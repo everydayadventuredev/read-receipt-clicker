@@ -63,37 +63,49 @@ export function LogPanel({ log }) {
 
 export function AchievementsPanel({ unlockedAchievements }) {
   const doneCount = ACHIEVEMENTS.filter(a => unlockedAchievements.has(a.id)).length;
+  const unlocked = ACHIEVEMENTS.filter(a => unlockedAchievements.has(a.id));
+  const locked = ACHIEVEMENTS.filter(a => !unlockedAchievements.has(a.id));
 
   return (
-    <div style={{ padding: '12px 0', maxHeight: 220, overflowY: 'auto' }}>
+    <div style={{ padding: '12px 0' }}>
       <div style={{
         fontSize: 11, fontWeight: 600, color: '#94a3b8',
         marginBottom: 8, letterSpacing: 0.5, textTransform: 'uppercase',
       }}>成就 <span style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 10 }}>{doneCount}/{ACHIEVEMENTS.length}</span></div>
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(150px,1fr))', gap: 8 }}>
-        {ACHIEVEMENTS.map(a => {
-          const done = unlockedAchievements.has(a.id);
-          return (
+
+      {/* Unlocked achievements — expanded cards */}
+      {unlocked.length > 0 && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginBottom: 8 }}>
+          {unlocked.map(a => (
             <div key={a.id} style={{
-              background: done
-                ? 'linear-gradient(135deg, rgba(163,230,53,.04), rgba(167,139,250,.03))'
-                : '#f8fafc',
-              border: `1px solid ${done ? 'rgba(163,230,53,.12)' : '#e2e8f0'}`,
-              borderRadius: 16, padding: '10px 12px',
-              opacity: done ? 1 : 0.35,
-              transition: 'all .2s',
+              background: 'linear-gradient(135deg, rgba(163,230,53,.04), rgba(167,139,250,.03))',
+              border: '1px solid rgba(163,230,53,.12)',
+              borderRadius: 10, padding: '8px 10px',
+              display: 'flex', alignItems: 'center', gap: 8,
             }}>
-              <div style={{ fontSize: 20, marginBottom: 3 }}>{done ? a.icon : '❓'}</div>
-              <div style={{ fontSize: 12, fontWeight: 700, color: done ? '#1e293b' : '#cbd5e1' }}>
-                {done ? a.name : '???'}
-              </div>
-              <div style={{ fontSize: 10, color: done ? '#64748b' : '#cbd5e1', marginTop: 2 }}>
-                {done ? a.desc : '繼續探索...'}
+              <span style={{ fontSize: 18, flexShrink: 0 }}>{a.icon}</span>
+              <div style={{ minWidth: 0 }}>
+                <div style={{ fontSize: 12, fontWeight: 700, color: '#1e293b' }}>{a.name}</div>
+                <div style={{ fontSize: 10, color: '#64748b', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{a.desc}</div>
               </div>
             </div>
-          );
-        })}
-      </div>
+          ))}
+        </div>
+      )}
+
+      {/* Locked achievements — compact icon row */}
+      {locked.length > 0 && (
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
+          {locked.map(a => (
+            <div key={a.id} style={{
+              width: 32, height: 32, borderRadius: 8,
+              background: '#f1f5f9', border: '1px solid #e2e8f0',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              fontSize: 13, color: '#cbd5e1', opacity: 0.6,
+            }}>?</div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
