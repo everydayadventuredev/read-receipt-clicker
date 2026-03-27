@@ -1,32 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 
-import { fmt as fmtUtil } from './utils/format.js';
-
-function AnimatedCounter({ value }) {
-  const [display, setDisplay] = useState(value);
-  const prevRef = useRef(value);
-  const rafRef = useRef(null);
-
-  useEffect(() => {
-    const from = prevRef.current;
-    const to = value;
-    if (Math.abs(to - from) < 1) { setDisplay(to); prevRef.current = to; return; }
-    const start = performance.now();
-    const dur = 300;
-    const step = (now) => {
-      const t = Math.min((now - start) / dur, 1);
-      const ease = 1 - Math.pow(1 - t, 3);
-      setDisplay(from + (to - from) * ease);
-      if (t < 1) rafRef.current = requestAnimationFrame(step);
-      else prevRef.current = to;
-    };
-    rafRef.current = requestAnimationFrame(step);
-    return () => rafRef.current && cancelAnimationFrame(rafRef.current);
-  }, [value]);
-
-  return fmtUtil(Math.floor(display));
-}
-
 import { BUILDINGS, UNLOCK_THRESHOLDS } from './game/buildings.js';
 import { UPGRADES } from './game/upgrades.js';
 import { MILESTONES } from './game/milestones.js';
@@ -543,7 +516,7 @@ export default function App() {
             animation: popAnim ? 'pn .18s ease-out' : 'none',
             letterSpacing: -3, lineHeight: 1,
           }}>
-            <AnimatedCounter value={reads} />
+            {fmt(reads)}
           </div>
 
           {/* CPS subtitle */}

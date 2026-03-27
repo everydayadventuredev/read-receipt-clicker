@@ -1,8 +1,9 @@
 export const fmt = (n) => {
-  if (n >= 1e12) return (n / 1e12).toFixed(1) + '兆';
-  if (n >= 1e8) return (n / 1e8).toFixed(1) + '億';
-  if (n >= 1e4) return (n / 1e4).toFixed(1) + '萬';
-  if (n >= 1e3) return n.toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+  if (n >= 1e15) return (n / 1e15).toFixed(2) + 'Q';
+  if (n >= 1e12) return (n / 1e12).toFixed(2) + 'T';
+  if (n >= 1e9)  return (n / 1e9).toFixed(2) + 'B';
+  if (n >= 1e6)  return (n / 1e6).toFixed(2) + 'M';
+  if (n >= 1e3)  return n.toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
   return Math.floor(n).toString();
 };
 
