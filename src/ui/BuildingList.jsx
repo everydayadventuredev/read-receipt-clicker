@@ -129,20 +129,20 @@ export default function BuildingList({ buildings, owned, reads, unlockedBuilding
                     color: '#94a3b8', fontSize: 11, marginTop: 2,
                     whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
                   }}>{b.desc}</div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 5 }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 5 }}>
                     <span style={{
                       color: canAfford ? '#65a30d' : '#cbd5e1',
                       fontSize: 12, fontWeight: 700,
                       fontFamily: "'JetBrains Mono',monospace",
                     }}>
-                      ✉ {fmt(cost)}{buyN > 1 ? ` (×${buyN})` : ''}
+                      {fmt(cost)}{buyN > 1 ? ` (×${buyN})` : ''}
                     </span>
-                    {hasAny && (
-                      <span style={{
-                        color: '#64748b', fontSize: 11,
-                        fontFamily: "'JetBrains Mono',monospace",
-                      }}>{fmt(prodRate)}/s</span>
-                    )}
+                    <span style={{
+                      color: '#94a3b8', fontSize: 10,
+                      fontFamily: "'JetBrains Mono',monospace",
+                    }}>
+                      {hasAny ? `${fmt(prodRate)}/s` : `+${fmt(b.baseProd)}/s each`}
+                    </span>
                   </div>
                 </div>
               </button>
