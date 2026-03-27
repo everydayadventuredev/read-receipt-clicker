@@ -29,19 +29,18 @@ export default function Ticker({ allTime }) {
   return (
     <div style={{
       padding: '10px 16px',
-      background: 'rgba(0,0,0,.5)',
-      borderTop: '1px solid rgba(255,255,255,.03)',
+      background: 'rgba(255,255,255,.8)',
+      borderTop: '1px solid #e2e8f0',
       minHeight: 40,
       display: 'flex', alignItems: 'center',
       flexShrink: 0, gap: 8,
-      backdropFilter: 'blur(10px)',
     }}>
       <span style={{
         fontSize: 13, flexShrink: 0,
-        opacity: 0.6,
+        opacity: 0.5,
       }}>📰</span>
       <span style={{
-        color: '#6b7280', fontSize: 12,
+        color: '#94a3b8', fontSize: 12,
         transition: 'opacity .3s',
         opacity: visible ? 0.7 : 0,
         lineHeight: 1.4,

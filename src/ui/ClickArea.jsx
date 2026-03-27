@@ -5,7 +5,7 @@ export default function ClickArea({ message, isRead, isFirstClick, popAnim, rece
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%' }}>
       {isFirstClick && !isRead && (
         <div style={{
-          textAlign: 'center', fontSize: 13, color: 'rgba(163,230,53,.6)',
+          textAlign: 'center', fontSize: 13, color: 'rgba(101,163,13,.6)',
           marginBottom: 10, animation: 'hf 4s ease-out forwards',
           fontWeight: 500,
         }}>
@@ -19,20 +19,19 @@ export default function ClickArea({ message, isRead, isFirstClick, popAnim, rece
         <div style={{
           position: 'relative',
           background: isRead
-            ? 'rgba(255,255,255,.03)'
-            : 'linear-gradient(145deg, rgba(139,92,246,.25) 0%, rgba(99,102,241,.15) 50%, rgba(59,130,246,.1) 100%)',
-          backdropFilter: 'blur(20px)',
+            ? '#f1f5f9'
+            : 'linear-gradient(145deg, rgba(167,139,250,.12), rgba(129,140,248,.06))',
           borderRadius: 24,
           padding: '24px 28px',
           transition: 'all .15s cubic-bezier(.4,0,.2,1)',
           transform: isRead ? 'scale(.96)' : 'scale(1)',
           opacity: isRead ? 0.3 : 1,
           border: isRead
-            ? '1px solid rgba(255,255,255,.04)'
-            : '1px solid rgba(167,139,250,.25)',
+            ? '1px solid #e2e8f0'
+            : '1px solid rgba(167,139,250,.2)',
           boxShadow: isRead
             ? 'none'
-            : '0 0 40px rgba(139,92,246,.12), 0 8px 32px rgba(0,0,0,.3), inset 0 1px 0 rgba(255,255,255,.06)',
+            : '0 0 40px rgba(139,92,246,.08), 0 8px 32px rgba(0,0,0,.06), inset 0 1px 0 rgba(255,255,255,.8)',
           animation: !isRead && !isFirstClick ? 'ib 2.5s ease-in-out infinite' : 'none',
         }}>
           {/* Notification badge */}
@@ -50,7 +49,7 @@ export default function ClickArea({ message, isRead, isFirstClick, popAnim, rece
 
           {/* Message text */}
           <div style={{
-            color: isRead ? '#4b5563' : '#f0f4f8',
+            color: isRead ? '#94a3b8' : '#1e293b',
             fontSize: 16, lineHeight: 1.6, fontWeight: 500,
             letterSpacing: 0.3,
           }}>
@@ -71,11 +70,11 @@ export default function ClickArea({ message, isRead, isFirstClick, popAnim, rece
         <div style={{ marginTop: 10, width: '100%', maxWidth: 300 }}>
           {recentMessages.slice(0, 3).map((m, i) => (
             <div key={i} style={{
-              fontSize: 11, color: 'rgba(167,139,250,.3)', opacity: 1 - i * 0.3,
+              fontSize: 11, color: `rgba(100,116,139,${0.4 - i * 0.1})`, opacity: 1 - i * 0.3,
               padding: '2px 0', display: 'flex', alignItems: 'center', gap: 5,
               overflow: 'hidden',
             }}>
-              <CheckIcon size={9} color={`rgba(167,139,250,${0.25 - i * 0.07})`} />
+              <CheckIcon size={9} color={`rgba(100,116,139,${0.35 - i * 0.1})`} />
               <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{m}</span>
             </div>
           ))}

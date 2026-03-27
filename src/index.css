@@ -1,6 +1,24 @@
-/* Minimal global reset — game uses inline styles */
+:root {
+  --bg: #f8f9fb;
+  --surface: #ffffff;
+  --text: #1e293b;
+  --text-secondary: #64748b;
+  --text-muted: #94a3b8;
+  --purple: #a78bfa;
+  --purple-text: #7c3aed;
+  --lime: #a3e635;
+  --lime-text: #65a30d;
+  --border: #e2e8f0;
+  --surface-hover: #f1f5f9;
+}
+
 html, body, #root {
   height: 100%;
   margin: 0;
   padding: 0;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
 }

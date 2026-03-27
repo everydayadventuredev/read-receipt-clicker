@@ -58,7 +58,6 @@ export default function App() {
   const [goldenCookie, setGoldenCookie] = useState(null);
   const [gcPos,      setGcPos]      = useState({ x: 50, y: 30 });
   const [newBuildings, setNewBuildings] = useState(new Set());
-  const [activePanel, setActivePanel] = useState(null);
   const [log,        setLog]        = useState([]);
   const [recentMsgs, setRecentMsgs] = useState([]);
   const [started,    setStarted]    = useState(false);
@@ -327,7 +326,6 @@ export default function App() {
     setNewBuildings(new Set());
     setSeenMilestones(new Set());
     setRecentMsgs([]);
-    setActivePanel(null);
     setTempMult(1);
     addToast(`🌀 Inbox Zero！+${prestigeEarned}已讀之力。第${prestigeCount + 1}次覺醒。`);
   }, [prestigeEarned, prestigeCount]);
@@ -343,7 +341,7 @@ export default function App() {
 
   return (
     <div style={{
-      minHeight: '100vh', background: '#08080f', color: '#e2e8f0',
+      minHeight: '100vh', background: '#f8f9fb', color: '#1e293b',
       display: 'flex', flexDirection: 'column',
       fontFamily: "'Noto Sans TC',-apple-system,sans-serif",
       position: 'relative', overflow: 'hidden',
@@ -364,17 +362,24 @@ export default function App() {
         button { font-family:inherit; cursor:pointer }
         ::-webkit-scrollbar { width:3px }
         ::-webkit-scrollbar-track { background:transparent }
-        ::-webkit-scrollbar-thumb { background:rgba(167,139,250,.15); border-radius:3px }
+        ::-webkit-scrollbar-thumb { background:rgba(167,139,250,.2); border-radius:3px }
         button:active { transform:scale(.96)!important }
-        @media(min-width:768px) {
-          .split { flex-direction:row!important }
-          .left  { width:42%!important; border-right:1px solid rgba(167,139,250,.06) }
-          .right { width:58%!important }
+        @media(min-width:1024px) {
+          .game-layout { flex-direction:row!important }
+          .section-left   { width:25%!important; border-right:1px solid #e2e8f0 }
+          .section-center { width:45%!important; border-right:1px solid #e2e8f0 }
+          .section-right  { width:30%!important }
+        }
+        @media(min-width:768px) and (max-width:1023px) {
+          .game-layout { flex-direction:row!important; flex-wrap:wrap }
+          .section-left   { width:35%!important; border-right:1px solid #e2e8f0 }
+          .section-center { width:65%!important }
+          .section-right  { width:100%!important; border-top:1px solid #e2e8f0 }
         }
       `}</style>
 
-      {/* Ambient glow */}
-      <div style={{ position: 'fixed', inset: 0, pointerEvents: 'none', background: 'radial-gradient(ellipse at 25% 15%, rgba(139,92,246,.06) 0%, transparent 50%), radial-gradient(ellipse at 75% 85%, rgba(163,230,53,.03) 0%, transparent 50%), radial-gradient(ellipse at 50% 50%, rgba(99,102,241,.02) 0%, transparent 60%)' }} />
+      {/* Ambient glow — very faint on light bg */}
+      <div style={{ position: 'fixed', inset: 0, pointerEvents: 'none', background: 'radial-gradient(ellipse at 25% 15%, rgba(167,139,250,.04) 0%, transparent 50%), radial-gradient(ellipse at 75% 85%, rgba(163,230,53,.03) 0%, transparent 50%)' }} />
 
       {/* Floating +N texts */}
       {floats.map(f => (
@@ -382,8 +387,8 @@ export default function App() {
           style={{
             position: 'fixed', left: f.x - 18, top: f.y - 22,
             pointerEvents: 'none', fontWeight: 800, fontSize: 21,
-            color: '#a3e635',
-            textShadow: '0 0 12px rgba(163,230,53,.4), 0 0 30px rgba(163,230,53,.15)',
+            color: '#65a30d',
+            textShadow: '0 0 8px rgba(101,163,13,.2), 0 1px 2px rgba(255,255,255,.8)',
             animation: 'fu .85s ease-out forwards', zIndex: 200,
             fontFamily: "'JetBrains Mono',monospace",
           }}
@@ -396,13 +401,12 @@ export default function App() {
         <div key={t.id}
           style={{
             position: 'fixed', top: 16, left: '50%', transform: 'translateX(-50%)',
-            background: 'rgba(15,15,25,.9)',
-            backdropFilter: 'blur(20px)',
-            color: '#f8fafc', padding: '14px 24px', borderRadius: 20, fontSize: 13,
-            boxShadow: '0 8px 40px rgba(0,0,0,.5), 0 0 20px rgba(139,92,246,.1)',
+            background: 'rgba(255,255,255,.95)',
+            color: '#1e293b', padding: '14px 24px', borderRadius: 20, fontSize: 13,
+            boxShadow: '0 8px 40px rgba(0,0,0,.1), 0 0 0 1px rgba(0,0,0,.04)',
             zIndex: 300, maxWidth: '90vw', textAlign: 'center',
             animation: 'ti .3s cubic-bezier(.4,0,.2,1)',
-            border: '1px solid rgba(167,139,250,.15)', lineHeight: 1.5,
+            border: '1px solid #e2e8f0', lineHeight: 1.5,
           }}
           onAnimationEnd={() => { setTimeout(() => setToasts(ts => ts.filter(x => x.id !== t.id)), 3000); }}
         >{t.m}</div>
@@ -412,11 +416,10 @@ export default function App() {
       {offlineBanner && (
         <div style={{
           position: 'fixed', top: 65, left: '50%', transform: 'translateX(-50%)',
-          background: 'rgba(163,230,53,.08)', backdropFilter: 'blur(16px)',
-          border: '1px solid rgba(163,230,53,.2)', borderRadius: 16,
-          padding: '10px 20px', fontSize: 13, color: '#a3e635',
-          fontWeight: 700, zIndex: 200,
-          boxShadow: '0 4px 24px rgba(163,230,53,.1)',
+          background: 'rgba(240,253,244,.9)', border: '1px solid #bbf7d0',
+          borderRadius: 16, padding: '10px 20px', fontSize: 13,
+          color: '#65a30d', fontWeight: 700, zIndex: 200,
+          boxShadow: '0 4px 24px rgba(101,163,13,.08)',
         }}>
           {offlineBanner}
         </div>
@@ -429,12 +432,11 @@ export default function App() {
       {tempMult > 1 && (
         <div style={{
           position: 'fixed', top: 60, left: '50%', transform: 'translateX(-50%)',
-          background: 'rgba(139,92,246,.12)', backdropFilter: 'blur(16px)',
-          border: '1px solid rgba(167,139,250,.2)', borderRadius: 14,
-          padding: '6px 16px', fontSize: 12, color: '#c4b5fd',
-          fontWeight: 700, zIndex: 200,
+          background: 'rgba(245,240,255,.9)', border: '1px solid rgba(167,139,250,.25)',
+          borderRadius: 14, padding: '6px 16px', fontSize: 12,
+          color: '#7c3aed', fontWeight: 700, zIndex: 200,
           fontFamily: "'JetBrains Mono',monospace",
-          boxShadow: '0 4px 20px rgba(139,92,246,.15)',
+          boxShadow: '0 4px 20px rgba(139,92,246,.08)',
         }}>
           🔥 x{tempMult} 產能加成中
         </div>
@@ -444,8 +446,8 @@ export default function App() {
       <div style={{
         padding: '12px 16px', display: 'flex', justifyContent: 'space-between',
         alignItems: 'center', flexShrink: 0,
-        background: 'rgba(255,255,255,.02)',
-        borderBottom: '1px solid rgba(255,255,255,.03)',
+        background: 'rgba(255,255,255,.8)',
+        borderBottom: '1px solid #e2e8f0',
         backdropFilter: 'blur(20px)',
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -458,70 +460,45 @@ export default function App() {
             <CheckIcon size={16} color="#fff" />
           </div>
           <span style={{
-            fontSize: 15, fontWeight: 800, color: '#e2e8f0',
+            fontSize: 15, fontWeight: 800, color: '#1e293b',
             letterSpacing: 3,
             fontFamily: "'JetBrains Mono',monospace",
           }}>已讀</span>
           {prestigePower > 0 && (
             <span style={{
-              fontSize: 11, color: '#c4b5fd',
-              background: 'rgba(167,139,250,.1)',
+              fontSize: 11, color: '#7c3aed',
+              background: 'rgba(167,139,250,.08)',
               padding: '3px 10px', borderRadius: 10,
               fontFamily: "'JetBrains Mono',monospace",
               border: '1px solid rgba(167,139,250,.15)',
             }}>✦{prestigePower}</span>
           )}
         </div>
-        <div style={{ display: 'flex', gap: 6 }}>
-          {[
-            { k: 'ach',   l: '🎖️', ac: '#a3e635', abg: 'rgba(163,230,53,' },
-            { k: 'log',   l: '📜', ac: '#c4b5fd', abg: 'rgba(167,139,250,' },
-            { k: 'stats', l: '📊', ac: '#818cf8', abg: 'rgba(129,140,248,' },
-          ].map(b => (
-            <button key={b.k}
-              onClick={() => setActivePanel(p => p === b.k ? null : b.k)}
-              style={{
-                background: activePanel === b.k ? `${b.abg}.12)` : 'rgba(255,255,255,.03)',
-                border: `1px solid ${activePanel === b.k ? `${b.abg}.2)` : 'rgba(255,255,255,.04)'}`,
-                borderRadius: 12, padding: '6px 12px',
-                color: activePanel === b.k ? b.ac : '#4b5563',
-                fontSize: 13, transition: 'all .2s cubic-bezier(.4,0,.2,1)',
-              }}
-            >{b.l}</button>
-          ))}
-          <button
-            onClick={() => { const m = toggleMute(); setMutedUI(m); }}
-            style={{
-              background: 'rgba(255,255,255,.03)',
-              border: '1px solid rgba(255,255,255,.04)',
-              borderRadius: 12, padding: '6px 12px',
-              color: '#4b5563', fontSize: 13,
-            }}
-          >{mutedUI ? '🔇' : '🔊'}</button>
-        </div>
+        <button
+          onClick={() => { const m = toggleMute(); setMutedUI(m); }}
+          style={{
+            background: '#f1f5f9',
+            border: '1px solid #e2e8f0',
+            borderRadius: 12, padding: '6px 12px',
+            color: '#64748b', fontSize: 13,
+          }}
+        >{mutedUI ? '🔇' : '🔊'}</button>
       </div>
 
-      {/* ── PANELS ── */}
-      {activePanel === 'stats' && (
-        <StatsPanel reads={reads} allTime={allTime} prodPerSec={prodPerSec} clickPower={calcClickPower()} owned={owned} seenMilestones={seenMilestones} prestigeCount={prestigeCount} prestigePower={prestigePower} boughtUpgrades={boughtUpgrades} />
-      )}
-      {activePanel === 'log' && <LogPanel log={log} />}
-      {activePanel === 'ach' && <AchievementsPanel unlockedAchievements={unlockedAchievements} />}
+      {/* ── THREE-COLUMN LAYOUT ── */}
+      <div className="game-layout" style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', minHeight: 0 }}>
 
-      {/* ── SPLIT LAYOUT ── */}
-      <div className="split" style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', minHeight: 0 }}>
-
-        {/* LEFT — Click area */}
-        <div className="left" style={{
+        {/* LEFT — Click area + Stats */}
+        <div className="section-left" style={{
           display: 'flex', flexDirection: 'column', alignItems: 'center',
-          justifyContent: 'center', padding: '20px 20px 16px',
+          padding: '20px 16px 16px',
           position: 'relative', flexShrink: 0,
+          overflowY: 'auto',
         }}>
           {/* Big counter */}
           <div style={{
             fontSize: 52, fontWeight: 900,
-            fontFamily: "'JetBrains Mono',monospace", color: '#f8fafc',
-            textShadow: '0 0 40px rgba(167,139,250,.1)',
+            fontFamily: "'JetBrains Mono',monospace", color: '#1e293b',
             animation: popAnim ? 'pn .18s ease-out' : 'none',
             letterSpacing: -3, lineHeight: 1,
           }}>
@@ -530,11 +507,11 @@ export default function App() {
 
           {/* CPS subtitle */}
           <div style={{
-            fontSize: 13, color: '#6b7280',
+            fontSize: 13, color: '#94a3b8',
             fontFamily: "'JetBrains Mono',monospace",
             marginTop: 6, display: 'flex', alignItems: 'center', gap: 6,
           }}>
-            <CheckIcon size={12} color="#6b7280" />
+            <CheckIcon size={12} color="#94a3b8" />
             {prodPerSec > 0 ? `${fmt(prodPerSec)}/秒` : '點擊開始已讀'}
           </div>
 
@@ -550,13 +527,15 @@ export default function App() {
               onClick={handleClick}
             />
           </div>
+
+          {/* Stats — always visible */}
+          <div style={{ width: '100%', marginTop: 16 }}>
+            <StatsPanel reads={reads} allTime={allTime} prodPerSec={prodPerSec} clickPower={calcClickPower()} owned={owned} seenMilestones={seenMilestones} prestigeCount={prestigeCount} prestigePower={prestigePower} boughtUpgrades={boughtUpgrades} />
+          </div>
         </div>
 
-        {/* RIGHT — Upgrades + Buildings */}
-        <div className="right" style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', minHeight: 0 }}>
-          {upgradeStates.length > 0 && (
-            <UpgradeRow upgrades={upgradeStates} reads={reads} onBuy={handleBuyUpgrade} />
-          )}
+        {/* CENTER — Buildings Store */}
+        <div className="section-center" style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', minHeight: 0 }}>
           <BuildingList
             buildings={BUILDINGS}
             owned={owned}
@@ -567,6 +546,22 @@ export default function App() {
             onBuy={handleBuy}
             setBuyN={setBuyN}
           />
+        </div>
+
+        {/* RIGHT — Upgrades + Achievements + Log */}
+        <div className="section-right" style={{ display: 'flex', flexDirection: 'column', overflow: 'hidden', minHeight: 0 }}>
+          {/* Upgrades */}
+          <div style={{ flexShrink: 0 }}>
+            {upgradeStates.length > 0 && (
+              <UpgradeRow upgrades={upgradeStates} reads={reads} onBuy={handleBuyUpgrade} />
+            )}
+          </div>
+
+          {/* Achievements + Log — scrollable */}
+          <div style={{ flex: 1, overflowY: 'auto', padding: '0 12px 12px' }}>
+            <AchievementsPanel unlockedAchievements={unlockedAchievements} />
+            <LogPanel log={log} />
+          </div>
         </div>
       </div>
 

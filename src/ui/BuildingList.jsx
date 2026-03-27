@@ -1,4 +1,5 @@
 import { fmt, buildingCostN } from '../utils/format.js';
+import { BUILDING_ICONS } from './PixelIcons.jsx';
 
 export default function BuildingList({ buildings, owned, reads, unlockedBuildings, newBuildings, buyN, onBuy, setBuyN }) {
   return (
@@ -9,7 +10,7 @@ export default function BuildingList({ buildings, owned, reads, unlockedBuilding
         justifyContent: 'space-between', flexShrink: 0,
       }}>
         <div style={{
-          fontSize: 12, color: '#6b7280', fontWeight: 600,
+          fontSize: 12, color: '#64748b', fontWeight: 600,
           display: 'flex', alignItems: 'center', gap: 6,
           letterSpacing: 1, textTransform: 'uppercase',
         }}>
@@ -17,9 +18,9 @@ export default function BuildingList({ buildings, owned, reads, unlockedBuilding
         </div>
         <div style={{
           display: 'flex', gap: 3,
-          background: 'rgba(255,255,255,.03)',
+          background: '#f1f5f9',
           borderRadius: 12, padding: 3,
-          border: '1px solid rgba(255,255,255,.04)',
+          border: '1px solid #e2e8f0',
         }}>
           {[1, 10, 100].map(n => (
             <button
@@ -28,9 +29,9 @@ export default function BuildingList({ buildings, owned, reads, unlockedBuilding
               style={{
                 fontSize: 11, padding: '4px 12px', borderRadius: 10, border: 'none',
                 background: buyN === n
-                  ? 'linear-gradient(135deg, rgba(139,92,246,.3), rgba(99,102,241,.2))'
+                  ? 'linear-gradient(135deg, #a78bfa, #818cf8)'
                   : 'transparent',
-                color: buyN === n ? '#c4b5fd' : '#4b5563',
+                color: buyN === n ? '#fff' : '#94a3b8',
                 fontWeight: 700,
                 fontFamily: "'JetBrains Mono',monospace",
                 cursor: 'pointer',
@@ -60,23 +61,21 @@ export default function BuildingList({ buildings, owned, reads, unlockedBuilding
                 style={{
                   display: 'flex', alignItems: 'center', gap: 14,
                   width: '100%', padding: '14px 16px',
-                  background: canAfford
-                    ? 'rgba(255,255,255,.04)'
-                    : 'rgba(255,255,255,.015)',
+                  background: '#fff',
                   border: isNew
                     ? `1px solid ${b.color}44`
                     : canAfford
-                      ? '1px solid rgba(255,255,255,.06)'
-                      : '1px solid rgba(255,255,255,.02)',
+                      ? '1px solid rgba(167,139,250,.3)'
+                      : '1px solid #e2e8f0',
                   borderRadius: 20,
-                  opacity: canAfford ? 1 : 0.3,
+                  opacity: canAfford ? 1 : 0.45,
                   transition: 'all .2s cubic-bezier(.4,0,.2,1)',
                   textAlign: 'left',
                   position: 'relative',
                   overflow: 'hidden',
                   cursor: canAfford ? 'pointer' : 'default',
                   animation: isNew ? 'si .4s ease-out' : 'none',
-                  backdropFilter: 'blur(10px)',
+                  boxShadow: '0 1px 3px rgba(0,0,0,.04)',
                 }}
               >
                 {/* Left accent bar */}
@@ -99,35 +98,40 @@ export default function BuildingList({ buildings, owned, reads, unlockedBuilding
                   }}>NEW</div>
                 )}
 
-                {/* Emoji icon */}
+                {/* Pixel art icon */}
                 <div style={{
                   width: 44, height: 44, borderRadius: 14,
-                  background: `linear-gradient(135deg, ${b.color}18, ${b.color}08)`,
-                  border: `1px solid ${b.color}20`,
+                  background: `linear-gradient(135deg, ${b.color}10, ${b.color}08)`,
+                  border: `1px solid ${b.color}15`,
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  fontSize: 22, flexShrink: 0,
+                  flexShrink: 0,
                   animation: hasAny ? `wg 3s ease-in-out infinite ${i * 0.3}s` : 'none',
-                }}>{b.emoji}</div>
+                }}>
+                  {BUILDING_ICONS[b.id]
+                    ? (() => { const Icon = BUILDING_ICONS[b.id]; return <Icon size={28} color={b.color} />; })()
+                    : <span style={{ fontSize: 22 }}>{b.emoji}</span>
+                  }
+                </div>
 
                 {/* Info */}
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <span style={{ color: '#e2e8f0', fontWeight: 700, fontSize: 14 }}>{b.name}</span>
+                    <span style={{ color: '#1e293b', fontWeight: 700, fontSize: 14 }}>{b.name}</span>
                     <span style={{
-                      color: hasAny ? '#a3e635' : '#4b5563',
+                      color: hasAny ? '#65a30d' : '#94a3b8',
                       fontSize: 11, fontFamily: "'JetBrains Mono',monospace",
-                      background: hasAny ? 'rgba(163,230,53,.08)' : 'rgba(255,255,255,.03)',
+                      background: hasAny ? '#f0fdf4' : '#f8fafc',
                       padding: '2px 8px', borderRadius: 8,
-                      border: hasAny ? '1px solid rgba(163,230,53,.15)' : '1px solid transparent',
+                      border: hasAny ? '1px solid #bbf7d0' : '1px solid #e2e8f0',
                     }}>×{count}</span>
                   </div>
                   <div style={{
-                    color: '#4b5563', fontSize: 11, marginTop: 2,
+                    color: '#94a3b8', fontSize: 11, marginTop: 2,
                     whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
                   }}>{b.desc}</div>
                   <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 5 }}>
                     <span style={{
-                      color: canAfford ? '#a3e635' : '#374151',
+                      color: canAfford ? '#65a30d' : '#cbd5e1',
                       fontSize: 12, fontWeight: 700,
                       fontFamily: "'JetBrains Mono',monospace",
                     }}>
@@ -135,7 +139,7 @@ export default function BuildingList({ buildings, owned, reads, unlockedBuilding
                     </span>
                     {hasAny && (
                       <span style={{
-                        color: '#6b7280', fontSize: 11,
+                        color: '#64748b', fontSize: 11,
                         fontFamily: "'JetBrains Mono',monospace",
                       }}>{fmt(prodRate)}/s</span>
                     )}
