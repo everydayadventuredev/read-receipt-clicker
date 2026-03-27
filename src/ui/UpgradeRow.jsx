@@ -18,7 +18,7 @@ export default function UpgradeRow({ upgrades, reads, onBuy }) {
         marginBottom: 8, letterSpacing: 0.5, textTransform: 'uppercase',
         display: 'flex', alignItems: 'center', gap: 6,
       }}>
-        <span style={{ fontSize: 13 }}>⬆</span> 升級
+        升級
         <span style={{
           fontFamily: "'JetBrains Mono',monospace", fontSize: 10,
           color: '#94a3b8',

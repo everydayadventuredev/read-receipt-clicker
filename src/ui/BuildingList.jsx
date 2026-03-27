@@ -14,7 +14,7 @@ export default function BuildingList({ buildings, owned, reads, unlockedBuilding
           display: 'flex', alignItems: 'center', gap: 6,
           letterSpacing: 1, textTransform: 'uppercase',
         }}>
-          <span style={{ fontSize: 14 }}>👥</span> 已讀大師
+          已讀大師
         </div>
         <div style={{
           display: 'flex', gap: 3,
@@ -108,7 +108,7 @@ export default function BuildingList({ buildings, owned, reads, unlockedBuilding
                   animation: hasAny ? `wg 3s ease-in-out infinite ${i * 0.3}s` : 'none',
                 }}>
                   {BUILDING_ICONS[b.id]
-                    ? (() => { const Icon = BUILDING_ICONS[b.id]; return <Icon size={28} color={b.color} />; })()
+                    ? (() => { const Icon = BUILDING_ICONS[b.id]; return <Icon size={32} color={b.color} />; })()
                     : <span style={{ fontSize: 22 }}>{b.emoji}</span>
                   }
                 </div>
