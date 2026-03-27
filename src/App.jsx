@@ -18,7 +18,7 @@ import UpgradeRow from './ui/UpgradeRow.jsx';
 import GoldenCookie from './ui/GoldenCookie.jsx';
 import PrestigeBar from './ui/PrestigeBar.jsx';
 import Ticker from './ui/Ticker.jsx';
-import { StatsPanel, LogPanel, AchievementsPanel } from './ui/Panels.jsx';
+import { StatsPanel, LogPanel, AchievementBadges } from './ui/Panels.jsx';
 
 function initState() {
   const saved = loadGame();
@@ -67,6 +67,7 @@ export default function App() {
   const [mutedUI,    setMutedUI]    = useState(false);
   const [offlineBanner, setOfflineBanner] = useState(null);
   const [prodPerSec, setProdPerSec] = useState(0);
+  const [storeTab,   setStoreTab]   = useState('build');
 
   const idRef      = useRef(0);
   const readsRef   = useRef(reads);
@@ -370,17 +371,10 @@ export default function App() {
         ::-webkit-scrollbar-track { background:transparent }
         ::-webkit-scrollbar-thumb { background:rgba(99,102,241,.15); border-radius:3px }
         button:active { transform:scale(.96)!important }
-        @media(min-width:1024px) {
+        @media(min-width:768px) {
           .game-layout { flex-direction:row!important }
-          .section-left   { width:25%!important; border-right:1px solid #e2e8f0 }
-          .section-center { width:45%!important; border-right:1px solid #e2e8f0 }
-          .section-right  { width:30%!important }
-        }
-        @media(min-width:768px) and (max-width:1023px) {
-          .game-layout { flex-direction:row!important; flex-wrap:wrap }
-          .section-left   { width:35%!important; border-right:1px solid #e2e8f0 }
-          .section-center { width:65%!important }
-          .section-right  { width:100%!important; border-top:1px solid #e2e8f0 }
+          .section-hero  { width:40%!important; border-right:1px solid #e2e8f0 }
+          .section-store { width:60%!important }
         }
       `}</style>
 
@@ -501,33 +495,35 @@ export default function App() {
         >{mutedUI ? '🔇' : '🔊'}</button>
       </div>
 
-      {/* ── THREE-COLUMN LAYOUT ── */}
+      {/* ── TWO-COLUMN LAYOUT ── */}
       <div className="game-layout" style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', minHeight: 0 }}>
 
-        {/* LEFT — Click area + Stats */}
-        <div className="section-left" style={{
+        {/* LEFT — Hero counter + Click + Stats */}
+        <div className="section-hero" style={{
           display: 'flex', flexDirection: 'column', alignItems: 'center',
-          padding: '20px 16px 16px',
+          justifyContent: 'center',
+          padding: '24px 20px 16px',
           position: 'relative', flexShrink: 0,
           overflowY: 'auto',
         }}>
-          {/* Big counter */}
+          {/* Hero counter — the star of the show */}
           <div style={{
-            fontSize: 52, fontWeight: 900,
+            fontSize: 72, fontWeight: 900,
             fontFamily: "'Space Grotesk','JetBrains Mono',monospace", color: '#1e293b',
             animation: popAnim ? 'pn .18s ease-out' : 'none',
-            letterSpacing: -3, lineHeight: 1,
+            letterSpacing: -4, lineHeight: 1,
+            marginBottom: 4,
           }}>
             {fmt(reads)}
           </div>
 
           {/* CPS subtitle */}
           <div style={{
-            fontSize: 13, color: '#94a3b8',
+            fontSize: 15, color: '#94a3b8',
             fontFamily: "'JetBrains Mono',monospace",
-            marginTop: 6, display: 'flex', alignItems: 'center', gap: 6,
+            marginBottom: 16, display: 'flex', alignItems: 'center', gap: 6,
           }}>
-            <CheckIcon size={12} color="#94a3b8" />
+            <CheckIcon size={13} color="#94a3b8" />
             {prodPerSec > 0 ? `${fmt(prodPerSec)}/秒` : '點擊開始已讀'}
           </div>
 
@@ -544,37 +540,101 @@ export default function App() {
             />
           </div>
 
-          {/* Stats — always visible */}
+          {/* Compact stats row */}
           <div style={{ width: '100%', marginTop: 16 }}>
             <StatsPanel reads={reads} allTime={allTime} prodPerSec={prodPerSec} clickPower={calcClickPower()} owned={owned} seenMilestones={seenMilestones} prestigeCount={prestigeCount} prestigePower={prestigePower} boughtUpgrades={boughtUpgrades} />
           </div>
+
+          {/* Achievement badges */}
+          <div style={{ width: '100%', marginTop: 12 }}>
+            <div style={{
+              fontSize: 10, color: '#94a3b8', fontWeight: 600, letterSpacing: 0.5,
+              textTransform: 'uppercase', marginBottom: 6,
+            }}>成就 {unlockedAchievements.size}/{ACHIEVEMENTS.length}</div>
+            <AchievementBadges unlockedAchievements={unlockedAchievements} />
+          </div>
         </div>
 
-        {/* CENTER — Buildings Store */}
-        <div className="section-center" style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', minHeight: 0 }}>
-          <BuildingList
-            buildings={BUILDINGS}
-            owned={owned}
-            reads={reads}
-            unlockedBuildings={unlockedBuildings}
-            newBuildings={newBuildings}
-            buyN={buyN}
-            onBuy={handleBuy}
-            setBuyN={setBuyN}
-          />
-        </div>
+        {/* RIGHT — Tabbed Store (Buildings / Upgrades) + Log */}
+        <div className="section-store" style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', minHeight: 0 }}>
 
-        {/* RIGHT — Upgrades + Achievements + Log */}
-        <div className="section-right" style={{ display: 'flex', flexDirection: 'column', overflow: 'hidden', minHeight: 0 }}>
-          {/* All right-panel content scrollable together */}
-          <div style={{ flex: 1, overflowY: 'auto', minHeight: 0 }}>
-            {upgradeStates.length > 0 && (
-              <UpgradeRow upgrades={upgradeStates} reads={reads} onBuy={handleBuyUpgrade} />
+          {/* Tab bar */}
+          <div style={{
+            display: 'flex', padding: '8px 12px 0', gap: 4, flexShrink: 0,
+          }}>
+            {[
+              { id: 'build', label: '建築', count: Object.values(owned).reduce((a, b) => a + b, 0) },
+              { id: 'upgrade', label: '升級', count: `${boughtUpgrades.size}/${UPGRADES.length}` },
+            ].map(tab => (
+              <button
+                key={tab.id}
+                onClick={() => setStoreTab(tab.id)}
+                style={{
+                  flex: 1, padding: '10px 0', border: 'none', borderRadius: '10px 10px 0 0',
+                  fontSize: 12, fontWeight: 700, cursor: 'pointer',
+                  background: storeTab === tab.id ? '#fff' : 'transparent',
+                  color: storeTab === tab.id ? '#1e293b' : '#94a3b8',
+                  borderBottom: storeTab === tab.id ? '2px solid #6366f1' : '2px solid transparent',
+                  transition: 'all .15s',
+                  fontFamily: 'inherit',
+                }}
+              >
+                {tab.label}
+                <span style={{
+                  marginLeft: 6, fontSize: 10,
+                  fontFamily: "'JetBrains Mono',monospace",
+                  color: storeTab === tab.id ? '#6366f1' : '#cbd5e1',
+                }}>{tab.count}</span>
+              </button>
+            ))}
+          </div>
+
+          {/* Tab content */}
+          <div style={{ flex: 1, overflow: 'hidden', display: 'flex', flexDirection: 'column', minHeight: 0 }}>
+            {storeTab === 'build' ? (
+              <BuildingList
+                buildings={BUILDINGS}
+                owned={owned}
+                reads={reads}
+                unlockedBuildings={unlockedBuildings}
+                newBuildings={newBuildings}
+                buyN={buyN}
+                onBuy={handleBuy}
+                setBuyN={setBuyN}
+              />
+            ) : (
+              <div style={{ flex: 1, overflowY: 'auto', minHeight: 0 }}>
+                {upgradeStates.length > 0 ? (
+                  <UpgradeRow upgrades={upgradeStates} reads={reads} onBuy={handleBuyUpgrade} />
+                ) : (
+                  <div style={{ padding: 24, textAlign: 'center', color: '#94a3b8', fontSize: 12, fontStyle: 'italic' }}>
+                    繼續已讀就會解鎖更多升級
+                  </div>
+                )}
+              </div>
             )}
-            <div style={{ padding: '0 12px 12px' }}>
-              <AchievementsPanel unlockedAchievements={unlockedAchievements} />
-              <LogPanel log={log} />
-            </div>
+          </div>
+
+          {/* Compact log footer */}
+          <div style={{
+            borderTop: '1px solid #e2e8f0',
+            padding: '6px 12px', flexShrink: 0,
+            maxHeight: 80, overflowY: 'auto',
+            background: 'rgba(248,250,251,.8)',
+          }}>
+            <div style={{
+              fontSize: 9, color: '#94a3b8', fontWeight: 600, letterSpacing: 0.5,
+              textTransform: 'uppercase', marginBottom: 2,
+            }}>紀錄</div>
+            {log.length === 0
+              ? <div style={{ fontSize: 10, color: '#cbd5e1', fontStyle: 'italic' }}>事件會出現在這裡</div>
+              : log.slice(-3).map(l => (
+                <div key={l.id} style={{
+                  fontSize: 10, color: '#64748b', padding: '1px 0',
+                  whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
+                }}>{l.m}</div>
+              ))
+            }
           </div>
         </div>
       </div>

@@ -67,71 +67,46 @@ export function LogPanel({ log }) {
   );
 }
 
-export function AchievementsPanel({ unlockedAchievements }) {
-  const [expanded, setExpanded] = useState(true);
-  const doneCount = ACHIEVEMENTS.filter(a => unlockedAchievements.has(a.id)).length;
-  const unlocked = ACHIEVEMENTS.filter(a => unlockedAchievements.has(a.id));
-  const locked = ACHIEVEMENTS.filter(a => !unlockedAchievements.has(a.id));
+export function AchievementBadges({ unlockedAchievements }) {
+  const [hoveredId, setHoveredId] = useState(null);
 
   return (
-    <div style={{ padding: '12px 0' }}>
-      <div
-        onClick={() => setExpanded(e => !e)}
-        style={{
-          fontSize: 11, fontWeight: 600, color: '#94a3b8',
-          marginBottom: expanded ? 8 : 0, letterSpacing: 0.5, textTransform: 'uppercase',
-          cursor: 'pointer', userSelect: 'none',
-          display: 'flex', alignItems: 'center', gap: 4,
-        }}
-      >
-        <span style={{ fontSize: 9, transition: 'transform .2s', transform: expanded ? 'rotate(90deg)' : 'rotate(0deg)' }}>▶</span>
-        成就 <span style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 10 }}>{doneCount}/{ACHIEVEMENTS.length}</span>
-      </div>
-
-      {expanded && (
-        <>
-          {/* Unlocked achievements — expanded cards */}
-          {unlocked.length > 0 && (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginBottom: 8 }}>
-              {unlocked.map(a => (
-                <div key={a.id} style={{
-                  background: 'linear-gradient(135deg, rgba(217,119,6,.04), rgba(99,102,241,.03))',
-                  border: '1px solid rgba(217,119,6,.12)',
-                  borderRadius: 10, padding: '8px 10px',
-                  display: 'flex', alignItems: 'center', gap: 8,
-                }}>
-                  <span style={{ fontSize: 18, flexShrink: 0 }}>{a.icon}</span>
-                  <div style={{ minWidth: 0 }}>
-                    <div style={{ fontSize: 12, fontWeight: 700, color: '#1e293b' }}>{a.name}</div>
-                    <div style={{ fontSize: 10, color: '#64748b', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{a.desc}</div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-
-          {/* Warm intro when no achievements unlocked */}
-          {doneCount === 0 && (
-            <div style={{ color: '#94a3b8', fontSize: 12, fontStyle: 'italic', marginBottom: 8 }}>
-              持續已讀就能解鎖成就
-            </div>
-          )}
-
-          {/* Locked achievements — compact icon row */}
-          {locked.length > 0 && (
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
-              {locked.map(a => (
-                <div key={a.id} style={{
-                  width: 32, height: 32, borderRadius: 8,
-                  background: '#f1f5f9', border: '1px solid #e2e8f0',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  fontSize: 13, color: '#cbd5e1', opacity: 0.6,
-                }}>?</div>
-              ))}
-            </div>
-          )}
-        </>
-      )}
+    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 3, alignItems: 'center' }}>
+      {ACHIEVEMENTS.map(a => {
+        const done = unlockedAchievements.has(a.id);
+        return (
+          <div
+            key={a.id}
+            onMouseEnter={() => setHoveredId(a.id)}
+            onMouseLeave={() => setHoveredId(null)}
+            style={{
+              position: 'relative',
+              width: 28, height: 28, borderRadius: 8,
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              fontSize: done ? 14 : 11,
+              background: done ? 'rgba(217,119,6,.06)' : '#f1f5f9',
+              border: done ? '1px solid rgba(217,119,6,.15)' : '1px solid #e2e8f0',
+              opacity: done ? 1 : 0.4,
+              cursor: 'default',
+              transition: 'all .15s',
+            }}
+          >
+            {done ? a.icon : '?'}
+            {hoveredId === a.id && (
+              <div style={{
+                position: 'absolute', bottom: '100%', left: '50%',
+                transform: 'translateX(-50%)', marginBottom: 4,
+                background: 'rgba(30,41,59,.9)', color: '#fff',
+                padding: '4px 8px', borderRadius: 6,
+                fontSize: 10, whiteSpace: 'nowrap', zIndex: 50,
+                pointerEvents: 'none',
+              }}>
+                {done ? a.name : a.desc}
+              </div>
+            )}
+          </div>
+        );
+      })}
     </div>
   );
 }
