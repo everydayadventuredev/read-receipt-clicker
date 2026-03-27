@@ -343,7 +343,7 @@ export default function App() {
 
   return (
     <div style={{
-      minHeight: '100vh', background: '#f8f9fb', color: '#1e293b',
+      height: '100vh', background: '#f8f9fb', color: '#1e293b',
       display: 'flex', flexDirection: 'column',
       fontFamily: "'Noto Sans TC',-apple-system,sans-serif",
       position: 'relative', overflow: 'hidden',
@@ -566,17 +566,15 @@ export default function App() {
 
         {/* RIGHT — Upgrades + Achievements + Log */}
         <div className="section-right" style={{ display: 'flex', flexDirection: 'column', overflow: 'hidden', minHeight: 0 }}>
-          {/* Upgrades */}
-          <div style={{ flexShrink: 0 }}>
+          {/* All right-panel content scrollable together */}
+          <div style={{ flex: 1, overflowY: 'auto', minHeight: 0 }}>
             {upgradeStates.length > 0 && (
               <UpgradeRow upgrades={upgradeStates} reads={reads} onBuy={handleBuyUpgrade} />
             )}
-          </div>
-
-          {/* Achievements + Log — scrollable */}
-          <div style={{ flex: 1, overflowY: 'auto', padding: '0 12px 12px' }}>
-            <AchievementsPanel unlockedAchievements={unlockedAchievements} />
-            <LogPanel log={log} />
+            <div style={{ padding: '0 12px 12px' }}>
+              <AchievementsPanel unlockedAchievements={unlockedAchievements} />
+              <LogPanel log={log} />
+            </div>
           </div>
         </div>
       </div>

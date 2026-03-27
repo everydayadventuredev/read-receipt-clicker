@@ -72,7 +72,7 @@ export default function BuildingList({ buildings, owned, reads, unlockedBuilding
                 onMouseEnter={() => canAfford && setHovered(b.id)}
                 onMouseLeave={() => setHovered(null)}
                 style={{
-                  display: 'flex', alignItems: 'center', gap: 14,
+                  display: 'flex', alignItems: 'center',
                   width: '100%', padding: hasAny ? '14px 16px 24px' : '14px 16px',
                   background: '#fff',
                   border: isNew
@@ -109,6 +109,18 @@ export default function BuildingList({ buildings, owned, reads, unlockedBuilding
                   }} />
                 )}
 
+                {/* Large watermark icon spanning right side */}
+                {BUILDING_ICONS[b.id] && (
+                  <div style={{
+                    position: 'absolute', right: -6, top: '50%', transform: 'translateY(-50%)',
+                    opacity: hasAny ? 0.10 : 0.05,
+                    pointerEvents: 'none',
+                    animation: hasAny ? `wg 3s ease-in-out infinite ${i * 0.3}s` : 'none',
+                  }}>
+                    {(() => { const Icon = BUILDING_ICONS[b.id]; return <Icon size={72} color={b.color} />; })()}
+                  </div>
+                )}
+
                 {/* NEW badge */}
                 {isNew && (
                   <div style={{
@@ -117,26 +129,12 @@ export default function BuildingList({ buildings, owned, reads, unlockedBuilding
                     color: '#fff', fontSize: 9, fontWeight: 800,
                     padding: '2px 8px', borderRadius: 8,
                     boxShadow: `0 2px 8px ${b.color}33`,
+                    zIndex: 2,
                   }}>NEW</div>
                 )}
 
-                {/* Pixel art icon */}
-                <div style={{
-                  width: 44, height: 44, borderRadius: 10,
-                  background: `linear-gradient(135deg, ${b.color}10, ${b.color}08)`,
-                  border: `1px solid ${b.color}15`,
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  flexShrink: 0,
-                  animation: hasAny ? `wg 3s ease-in-out infinite ${i * 0.3}s` : 'none',
-                }}>
-                  {BUILDING_ICONS[b.id]
-                    ? (() => { const Icon = BUILDING_ICONS[b.id]; return <Icon size={32} color={b.color} />; })()
-                    : <span style={{ fontSize: 22 }}>{b.emoji}</span>
-                  }
-                </div>
-
-                {/* Info */}
-                <div style={{ flex: 1, minWidth: 0 }}>
+                {/* Info — no separate icon box, text takes full width */}
+                <div style={{ flex: 1, minWidth: 0, position: 'relative', zIndex: 1, paddingLeft: hasAny ? 4 : 0 }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <span style={{ color: '#1e293b', fontWeight: 700, fontSize: 14 }}>{b.name}</span>
                     <span style={{
@@ -177,6 +175,7 @@ export default function BuildingList({ buildings, owned, reads, unlockedBuilding
                     borderTop: `1px solid ${b.color}08`,
                     borderRadius: '0 0 12px 12px',
                     overflow: 'hidden',
+                    zIndex: 1,
                   }}>
                     {Array.from({ length: Math.min(count, 15) }, (_, j) => {
                       const Icon = BUILDING_ICONS[b.id];
