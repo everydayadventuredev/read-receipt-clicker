@@ -1,7 +1,18 @@
+import { useState } from 'react';
 import { fmt, buildingCostN } from '../utils/format.js';
 import { BUILDING_ICONS } from './PixelIcons.jsx';
 
 export default function BuildingList({ buildings, owned, reads, unlockedBuildings, newBuildings, buyN, onBuy, setBuyN }) {
+  const [lastBought, setLastBought] = useState(null);
+  const [hovered, setHovered] = useState(null);
+
+  const visibleBuildings = buildings.filter(b => unlockedBuildings.has(b.id));
+  const noneAffordable = visibleBuildings.length > 0 && visibleBuildings.every(b => {
+    const count = owned[b.id] ?? 0;
+    const cost = buildingCostN(b, count, buyN);
+    return reads < cost;
+  });
+
   return (
     <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', minHeight: 0 }}>
       {/* Header with bulk buy */}
@@ -29,7 +40,7 @@ export default function BuildingList({ buildings, owned, reads, unlockedBuilding
               style={{
                 fontSize: 11, padding: '8px 14px', borderRadius: 10, border: 'none',
                 background: buyN === n
-                  ? 'linear-gradient(135deg, #a78bfa, #818cf8)'
+                  ? 'linear-gradient(135deg, #6366f1, #4338ca)'
                   : 'transparent',
                 color: buyN === n ? '#fff' : '#94a3b8',
                 fontWeight: 700,
@@ -56,8 +67,10 @@ export default function BuildingList({ buildings, owned, reads, unlockedBuilding
             return (
               <button
                 key={b.id}
-                onClick={() => onBuy(b, buyN)}
+                onClick={() => { onBuy(b, buyN); setLastBought(b.id); setTimeout(() => setLastBought(null), 400); }}
                 disabled={!canAfford}
+                onMouseEnter={() => canAfford && setHovered(b.id)}
+                onMouseLeave={() => setHovered(null)}
                 style={{
                   display: 'flex', alignItems: 'center', gap: 14,
                   width: '100%', padding: '14px 16px',
@@ -65,7 +78,7 @@ export default function BuildingList({ buildings, owned, reads, unlockedBuilding
                   border: isNew
                     ? `1px solid ${b.color}44`
                     : canAfford
-                      ? '1px solid rgba(167,139,250,.3)'
+                      ? '1px solid rgba(99,102,241,.3)'
                       : '1px solid #e2e8f0',
                   borderRadius: 12,
                   opacity: canAfford ? 1 : 0.45,
@@ -75,7 +88,16 @@ export default function BuildingList({ buildings, owned, reads, unlockedBuilding
                   overflow: 'hidden',
                   cursor: canAfford ? 'pointer' : 'default',
                   animation: isNew ? 'si .4s ease-out' : 'none',
-                  boxShadow: '0 1px 3px rgba(0,0,0,.04)',
+                  boxShadow: lastBought === b.id
+                    ? '0 0 0 3px rgba(217,119,6,.3), 0 1px 3px rgba(0,0,0,.04)'
+                    : hovered === b.id && canAfford
+                      ? '0 4px 12px rgba(0,0,0,.08)'
+                      : '0 1px 3px rgba(0,0,0,.04)',
+                  transform: lastBought === b.id
+                    ? 'scale(1.02)'
+                    : hovered === b.id && canAfford
+                      ? 'translateY(-2px)'
+                      : 'none',
                 }}
               >
                 {/* Left accent bar */}
@@ -118,11 +140,11 @@ export default function BuildingList({ buildings, owned, reads, unlockedBuilding
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <span style={{ color: '#1e293b', fontWeight: 700, fontSize: 14 }}>{b.name}</span>
                     <span style={{
-                      color: hasAny ? '#65a30d' : '#94a3b8',
+                      color: hasAny ? '#059669' : '#94a3b8',
                       fontSize: 11, fontFamily: "'JetBrains Mono',monospace",
-                      background: hasAny ? '#f0fdf4' : '#f8fafc',
+                      background: hasAny ? '#fffbeb' : '#f8fafc',
                       padding: '2px 8px', borderRadius: 8,
-                      border: hasAny ? '1px solid #bbf7d0' : '1px solid #e2e8f0',
+                      border: hasAny ? '1px solid #fde68a' : '1px solid #e2e8f0',
                     }}>×{count}</span>
                   </div>
                   <div style={{
@@ -131,7 +153,7 @@ export default function BuildingList({ buildings, owned, reads, unlockedBuilding
                   }}>{b.desc}</div>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 5 }}>
                     <span style={{
-                      color: canAfford ? '#65a30d' : '#cbd5e1',
+                      color: canAfford ? '#b45309' : '#cbd5e1',
                       fontSize: 12, fontWeight: 700,
                       fontFamily: "'JetBrains Mono',monospace",
                     }}>
@@ -148,6 +170,11 @@ export default function BuildingList({ buildings, owned, reads, unlockedBuilding
               </button>
             );
           })}
+          {reads > 0 && noneAffordable && (
+            <div style={{ textAlign: 'center', padding: '12px 0', fontSize: 12, color: '#94a3b8', fontStyle: 'italic' }}>
+              繼續點擊，很快就能招募第一個已讀大師
+            </div>
+          )}
         </div>
       </div>
     </div>

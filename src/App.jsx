@@ -1,5 +1,32 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 
+import { fmt as fmtUtil } from './utils/format.js';
+
+function AnimatedCounter({ value }) {
+  const [display, setDisplay] = useState(value);
+  const prevRef = useRef(value);
+  const rafRef = useRef(null);
+
+  useEffect(() => {
+    const from = prevRef.current;
+    const to = value;
+    if (Math.abs(to - from) < 1) { setDisplay(to); prevRef.current = to; return; }
+    const start = performance.now();
+    const dur = 300;
+    const step = (now) => {
+      const t = Math.min((now - start) / dur, 1);
+      const ease = 1 - Math.pow(1 - t, 3);
+      setDisplay(from + (to - from) * ease);
+      if (t < 1) rafRef.current = requestAnimationFrame(step);
+      else prevRef.current = to;
+    };
+    rafRef.current = requestAnimationFrame(step);
+    return () => rafRef.current && cancelAnimationFrame(rafRef.current);
+  }, [value]);
+
+  return fmtUtil(Math.floor(display));
+}
+
 import { BUILDINGS, UNLOCK_THRESHOLDS } from './game/buildings.js';
 import { UPGRADES } from './game/upgrades.js';
 import { MILESTONES } from './game/milestones.js';
@@ -346,7 +373,7 @@ export default function App() {
       fontFamily: "'Noto Sans TC',-apple-system,sans-serif",
       position: 'relative', overflow: 'hidden',
     }}>
-      <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700;800&family=Noto+Sans+TC:wght@300;400;500;700;900&display=swap" rel="stylesheet" />
+      <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700;800&family=Noto+Sans+TC:wght@300;400;500;700;900&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet" />
       <style>{`
         @keyframes fu  { 0% { opacity:1;transform:translateY(0) scale(1) } 100% { opacity:0;transform:translateY(-60px) scale(1.3) } }
         @keyframes pu  { 0%,100% { transform:scale(1);opacity:1 } 50% { transform:scale(1.4);opacity:.5 } }
@@ -358,11 +385,15 @@ export default function App() {
         @keyframes wg  { 0%,100% { transform:rotate(0) } 25% { transform:rotate(-6deg) } 75% { transform:rotate(6deg) } }
         @keyframes si  { 0% { opacity:0;transform:translateY(8px) } 100% { opacity:1;transform:translateY(0) } }
         @keyframes gcf { 0% { opacity:0;transform:scale(.5) } 10% { opacity:1;transform:scale(1) } 85% { opacity:.8 } 100% { opacity:0;transform:scale(.3) } }
+        @keyframes glow { 0%,100% { box-shadow: 0 0 8px rgba(99,102,241,.2) } 50% { box-shadow: 0 0 20px rgba(99,102,241,.4), 0 0 40px rgba(99,102,241,.15) } }
+        @keyframes tp { 0% { transform:scaleX(1) } 100% { transform:scaleX(0) } }
+        @keyframes ba { 0%,100% { transform:translateY(0);opacity:.6 } 50% { transform:translateY(6px);opacity:1 } }
+        @media(prefers-reduced-motion:reduce) { *,*::before,*::after { animation-duration:0.01ms!important; animation-iteration-count:1!important; transition-duration:0.01ms!important } }
         * { box-sizing:border-box; margin:0; padding:0 }
         button { font-family:inherit; cursor:pointer }
         ::-webkit-scrollbar { width:3px }
         ::-webkit-scrollbar-track { background:transparent }
-        ::-webkit-scrollbar-thumb { background:rgba(167,139,250,.2); border-radius:3px }
+        ::-webkit-scrollbar-thumb { background:rgba(99,102,241,.15); border-radius:3px }
         button:active { transform:scale(.96)!important }
         @media(min-width:1024px) {
           .game-layout { flex-direction:row!important }
@@ -379,7 +410,7 @@ export default function App() {
       `}</style>
 
       {/* Ambient glow — very faint on light bg */}
-      <div style={{ position: 'fixed', inset: 0, pointerEvents: 'none', background: 'radial-gradient(ellipse at 25% 15%, rgba(167,139,250,.04) 0%, transparent 50%), radial-gradient(ellipse at 75% 85%, rgba(163,230,53,.03) 0%, transparent 50%)' }} />
+      <div style={{ position: 'fixed', inset: 0, pointerEvents: 'none', background: 'radial-gradient(ellipse at 25% 15%, rgba(99,102,241,.04) 0%, transparent 50%), radial-gradient(ellipse at 75% 85%, rgba(217,119,6,.03) 0%, transparent 50%)' }} />
 
       {/* Floating +N texts */}
       {floats.map(f => (
@@ -387,8 +418,8 @@ export default function App() {
           style={{
             position: 'fixed', left: f.x - 18, top: f.y - 22,
             pointerEvents: 'none', fontWeight: 800, fontSize: 21,
-            color: '#65a30d',
-            textShadow: '0 0 8px rgba(101,163,13,.2), 0 1px 2px rgba(255,255,255,.8)',
+            color: '#b45309',
+            textShadow: '0 0 8px rgba(180,83,9,.2), 0 1px 2px rgba(255,255,255,.8)',
             animation: 'fu .85s ease-out forwards', zIndex: 200,
             fontFamily: "'JetBrains Mono',monospace",
           }}
@@ -402,24 +433,34 @@ export default function App() {
           style={{
             position: 'fixed', top: 16, left: '50%', transform: 'translateX(-50%)',
             background: 'rgba(255,255,255,.95)',
-            color: '#1e293b', padding: '14px 24px', borderRadius: 20, fontSize: 13,
+            color: '#1e293b', padding: '14px 24px', borderRadius: 12, fontSize: 13,
             boxShadow: '0 8px 40px rgba(0,0,0,.1), 0 0 0 1px rgba(0,0,0,.04)',
             zIndex: 300, maxWidth: '90vw', textAlign: 'center',
             animation: 'ti .3s cubic-bezier(.4,0,.2,1)',
             border: '1px solid #e2e8f0', lineHeight: 1.5,
+            overflow: 'hidden',
           }}
           onAnimationEnd={() => { setTimeout(() => setToasts(ts => ts.filter(x => x.id !== t.id)), 3000); }}
-        >{t.m}</div>
+        >
+          {t.m}
+          <div style={{
+            position: 'absolute', bottom: 0, left: 0, right: 0, height: 2,
+            background: 'linear-gradient(90deg, #6366f1, #4338ca)',
+            borderRadius: '0 0 12px 12px',
+            animation: 'tp 3s linear forwards',
+            transformOrigin: 'left',
+          }} />
+        </div>
       ))}
 
       {/* Offline banner */}
       {offlineBanner && (
         <div style={{
           position: 'fixed', top: 65, left: '50%', transform: 'translateX(-50%)',
-          background: 'rgba(240,253,244,.9)', border: '1px solid #bbf7d0',
+          background: 'rgba(255,251,235,.9)', border: '1px solid #fde68a',
           borderRadius: 16, padding: '10px 20px', fontSize: 13,
-          color: '#65a30d', fontWeight: 700, zIndex: 200,
-          boxShadow: '0 4px 24px rgba(101,163,13,.08)',
+          color: '#b45309', fontWeight: 700, zIndex: 200,
+          boxShadow: '0 4px 24px rgba(217,119,6,.08)',
         }}>
           {offlineBanner}
         </div>
@@ -432,11 +473,11 @@ export default function App() {
       {tempMult > 1 && (
         <div style={{
           position: 'fixed', top: 60, left: '50%', transform: 'translateX(-50%)',
-          background: 'rgba(245,240,255,.9)', border: '1px solid rgba(167,139,250,.25)',
+          background: 'rgba(245,240,255,.9)', border: '1px solid rgba(99,102,241,.25)',
           borderRadius: 14, padding: '6px 16px', fontSize: 12,
-          color: '#7c3aed', fontWeight: 700, zIndex: 200,
+          color: '#4f46e5', fontWeight: 700, zIndex: 200,
           fontFamily: "'JetBrains Mono',monospace",
-          boxShadow: '0 4px 20px rgba(139,92,246,.08)',
+          boxShadow: '0 4px 20px rgba(99,102,241,.08)',
         }}>
           🔥 x{tempMult} 產能加成中
         </div>
@@ -453,9 +494,9 @@ export default function App() {
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
           <div style={{
             width: 32, height: 32, borderRadius: 12,
-            background: 'linear-gradient(135deg, #a78bfa, #818cf8)',
+            background: 'linear-gradient(135deg, #6366f1, #4338ca)',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
-            boxShadow: '0 2px 12px rgba(139,92,246,.25)',
+            boxShadow: '0 2px 12px rgba(99,102,241,.25)',
           }}>
             <CheckIcon size={16} color="#fff" />
           </div>
@@ -466,11 +507,11 @@ export default function App() {
           }}>已讀</span>
           {prestigePower > 0 && (
             <span style={{
-              fontSize: 11, color: '#7c3aed',
-              background: 'rgba(167,139,250,.08)',
+              fontSize: 11, color: '#4f46e5',
+              background: 'rgba(99,102,241,.08)',
               padding: '3px 10px', borderRadius: 10,
               fontFamily: "'JetBrains Mono',monospace",
-              border: '1px solid rgba(167,139,250,.15)',
+              border: '1px solid rgba(99,102,241,.15)',
             }}>✦{prestigePower}</span>
           )}
         </div>
@@ -498,11 +539,11 @@ export default function App() {
           {/* Big counter */}
           <div style={{
             fontSize: 52, fontWeight: 900,
-            fontFamily: "'JetBrains Mono',monospace", color: '#1e293b',
+            fontFamily: "'Space Grotesk','JetBrains Mono',monospace", color: '#1e293b',
             animation: popAnim ? 'pn .18s ease-out' : 'none',
             letterSpacing: -3, lineHeight: 1,
           }}>
-            {fmt(reads)}
+            <AnimatedCounter value={reads} />
           </div>
 
           {/* CPS subtitle */}

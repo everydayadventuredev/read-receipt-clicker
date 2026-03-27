@@ -38,17 +38,17 @@ export default function UpgradeRow({ upgrades, reads, onBuy }) {
                 width: 40, height: 40, borderRadius: 10, fontSize: 17,
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                 background: u.state === 'done'
-                  ? '#f0fdf4'
+                  ? '#fffbeb'
                   : u.state === 'buy'
                     ? '#fff'
                     : '#f8fafc',
                 border: u.state === 'done'
-                  ? '1px solid #bbf7d0'
+                  ? '1px solid #fde68a'
                   : u.state === 'buy'
-                    ? '1px solid rgba(167,139,250,.3)'
+                    ? '1px solid rgba(99,102,241,.3)'
                     : '1px solid #e2e8f0',
                 opacity: u.state === 'done' ? 0.5 : u.state === 'buy' ? 1 : 0.3,
-                boxShadow: u.state === 'buy' ? '0 1px 4px rgba(139,92,246,.08)' : 'none',
+                boxShadow: u.state === 'buy' ? '0 1px 4px rgba(99,102,241,.08)' : 'none',
                 transition: 'all .2s cubic-bezier(.4,0,.2,1)',
                 flexShrink: 0,
                 cursor: u.state === 'buy' ? 'pointer' : 'default',
@@ -57,7 +57,7 @@ export default function UpgradeRow({ upgrades, reads, onBuy }) {
             >
               {u.state === 'done' && (
                 <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <CheckIcon size={13} color="#65a30d" />
+                  <CheckIcon size={13} color="#059669" />
                 </div>
               )}
               <span style={{ opacity: u.state === 'done' ? 0.2 : 1 }}>{u.emoji}</span>
@@ -79,7 +79,7 @@ export default function UpgradeRow({ upgrades, reads, onBuy }) {
                 <div style={{ color: '#64748b', marginTop: 2 }}>{u.desc}</div>
                 {u.state === 'buy' && (
                   <div style={{
-                    color: '#65a30d', marginTop: 4,
+                    color: '#b45309', marginTop: 4,
                     fontFamily: "'JetBrains Mono',monospace",
                     fontSize: 11,
                   }}>✉ {fmt(u.cost)} — 可購買！</div>

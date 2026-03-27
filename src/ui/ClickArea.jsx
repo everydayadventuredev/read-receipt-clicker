@@ -5,11 +5,20 @@ export default function ClickArea({ message, isRead, isFirstClick, popAnim, rece
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%' }}>
       {isFirstClick && !isRead && (
         <div style={{
-          textAlign: 'center', fontSize: 13, color: 'rgba(101,163,13,.6)',
-          marginBottom: 10, animation: 'hf 4s ease-out forwards',
-          fontWeight: 500,
+          textAlign: 'center', marginBottom: 10, animation: 'hf 4s ease-out forwards',
         }}>
-          👆 點擊訊息來已讀
+          <div style={{
+            fontSize: 14, color: '#64748b', fontWeight: 600,
+          }}>
+            點一下這則訊息
+          </div>
+          <div style={{
+            fontSize: 16, lineHeight: 1, marginTop: 4,
+            animation: 'ba 1.2s ease-in-out infinite',
+            color: '#94a3b8',
+          }}>
+            &#x25BC;
+          </div>
         </div>
       )}
       <div
@@ -20,7 +29,7 @@ export default function ClickArea({ message, isRead, isFirstClick, popAnim, rece
           position: 'relative',
           background: isRead
             ? '#f1f5f9'
-            : 'linear-gradient(145deg, rgba(167,139,250,.12), rgba(129,140,248,.06))',
+            : 'linear-gradient(145deg, rgba(99,102,241,.12), rgba(99,102,241,.06))',
           borderRadius: 16,
           padding: '20px 24px',
           transition: 'all .15s cubic-bezier(.4,0,.2,1)',
@@ -28,10 +37,10 @@ export default function ClickArea({ message, isRead, isFirstClick, popAnim, rece
           opacity: isRead ? 0.3 : 1,
           border: isRead
             ? '1px solid #e2e8f0'
-            : '1px solid rgba(167,139,250,.2)',
+            : '1px solid rgba(99,102,241,.2)',
           boxShadow: isRead
             ? 'none'
-            : '0 0 40px rgba(139,92,246,.08), 0 8px 32px rgba(0,0,0,.06), inset 0 1px 0 rgba(255,255,255,.8)',
+            : '0 0 40px rgba(99,102,241,.08), 0 8px 32px rgba(0,0,0,.06), inset 0 1px 0 rgba(255,255,255,.8)',
           animation: !isRead && !isFirstClick ? 'ib 2.5s ease-in-out infinite' : 'none',
         }}>
           {/* Notification badge */}
@@ -59,7 +68,7 @@ export default function ClickArea({ message, isRead, isFirstClick, popAnim, rece
           {/* Read checkmark */}
           {isRead && (
             <div style={{ position: 'absolute', bottom: 8, right: 14, animation: 'ci .3s ease-out' }}>
-              <CheckIcon size={16} color="#a78bfa" />
+              <CheckIcon size={16} color="#6366f1" />
             </div>
           )}
         </div>

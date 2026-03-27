@@ -22,7 +22,7 @@ export default function PrestigeBar({ allTime, prestigeEarned, onPrestige }) {
           🌀 Inbox Zero
           {prestigeEarned >= 1 && (
             <span style={{
-              color: '#7c3aed', background: 'rgba(167,139,250,.08)',
+              color: '#4f46e5', background: 'rgba(99,102,241,.08)',
               padding: '1px 6px', borderRadius: 6, fontSize: 10,
             }}>+✦{prestigeEarned}</span>
           )}
@@ -30,12 +30,13 @@ export default function PrestigeBar({ allTime, prestigeEarned, onPrestige }) {
         <span>
           {prestigeEarned >= 1
             ? <button onClick={onPrestige} style={{
-                background: 'linear-gradient(135deg, #a78bfa, #818cf8)',
+                background: 'linear-gradient(135deg, #6366f1, #4338ca)',
                 color: '#fff', border: 'none', borderRadius: 10,
                 padding: '4px 14px', fontSize: 11, fontWeight: 700,
                 cursor: 'pointer',
-                boxShadow: '0 2px 12px rgba(139,92,246,.3)',
+                boxShadow: '0 2px 12px rgba(99,102,241,.3)',
                 transition: 'all .15s',
+                animation: 'pu 2s ease-in-out infinite',
               }}>重生</button>
             : <span style={{ color: '#94a3b8', fontFamily: "'JetBrains Mono',monospace", fontSize: 10 }}>
                 需{fmt(500000)}已讀
@@ -46,16 +47,17 @@ export default function PrestigeBar({ allTime, prestigeEarned, onPrestige }) {
       <div style={{
         height: 4, background: '#f1f5f9',
         borderRadius: 4, overflow: 'hidden',
+        animation: progress >= 100 ? 'glow 2s ease-in-out infinite' : 'none',
       }}>
         <div style={{
           height: '100%',
           background: progress >= 100
-            ? 'linear-gradient(90deg, #a78bfa, #a3e635)'
-            : 'linear-gradient(90deg, #a78bfa, #818cf8)',
+            ? 'linear-gradient(90deg, #6366f1, #d97706)'
+            : 'linear-gradient(90deg, #6366f1, #4338ca)',
           borderRadius: 4,
           transition: 'width .3s cubic-bezier(.4,0,.2,1)',
           width: `${progress}%`,
-          boxShadow: progress > 5 ? '0 0 8px rgba(167,139,250,.4)' : 'none',
+          boxShadow: progress > 5 ? '0 0 8px rgba(99,102,241,.4)' : 'none',
         }} />
       </div>
     </div>
