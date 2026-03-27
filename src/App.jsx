@@ -74,11 +74,13 @@ export default function App() {
   const psRef      = useRef(0);
   const ownedRef   = useRef(owned);
   const boughtRef  = useRef(boughtUpgrades);
+  const tempMultRef = useRef(tempMult);
 
   useEffect(() => { readsRef.current   = reads;   }, [reads]);
   useEffect(() => { allTimeRef.current = allTime; }, [allTime]);
   useEffect(() => { ownedRef.current   = owned;   }, [owned]);
   useEffect(() => { boughtRef.current  = boughtUpgrades; }, [boughtUpgrades]);
+  useEffect(() => { tempMultRef.current = tempMult; }, [tempMult]);
 
   const prestigeMult   = 1 + prestigePower * 0.1;
   const prestigeEarned = Math.floor(Math.sqrt(allTime / 500000));
@@ -105,7 +107,7 @@ export default function App() {
       if (u.type === 'ck') bonus += u.bonus;
       if (u.type === 'cp') pct  += u.bonus;
     });
-    return Math.floor((bonus + psRef.current * pct) * prestigeMult);
+    return Math.floor((bonus + psRef.current * pct) * prestigeMult * tempMultRef.current);
   }, [prestigeMult]);
 
   // Production tick

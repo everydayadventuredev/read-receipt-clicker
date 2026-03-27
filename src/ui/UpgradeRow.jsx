@@ -4,14 +4,16 @@ import { fmt } from '../utils/format.js';
 import CheckIcon from './CheckIcon.jsx';
 
 export default function UpgradeRow({ upgrades, reads, onBuy }) {
-  const [hov, setHov] = useState(null);
   const doneCount = upgrades.filter(u => u.state === 'done').length;
 
+  // Sort: buy first, wait second, done last
+  const sorted = [...upgrades].sort((a, b) => {
+    const order = { buy: 0, wait: 1, done: 2 };
+    return (order[a.state] ?? 1) - (order[b.state] ?? 1);
+  });
+
   return (
-    <div style={{
-      padding: '10px 16px 8px',
-      flexShrink: 0,
-    }}>
+    <div style={{ padding: '10px 12px 8px', flexShrink: 0 }}>
       {/* Section header */}
       <div style={{
         fontSize: 11, fontWeight: 600, color: '#94a3b8',
@@ -25,81 +27,79 @@ export default function UpgradeRow({ upgrades, reads, onBuy }) {
         }}>{doneCount}/{upgrades.length}</span>
       </div>
 
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5 }}>
-        {upgrades.map(u => (
-          <div key={u.id} style={{ position: 'relative' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+        {sorted.map(u => {
+          const isDone = u.state === 'done';
+          const canBuy = u.state === 'buy';
+          const isWait = u.state === 'wait';
+          const buildingName = u.req?.building ? BUILDINGS.find(b => b.id === u.req.building)?.name : null;
+
+          if (isDone) {
+            // Compact done row
+            return (
+              <div key={u.id} style={{
+                display: 'flex', alignItems: 'center', gap: 6,
+                padding: '4px 8px', borderRadius: 8,
+                background: '#f8fafc', opacity: 0.5,
+                fontSize: 11, color: '#94a3b8',
+              }}>
+                <CheckIcon size={10} color="#059669" />
+                <span>{u.emoji}</span>
+                <span>{u.name}</span>
+              </div>
+            );
+          }
+
+          // Buyable or waiting card
+          return (
             <button
-              onClick={() => u.state === 'buy' && onBuy(u)}
-              onMouseEnter={() => setHov(u.id)}
-              onMouseLeave={() => setHov(null)}
-              onTouchStart={() => setHov(u.id)}
-              onTouchEnd={() => { if (u.state === 'buy') onBuy(u); setTimeout(() => setHov(null), 2000); }}
+              key={u.id}
+              onClick={() => canBuy && onBuy(u)}
               style={{
-                width: 40, height: 40, borderRadius: 10, fontSize: 17,
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                background: u.state === 'done'
-                  ? '#fffbeb'
-                  : u.state === 'buy'
-                    ? '#fff'
-                    : '#f8fafc',
-                border: u.state === 'done'
-                  ? '1px solid #fde68a'
-                  : u.state === 'buy'
-                    ? '1px solid rgba(99,102,241,.3)'
-                    : '1px solid #e2e8f0',
-                opacity: u.state === 'done' ? 0.5 : u.state === 'buy' ? 1 : 0.3,
-                boxShadow: u.state === 'buy' ? '0 1px 4px rgba(99,102,241,.08)' : 'none',
-                transition: 'all .2s cubic-bezier(.4,0,.2,1)',
-                flexShrink: 0,
-                cursor: u.state === 'buy' ? 'pointer' : 'default',
-                position: 'relative',
+                display: 'flex', alignItems: 'flex-start', gap: 10,
+                width: '100%', padding: '10px 12px', borderRadius: 10,
+                background: canBuy ? '#fff' : '#f8fafc',
+                border: canBuy ? '1px solid rgba(99,102,241,.25)' : '1px solid #e2e8f0',
+                boxShadow: canBuy ? '0 1px 3px rgba(99,102,241,.06)' : 'none',
+                opacity: isWait ? 0.55 : 1,
+                cursor: canBuy ? 'pointer' : 'default',
+                textAlign: 'left',
+                transition: 'all .15s',
+                fontFamily: 'inherit',
               }}
             >
-              {u.state === 'done' && (
-                <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <CheckIcon size={13} color="#059669" />
-                </div>
-              )}
-              <span style={{ opacity: u.state === 'done' ? 0.2 : 1 }}>{u.emoji}</span>
-            </button>
+              {/* Emoji */}
+              <span style={{ fontSize: 18, lineHeight: 1, flexShrink: 0, marginTop: 1 }}>{u.emoji}</span>
 
-            {/* Tooltip */}
-            {hov === u.id && (
-              <div style={{
-                position: 'absolute', bottom: '115%', left: '50%',
-                transform: 'translateX(-50%)',
-                background: '#fff',
-                border: '1px solid #e2e8f0',
-                borderRadius: 10, padding: '10px 14px', minWidth: 155,
-                zIndex: 100, fontSize: 12,
-                boxShadow: '0 8px 32px rgba(0,0,0,.12)',
-                pointerEvents: 'none', whiteSpace: 'nowrap',
-              }}>
-                <div style={{ fontWeight: 700, color: '#1e293b' }}>{u.name}</div>
-                <div style={{ color: '#64748b', marginTop: 2 }}>{u.desc}</div>
-                {u.state === 'buy' && (
-                  <div style={{
-                    color: '#b45309', marginTop: 4,
+              {/* Content */}
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <span style={{ fontSize: 13, fontWeight: 700, color: '#1e293b' }}>{u.name}</span>
+                  <span style={{
+                    fontSize: 11, fontWeight: 700,
                     fontFamily: "'JetBrains Mono',monospace",
-                    fontSize: 11,
-                  }}>✉ {fmt(u.cost)} — 可購買！</div>
-                )}
-                {u.state === 'wait' && (
+                    color: canBuy ? '#b45309' : '#cbd5e1',
+                  }}>{fmt(u.cost)}</span>
+                </div>
+                <div style={{ fontSize: 11, color: '#64748b', marginTop: 2 }}>{u.desc}</div>
+                {isWait && (
                   <div style={{
-                    color: '#f59e0b', marginTop: 4,
+                    fontSize: 10, color: '#f59e0b', marginTop: 3,
                     fontFamily: "'JetBrains Mono',monospace",
-                    fontSize: 11,
-                  }}>✉ {fmt(u.cost)} — 還差 {fmt(u.cost - reads)}</div>
+                  }}>
+                    還差 {fmt(u.cost - reads)}
+                    {buildingName && u.req?.count && ` · 需 ${buildingName} ×${u.req.count}`}
+                  </div>
                 )}
-                {u.req?.building && u.state !== 'done' && (
-                  <div style={{ color: '#94a3b8', marginTop: 2, fontSize: 10 }}>
-                    需要 {BUILDINGS.find(b => b.id === u.req.building)?.name} ×{u.req.count}
+                {canBuy && buildingName && u.req?.count && (
+                  <div style={{ fontSize: 10, color: '#94a3b8', marginTop: 3 }}>
+                    需 {buildingName} ×{u.req.count}
                   </div>
                 )}
               </div>
-            )}
-          </div>
-        ))}
+            </button>
+          );
+        })}
       </div>
     </div>
   );

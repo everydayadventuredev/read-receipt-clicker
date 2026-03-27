@@ -73,7 +73,7 @@ export default function BuildingList({ buildings, owned, reads, unlockedBuilding
                 onMouseLeave={() => setHovered(null)}
                 style={{
                   display: 'flex', alignItems: 'center', gap: 14,
-                  width: '100%', padding: '14px 16px',
+                  width: '100%', padding: hasAny ? '14px 16px 24px' : '14px 16px',
                   background: '#fff',
                   border: isNew
                     ? `1px solid ${b.color}44`
@@ -167,6 +167,39 @@ export default function BuildingList({ buildings, owned, reads, unlockedBuilding
                     </span>
                   </div>
                 </div>
+
+                {/* Mini icon crowd */}
+                {hasAny && (
+                  <div style={{
+                    position: 'absolute', bottom: 0, left: 0, right: 0,
+                    padding: '3px 8px', display: 'flex', alignItems: 'center', gap: 1,
+                    background: `${b.color}06`,
+                    borderTop: `1px solid ${b.color}08`,
+                    borderRadius: '0 0 12px 12px',
+                    overflow: 'hidden',
+                  }}>
+                    {Array.from({ length: Math.min(count, 15) }, (_, j) => {
+                      const Icon = BUILDING_ICONS[b.id];
+                      const rotation = ((j * 7 + 3) % 11) - 5;
+                      return Icon ? (
+                        <span key={j} style={{
+                          display: 'inline-flex', opacity: 0.5 + (j % 3) * 0.15,
+                          transform: `rotate(${rotation}deg)`,
+                          flexShrink: 0,
+                        }}>
+                          <Icon size={12} color={b.color} />
+                        </span>
+                      ) : null;
+                    })}
+                    {count > 15 && (
+                      <span style={{
+                        fontSize: 9, color: b.color, fontWeight: 700, opacity: 0.6,
+                        fontFamily: "'JetBrains Mono',monospace",
+                        marginLeft: 2,
+                      }}>+{count - 15}</span>
+                    )}
+                  </div>
+                )}
               </button>
             );
           })}
