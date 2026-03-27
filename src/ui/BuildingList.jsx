@@ -27,7 +27,7 @@ export default function BuildingList({ buildings, owned, reads, unlockedBuilding
               key={n}
               onClick={() => setBuyN(n)}
               style={{
-                fontSize: 11, padding: '4px 12px', borderRadius: 10, border: 'none',
+                fontSize: 11, padding: '8px 14px', borderRadius: 10, border: 'none',
                 background: buyN === n
                   ? 'linear-gradient(135deg, #a78bfa, #818cf8)'
                   : 'transparent',

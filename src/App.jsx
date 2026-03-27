@@ -479,8 +479,8 @@ export default function App() {
           style={{
             background: '#f1f5f9',
             border: '1px solid #e2e8f0',
-            borderRadius: 12, padding: '6px 12px',
-            color: '#64748b', fontSize: 13,
+            borderRadius: 10, padding: '8px 14px',
+            color: '#64748b', fontSize: 14,
           }}
         >{mutedUI ? '🔇' : '🔊'}</button>
       </div>
