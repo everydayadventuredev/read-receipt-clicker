@@ -21,8 +21,8 @@ export default function ClickArea({ message, isRead, isFirstClick, popAnim, rece
           background: isRead
             ? '#f1f5f9'
             : 'linear-gradient(145deg, rgba(167,139,250,.12), rgba(129,140,248,.06))',
-          borderRadius: 24,
-          padding: '24px 28px',
+          borderRadius: 16,
+          padding: '20px 24px',
           transition: 'all .15s cubic-bezier(.4,0,.2,1)',
           transform: isRead ? 'scale(.96)' : 'scale(1)',
           opacity: isRead ? 0.3 : 1,

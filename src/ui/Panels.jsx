@@ -23,7 +23,7 @@ export function StatsPanel({ reads, allTime, prodPerSec, clickPower, owned, seen
           <div key={label} style={{
             background: '#fff',
             border: '1px solid #e2e8f0',
-            borderRadius: 14, padding: '8px 14px', minWidth: 85,
+            borderRadius: 8, padding: '8px 14px', minWidth: 85,
             textAlign: 'center', flex: '1 0 auto',
             boxShadow: '0 1px 2px rgba(0,0,0,.04)',
           }}>

@@ -67,7 +67,7 @@ export default function BuildingList({ buildings, owned, reads, unlockedBuilding
                     : canAfford
                       ? '1px solid rgba(167,139,250,.3)'
                       : '1px solid #e2e8f0',
-                  borderRadius: 20,
+                  borderRadius: 12,
                   opacity: canAfford ? 1 : 0.45,
                   transition: 'all .2s cubic-bezier(.4,0,.2,1)',
                   textAlign: 'left',
@@ -100,7 +100,7 @@ export default function BuildingList({ buildings, owned, reads, unlockedBuilding
 
                 {/* Pixel art icon */}
                 <div style={{
-                  width: 44, height: 44, borderRadius: 14,
+                  width: 44, height: 44, borderRadius: 10,
                   background: `linear-gradient(135deg, ${b.color}10, ${b.color}08)`,
                   border: `1px solid ${b.color}15`,
                   display: 'flex', alignItems: 'center', justifyContent: 'center',

@@ -35,7 +35,7 @@ export default function UpgradeRow({ upgrades, reads, onBuy }) {
               onTouchStart={() => setHov(u.id)}
               onTouchEnd={() => { if (u.state === 'buy') onBuy(u); setTimeout(() => setHov(null), 2000); }}
               style={{
-                width: 40, height: 40, borderRadius: 14, fontSize: 17,
+                width: 40, height: 40, borderRadius: 10, fontSize: 17,
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                 background: u.state === 'done'
                   ? '#f0fdf4'
@@ -70,7 +70,7 @@ export default function UpgradeRow({ upgrades, reads, onBuy }) {
                 transform: 'translateX(-50%)',
                 background: '#fff',
                 border: '1px solid #e2e8f0',
-                borderRadius: 16, padding: '10px 14px', minWidth: 155,
+                borderRadius: 10, padding: '10px 14px', minWidth: 155,
                 zIndex: 100, fontSize: 12,
                 boxShadow: '0 8px 32px rgba(0,0,0,.12)',
                 pointerEvents: 'none', whiteSpace: 'nowrap',
