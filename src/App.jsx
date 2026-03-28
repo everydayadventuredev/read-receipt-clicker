@@ -93,7 +93,7 @@ export default function App() {
   const [mutedUI,    setMutedUI]    = useState(false);
   const [offlineBanner, setOfflineBanner] = useState(null);
   const [prodPerSec, setProdPerSec] = useState(0);
-  const [storeTab,   setStoreTab]   = useState('build');
+  const [showPrestigeShop, setShowPrestigeShop] = useState(false);
 
   const idRef      = useRef(0);
   const readsRef   = useRef(reads);
@@ -677,8 +677,8 @@ export default function App() {
         button:active { transform:scale(.96)!important }
         @media(min-width:768px) {
           .game-layout { flex-direction:row!important }
-          .section-hero  { width:30%!important; border-right:1px solid #e2e8f0 }
-          .section-store { width:70%!important }
+          .section-hero  { width:35%!important; border-right:1px solid #e2e8f0 }
+          .section-store { width:65%!important }
         }
       `}</style>
 
@@ -793,45 +793,111 @@ export default function App() {
 
       {/* ── HEADER ── */}
       <div style={{
-        padding: '12px 16px', display: 'flex', justifyContent: 'space-between',
-        alignItems: 'center', flexShrink: 0,
+        padding: '8px 16px', display: 'flex', alignItems: 'center',
+        flexShrink: 0, gap: 10,
         background: 'rgba(255,255,255,.8)',
-        borderBottom: '1px solid #e2e8f0',
         backdropFilter: 'blur(20px)',
+        position: 'relative',
       }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+        {/* Logo */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
           <div style={{
-            width: 32, height: 32, borderRadius: 12,
+            width: 28, height: 28, borderRadius: 10,
             background: 'linear-gradient(135deg, #6366f1, #4338ca)',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             boxShadow: '0 2px 12px rgba(99,102,241,.25)',
           }}>
-            <CheckIcon size={16} color="#fff" />
+            <CheckIcon size={14} color="#fff" />
           </div>
           <span style={{
-            fontSize: 15, fontWeight: 800, color: '#1e293b',
-            letterSpacing: 3,
+            fontSize: 14, fontWeight: 800, color: '#1e293b',
+            letterSpacing: 2,
             fontFamily: "'JetBrains Mono',monospace",
           }}>已讀</span>
           {prestigePower > 0 && (
             <span style={{
-              fontSize: 11, color: '#4f46e5',
+              fontSize: 10, color: '#4f46e5',
               background: 'rgba(99,102,241,.08)',
-              padding: '3px 10px', borderRadius: 10,
+              padding: '2px 8px', borderRadius: 8,
               fontFamily: "'JetBrains Mono',monospace",
               border: '1px solid rgba(99,102,241,.15)',
             }}>✦{prestigePower}</span>
           )}
         </div>
-        <button
-          onClick={() => { const m = toggleMute(); setMutedUI(m); }}
-          style={{
-            background: '#f1f5f9',
-            border: '1px solid #e2e8f0',
-            borderRadius: 10, padding: '8px 14px',
-            color: '#64748b', fontSize: 14,
-          }}
-        >{mutedUI ? '🔇' : '🔊'}</button>
+
+        {/* Achievement badges in header */}
+        <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
+          <AchievementBadges unlockedAchievements={unlockedAchievements} maxVisible={5} />
+        </div>
+
+        {/* Right buttons */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0 }}>
+          {/* Prestige shop button */}
+          {prestigeCount > 0 && (
+            <button
+              onClick={() => setShowPrestigeShop(true)}
+              style={{
+                background: 'rgba(99,102,241,.08)',
+                border: '1px solid rgba(99,102,241,.2)',
+                borderRadius: 8, padding: '5px 10px',
+                color: '#4f46e5', fontSize: 11, fontWeight: 700,
+                cursor: 'pointer', fontFamily: "'JetBrains Mono',monospace",
+              }}
+            >✦商店</button>
+          )}
+          {/* Prestige button */}
+          {prestigeEarned >= 1 && (
+            <button
+              onClick={handlePrestige}
+              style={{
+                background: 'linear-gradient(135deg, #6366f1, #4338ca)',
+                color: '#fff', border: 'none', borderRadius: 8,
+                padding: '5px 12px', fontSize: 11, fontWeight: 700,
+                cursor: 'pointer', position: 'relative', overflow: 'hidden',
+                boxShadow: '0 2px 12px rgba(99,102,241,.3)',
+              }}
+            >
+              <span style={{
+                position: 'absolute', top: 0, left: '-100%', width: '60%', height: '100%',
+                background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent)',
+                animation: 'shimmer 2s ease-in-out infinite', pointerEvents: 'none',
+              }} />
+              重生 +✦{prestigeEarned}
+            </button>
+          )}
+          {/* Mute button */}
+          <button
+            onClick={() => { const m = toggleMute(); setMutedUI(m); }}
+            style={{
+              background: '#f1f5f9', border: '1px solid #e2e8f0',
+              borderRadius: 8, padding: '5px 10px',
+              color: '#64748b', fontSize: 13,
+            }}
+          >{mutedUI ? '🔇' : '🔊'}</button>
+        </div>
+
+        {/* Prestige progress thin bar at header bottom */}
+        <div style={{
+          position: 'absolute', bottom: 0, left: 0, right: 0, height: 3,
+          background: '#e2e8f0',
+        }}>
+          {(() => {
+            const progress = Math.min(100, (allTime / 500000) * 100);
+            const isComplete = progress >= 100;
+            let barGrad = 'linear-gradient(90deg, #6366f1, #4338ca)';
+            if (isComplete) barGrad = 'linear-gradient(90deg, #ef4444, #f59e0b, #22c55e, #3b82f6, #8b5cf6, #ef4444)';
+            return (
+              <div style={{
+                height: '100%', width: `${progress}%`,
+                background: barGrad,
+                backgroundSize: isComplete ? '300% 100%' : '100% 100%',
+                transition: 'width .3s',
+                animation: isComplete ? 'rainbowBreath 2s ease-in-out infinite' : 'none',
+                boxShadow: progress >= 50 ? '0 0 8px rgba(99,102,241,.4)' : 'none',
+              }} />
+            );
+          })()}
+        </div>
       </div>
 
       {/* ── NEWS TICKER ── */}
@@ -840,21 +906,19 @@ export default function App() {
       {/* ── TWO-COLUMN LAYOUT ── */}
       <div className="game-layout" style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', minHeight: 0 }}>
 
-        {/* LEFT — Hero counter + Click + Stats */}
+        {/* LEFT — Counter + Guilt + Click (3 core blocks only) */}
         <div className="section-hero" style={{
           display: 'flex', flexDirection: 'column', alignItems: 'center',
           justifyContent: 'flex-start',
           padding: '16px 14px 12px',
           position: 'relative', flexShrink: 0,
-          overflowY: 'auto',
         }}>
           {/* Hero counter — the star of the show */}
           {(() => {
-            // Color shifts by magnitude
-            const counterColor = reads >= 1e12 ? '#7c3aed' // T = purple
-              : reads >= 1e9 ? '#b45309' // B = gold
-              : reads >= 1e6 ? '#4f46e5' // M = indigo
-              : '#1e293b'; // default
+            const counterColor = reads >= 1e12 ? '#7c3aed'
+              : reads >= 1e9 ? '#b45309'
+              : reads >= 1e6 ? '#4f46e5'
+              : '#1e293b';
             const counterGlow = reads >= 1e9
               ? `0 0 30px ${counterColor}22, 0 0 60px ${counterColor}11`
               : 'none';
@@ -874,22 +938,114 @@ export default function App() {
             );
           })()}
 
-          {/* CPS subtitle — scales with production */}
+          {/* CPS subtitle */}
           <div style={{
             fontSize: prodPerSec >= 1e6 ? 18 : 16,
             color: prodPerSec >= 1e6 ? '#b45309' : '#94a3b8',
             fontFamily: "'JetBrains Mono',monospace",
             fontWeight: prodPerSec >= 1e6 ? 700 : 400,
-            marginBottom: 12, display: 'flex', alignItems: 'center', gap: 6,
+            marginBottom: 10, display: 'flex', alignItems: 'center', gap: 6,
             transition: 'all .3s',
           }}>
             <CheckIcon size={13} color={prodPerSec >= 1e6 ? '#b45309' : '#94a3b8'} />
             {prodPerSec > 0 ? `${fmt(prodPerSec)}/秒` : '點擊開始已讀'}
           </div>
 
-          <PrestigeBar allTime={allTime} prestigeEarned={prestigeEarned} prestigeCount={prestigeCount} onPrestige={handlePrestige} />
+          {/* Guilt indicator — always visible, between CPS and ClickArea */}
+          <div style={{
+            width: '100%', marginBottom: 10,
+            padding: '8px 10px', borderRadius: 10,
+            background: guilt < 50 ? 'rgba(148,163,184,.03)'
+              : coldMaster ? 'rgba(20,184,166,.06)'
+              : guiltLevel === 'high' ? 'rgba(239,68,68,.05)'
+              : guiltLevel === 'medium' ? 'rgba(245,158,11,.04)'
+              : 'rgba(99,102,241,.03)',
+            border: `1px solid ${guilt < 50 ? 'rgba(148,163,184,.1)'
+              : coldMaster ? 'rgba(20,184,166,.15)'
+              : guiltLevel === 'high' ? 'rgba(239,68,68,.15)'
+              : guiltLevel === 'medium' ? 'rgba(245,158,11,.1)'
+              : 'rgba(99,102,241,.08)'}`,
+            transition: 'all .5s',
+            animation: guiltLevel === 'high' ? 'guiltShake 0.5s ease-in-out infinite' : 'none',
+          }}>
+            <div style={{
+              display: 'flex', alignItems: 'center', gap: 6, marginBottom: guilt >= 50 ? 4 : 0,
+            }}>
+              <span style={{
+                fontSize: 10, fontWeight: 600, letterSpacing: 0.5, textTransform: 'uppercase',
+                color: guilt < 50 ? '#cbd5e1'
+                  : coldMaster ? '#14b8a6'
+                  : guiltLevel === 'high' ? '#ef4444'
+                  : guiltLevel === 'medium' ? '#f59e0b'
+                  : '#94a3b8',
+              }}>
+                {guilt < 50 ? '😶 罪惡感尚未覺醒' : coldMaster ? '🧊 冷漠大師' : '😔 罪惡感'}
+              </span>
+              <span style={{ flex: 1 }} />
+              {guilt >= 50 && (
+                <span style={{
+                  fontSize: 12, fontWeight: 800,
+                  fontFamily: "'JetBrains Mono',monospace",
+                  color: coldMaster ? '#14b8a6'
+                    : guiltLevel === 'high' ? '#ef4444'
+                    : guiltLevel === 'medium' ? '#f59e0b'
+                    : '#6366f1',
+                }}>
+                  {coldMaster ? '∞' : Math.floor(guilt)}
+                </span>
+              )}
+            </div>
+            {guilt >= 50 && (
+              <>
+                <div style={{
+                  height: 4, background: 'rgba(0,0,0,.05)', borderRadius: 3,
+                  overflow: 'hidden', marginBottom: coldMaster ? 0 : 6,
+                }}>
+                  <div style={{
+                    height: '100%', borderRadius: 3,
+                    transition: 'width .3s, background .5s',
+                    width: coldMaster ? '100%' : `${Math.min(100, (guilt / GUILT_THRESHOLDS.transcend) * 100)}%`,
+                    background: coldMaster ? 'linear-gradient(90deg, #14b8a6, #06b6d4)'
+                      : guiltLevel === 'high' ? 'linear-gradient(90deg, #ef4444, #f97316)'
+                      : guiltLevel === 'medium' ? 'linear-gradient(90deg, #f59e0b, #fbbf24)'
+                      : 'linear-gradient(90deg, #6366f1, #818cf8)',
+                    boxShadow: guiltLevel === 'high' ? '0 0 8px rgba(239,68,68,.4)' : 'none',
+                  }} />
+                </div>
+                {!coldMaster && (
+                  <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
+                    {GUILT_RELIEF.map(r => {
+                      const now = Date.now();
+                      const onCooldown = guiltCooldowns[r.id] && now < guiltCooldowns[r.id];
+                      const cdLeft = onCooldown ? Math.ceil((guiltCooldowns[r.id] - now) / 1000) : 0;
+                      return (
+                        <button
+                          key={r.id}
+                          onClick={() => handleGuiltRelief(r)}
+                          disabled={onCooldown || guilt < 10}
+                          title={`${r.name}：${r.desc}（-${r.guiltReduce}罪惡感）`}
+                          style={{
+                            fontSize: 13, padding: '4px 10px', borderRadius: 8,
+                            border: '1px solid #e2e8f0',
+                            background: onCooldown ? '#f1f5f9' : '#fff',
+                            cursor: onCooldown ? 'default' : 'pointer',
+                            opacity: onCooldown ? 0.35 : 1,
+                            fontFamily: 'inherit', transition: 'all .15s',
+                            boxShadow: !onCooldown && guilt > 200 ? '0 1px 4px rgba(0,0,0,.06)' : 'none',
+                          }}
+                        >
+                          {r.emoji}{onCooldown ? ` ${cdLeft}s` : ''}
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
+              </>
+            )}
+          </div>
 
-          <div style={{ marginTop: 10, width: '100%', display: 'flex', justifyContent: 'center' }}>
+          {/* ClickArea — the primary interaction, fills remaining space */}
+          <div style={{ width: '100%', flex: 1, display: 'flex', justifyContent: 'center' }}>
             <ClickArea
               message={message}
               isRead={isRead}
@@ -901,219 +1057,71 @@ export default function App() {
               guiltLevel={guiltLevel}
             />
           </div>
-
-          {/* Compact stats row */}
-          <div style={{ width: '100%', marginTop: 10 }}>
-            <StatsPanel reads={reads} allTime={allTime} prodPerSec={prodPerSec} clickPower={calcClickPower()} owned={owned} seenMilestones={seenMilestones} prestigeCount={prestigeCount} prestigePower={prestigePower} boughtUpgrades={boughtUpgrades} />
-          </div>
-
-          {/* Achievement badges */}
-          <div style={{ width: '100%', marginTop: 8 }}>
-            <div style={{
-              fontSize: 10, color: '#94a3b8', fontWeight: 600, letterSpacing: 0.5,
-              textTransform: 'uppercase', marginBottom: 6,
-            }}>成就 {unlockedAchievements.size}/{ACHIEVEMENTS.length}</div>
-            <AchievementBadges unlockedAchievements={unlockedAchievements} />
-          </div>
-
-          {/* Guilt indicator + relief */}
-          {guilt >= 50 && (
-            <div style={{
-              width: '100%', marginTop: 8,
-              padding: '8px 10px', borderRadius: 10,
-              background: coldMaster ? 'rgba(20,184,166,.06)'
-                : guiltLevel === 'high' ? 'rgba(239,68,68,.05)'
-                : guiltLevel === 'medium' ? 'rgba(245,158,11,.04)'
-                : 'rgba(99,102,241,.03)',
-              border: `1px solid ${coldMaster ? 'rgba(20,184,166,.15)'
-                : guiltLevel === 'high' ? 'rgba(239,68,68,.15)'
-                : guiltLevel === 'medium' ? 'rgba(245,158,11,.1)'
-                : 'rgba(99,102,241,.08)'}`,
-              transition: 'all .5s',
-              animation: guiltLevel === 'high' ? 'guiltShake 0.5s ease-in-out infinite' : 'none',
-            }}>
-              <div style={{
-                display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4,
-              }}>
-                <span style={{
-                  fontSize: 10, fontWeight: 600, letterSpacing: 0.5, textTransform: 'uppercase',
-                  color: coldMaster ? '#14b8a6'
-                    : guiltLevel === 'high' ? '#ef4444'
-                    : guiltLevel === 'medium' ? '#f59e0b'
-                    : '#94a3b8',
-                }}>
-                  {coldMaster ? '🧊 冷漠大師' : '😔 罪惡感'}
-                </span>
-                <span style={{ flex: 1 }} />
-                <span style={{
-                  fontSize: 12, fontWeight: 800,
-                  fontFamily: "'JetBrains Mono',monospace",
-                  color: coldMaster ? '#14b8a6'
-                    : guiltLevel === 'high' ? '#ef4444'
-                    : guiltLevel === 'medium' ? '#f59e0b'
-                    : '#6366f1',
-                }}>
-                  {coldMaster ? '∞' : Math.floor(guilt)}
-                </span>
-              </div>
-              {/* Guilt bar */}
-              <div style={{
-                height: 4, background: 'rgba(0,0,0,.05)', borderRadius: 3,
-                overflow: 'hidden', marginBottom: coldMaster ? 0 : 6,
-              }}>
-                <div style={{
-                  height: '100%', borderRadius: 3,
-                  transition: 'width .3s, background .5s',
-                  width: coldMaster ? '100%' : `${Math.min(100, (guilt / GUILT_THRESHOLDS.transcend) * 100)}%`,
-                  background: coldMaster ? 'linear-gradient(90deg, #14b8a6, #06b6d4)'
-                    : guiltLevel === 'high' ? 'linear-gradient(90deg, #ef4444, #f97316)'
-                    : guiltLevel === 'medium' ? 'linear-gradient(90deg, #f59e0b, #fbbf24)'
-                    : 'linear-gradient(90deg, #6366f1, #818cf8)',
-                  boxShadow: guiltLevel === 'high' ? '0 0 8px rgba(239,68,68,.4)' : 'none',
-                }} />
-              </div>
-              {/* Relief buttons */}
-              {!coldMaster && (
-                <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
-                  {GUILT_RELIEF.map(r => {
-                    const now = Date.now();
-                    const onCooldown = guiltCooldowns[r.id] && now < guiltCooldowns[r.id];
-                    const cdLeft = onCooldown ? Math.ceil((guiltCooldowns[r.id] - now) / 1000) : 0;
-                    return (
-                      <button
-                        key={r.id}
-                        onClick={() => handleGuiltRelief(r)}
-                        disabled={onCooldown || guilt < 10}
-                        title={`${r.name}：${r.desc}（-${r.guiltReduce}罪惡感）`}
-                        style={{
-                          fontSize: 13, padding: '4px 10px', borderRadius: 8,
-                          border: '1px solid #e2e8f0',
-                          background: onCooldown ? '#f1f5f9' : '#fff',
-                          cursor: onCooldown ? 'default' : 'pointer',
-                          opacity: onCooldown ? 0.35 : 1,
-                          fontFamily: 'inherit', transition: 'all .15s',
-                          boxShadow: !onCooldown && guilt > 200 ? '0 1px 4px rgba(0,0,0,.06)' : 'none',
-                        }}
-                      >
-                        {r.emoji}{onCooldown ? ` ${cdLeft}s` : ''}
-                      </button>
-                    );
-                  })}
-                </div>
-              )}
-            </div>
-          )}
         </div>
 
-        {/* RIGHT — Tabbed Store (Buildings / Upgrades) + Log */}
+        {/* RIGHT — Stats + Upgrades + Buildings (no tabs) */}
         <div className="section-store" style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', minHeight: 0 }}>
 
-          {/* Tab bar */}
-          <div style={{
-            display: 'flex', padding: '8px 12px 0', gap: 4, flexShrink: 0,
-          }}>
-            {[
-              { id: 'build', label: '建築', count: Object.values(owned).reduce((a, b) => a + b, 0) },
-              { id: 'upgrade', label: '升級', count: `${boughtUpgrades.size}/${UPGRADES.length}` },
-              ...(prestigeCount > 0 ? [{ id: 'prestige', label: '✦商店', count: `${boughtPrestige.size}/${PRESTIGE_UPGRADES.length}` }] : []),
-            ].map(tab => (
-              <button
-                key={tab.id}
-                onClick={() => setStoreTab(tab.id)}
-                style={{
-                  flex: 1, padding: '10px 0', border: 'none', borderRadius: '10px 10px 0 0',
-                  fontSize: 12, fontWeight: 700, cursor: 'pointer',
-                  background: storeTab === tab.id ? '#fff' : 'transparent',
-                  color: storeTab === tab.id ? '#1e293b' : '#94a3b8',
-                  borderBottom: storeTab === tab.id ? '2px solid #6366f1' : '2px solid transparent',
-                  transition: 'all .15s',
-                  fontFamily: 'inherit',
-                }}
-              >
-                {tab.label}
-                <span style={{
-                  marginLeft: 6, fontSize: 10,
-                  fontFamily: "'JetBrains Mono',monospace",
-                  color: storeTab === tab.id ? '#6366f1' : '#cbd5e1',
-                }}>{tab.count}</span>
-              </button>
-            ))}
-          </div>
+          {/* Stats info bar — horizontal */}
+          <StatsPanel layout="horizontal" reads={reads} allTime={allTime} prodPerSec={prodPerSec} clickPower={calcClickPower()} owned={owned} seenMilestones={seenMilestones} prestigeCount={prestigeCount} prestigePower={prestigePower} boughtUpgrades={boughtUpgrades} />
 
-          {/* Always-visible upgrade quick bar — buyable upgrades, max 5 chips */}
-          {(() => {
-            const buyableUpgrades = upgradeStates.filter(u => u.state === 'buy').slice(0, 5);
-            if (buyableUpgrades.length === 0) return null;
-            return (
-              <div style={{
-                padding: '6px 12px', display: 'flex', gap: 6, flexWrap: 'wrap',
-                borderBottom: '1px solid #e2e8f0',
-                background: 'rgba(99,102,241,.03)',
-                flexShrink: 0,
-              }}>
-                <span style={{ fontSize: 9, color: '#94a3b8', fontWeight: 700, letterSpacing: 0.5, textTransform: 'uppercase', alignSelf: 'center', flexShrink: 0 }}>可升級</span>
-                {buyableUpgrades.map(u => (
-                  <button
-                    key={u.id}
-                    onClick={() => handleBuyUpgrade(u)}
-                    title={`${u.name}：${u.desc} (${fmt(u.cost)})`}
-                    style={{
-                      display: 'flex', alignItems: 'center', gap: 5,
-                      padding: '4px 10px', borderRadius: 8,
-                      background: 'rgba(99,102,241,.08)',
-                      border: '1px solid rgba(99,102,241,.2)',
-                      cursor: 'pointer', fontSize: 11, fontWeight: 600,
-                      color: '#4f46e5', transition: 'all .15s',
-                      animation: 'glow 2s ease-in-out infinite',
-                    }}
-                  >
-                    <span style={{ fontSize: 14 }}>{u.emoji}</span>
-                    <span style={{ maxWidth: 80, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{u.name}</span>
-                    <span style={{ fontSize: 10, color: '#b45309', fontFamily: "'JetBrains Mono',monospace", fontWeight: 700 }}>{fmt(u.cost)}</span>
-                  </button>
-                ))}
-              </div>
-            );
-          })()}
-
-          {/* Tab content */}
-          <div style={{ flex: 1, overflow: 'hidden', display: 'flex', flexDirection: 'column', minHeight: 0 }}>
-            {storeTab === 'build' ? (
-              <BuildingList
-                buildings={BUILDINGS}
-                owned={owned}
-                reads={reads}
-                allTime={allTime}
-                unlockedBuildings={unlockedBuildings}
-                newBuildings={newBuildings}
-                buyN={buyN}
-                onBuy={handleBuy}
-                setBuyN={setBuyN}
-              />
-            ) : storeTab === 'upgrade' ? (
-              <div style={{ flex: 1, overflowY: 'auto', minHeight: 0 }}>
-                {upgradeStates.length > 0 ? (
-                  <UpgradeRow upgrades={upgradeStates} reads={reads} onBuy={handleBuyUpgrade} />
-                ) : (
-                  <div style={{ padding: 24, textAlign: 'center', color: '#94a3b8', fontSize: 12, fontStyle: 'italic' }}>
-                    繼續已讀就會解鎖更多升級
-                  </div>
-                )}
-              </div>
+          {/* Upgrades — always visible, compact, capped height */}
+          <div style={{ maxHeight: '30%', overflowY: 'auto', borderBottom: '1px solid #e2e8f0', flexShrink: 0 }}>
+            {upgradeStates.length > 0 ? (
+              <UpgradeRow upgrades={upgradeStates} reads={reads} onBuy={handleBuyUpgrade} compact />
             ) : (
-              <div style={{ flex: 1, overflowY: 'auto', minHeight: 0 }}>
-                <PrestigeShop
-                  prestigePower={prestigePower}
-                  boughtPrestige={boughtPrestige}
-                  onBuy={handleBuyPrestige}
-                />
+              <div style={{ padding: '8px 12px', fontSize: 11, color: '#94a3b8', fontStyle: 'italic' }}>
+                繼續已讀就會解鎖升級
               </div>
             )}
           </div>
 
-          {/* (log moved to top marquee) */}
+          {/* Buildings — fills remaining space */}
+          <BuildingList
+            buildings={BUILDINGS}
+            owned={owned}
+            reads={reads}
+            allTime={allTime}
+            unlockedBuildings={unlockedBuildings}
+            newBuildings={newBuildings}
+            buyN={buyN}
+            onBuy={handleBuy}
+            setBuyN={setBuyN}
+          />
         </div>
       </div>
+
+      {/* Prestige Shop Modal */}
+      {showPrestigeShop && (
+        <div style={{
+          position: 'fixed', inset: 0, zIndex: 400,
+          background: 'rgba(0,0,0,.4)', backdropFilter: 'blur(4px)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+        }} onClick={(e) => { if (e.target === e.currentTarget) setShowPrestigeShop(false); }}>
+          <div style={{
+            background: '#fff', borderRadius: 16, padding: '20px 24px',
+            maxWidth: 500, width: '90vw', maxHeight: '80vh', overflowY: 'auto',
+            boxShadow: '0 20px 60px rgba(0,0,0,.15)',
+          }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+              <div style={{ fontSize: 15, fontWeight: 800, color: '#1e293b' }}>✦ 已讀之力商店</div>
+              <button
+                onClick={() => setShowPrestigeShop(false)}
+                style={{
+                  background: '#f1f5f9', border: '1px solid #e2e8f0',
+                  borderRadius: 8, padding: '4px 12px', fontSize: 12,
+                  cursor: 'pointer', color: '#64748b', fontFamily: 'inherit',
+                }}
+              >關閉</button>
+            </div>
+            <PrestigeShop
+              prestigePower={prestigePower}
+              boughtPrestige={boughtPrestige}
+              onBuy={handleBuyPrestige}
+            />
+          </div>
+        </div>
+      )}
 
       {/* Read Storm mini-game */}
       <ReadStorm

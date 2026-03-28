@@ -15,7 +15,7 @@ function isNewMilestone(value) {
 
 /* ── StatsPanel ── */
 
-export function StatsPanel({ reads, allTime, prodPerSec, clickPower, owned, seenMilestones, prestigeCount, prestigePower, boughtUpgrades }) {
+export function StatsPanel({ reads, allTime, prodPerSec, clickPower, owned, seenMilestones, prestigeCount, prestigePower, boughtUpgrades, layout = 'grid' }) {
   const totalOwned = Object.values(owned).reduce((a, b) => a + b, 0);
   const prevRef = useRef({});
   const [flashKeys, setFlashKeys] = useState(new Set());
@@ -74,6 +74,38 @@ export function StatsPanel({ reads, allTime, prodPerSec, clickPower, owned, seen
     );
   });
 
+  if (layout === 'horizontal') {
+    const allItems = [...left, ...right];
+    return (
+      <div style={{
+        display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '2px 8px',
+        padding: '5px 10px',
+        background: 'rgba(255,255,255,.5)',
+        borderBottom: '1px solid #e2e8f0',
+      }}>
+        {allItems.map(([label, value, color]) => {
+          const isFlashing = flashKeys.has(label);
+          const isGold = label === '生涯' && allTimeGold;
+          return (
+            <div key={label} style={{
+              display: 'flex', flexDirection: 'column', alignItems: 'center',
+              padding: '1px 0',
+            }}>
+              <span style={{ fontSize: 9, color: '#94a3b8', lineHeight: 1.2 }}>{label}</span>
+              <span style={{
+                fontSize: 11, fontWeight: 700, color,
+                fontFamily: "'JetBrains Mono',monospace",
+                lineHeight: 1.3,
+                ...(isFlashing ? { animation: 'statFlash .6s ease-out' } : {}),
+                ...(isGold ? { animation: 'goldPulse 1.5s ease-in-out infinite' } : {}),
+              }}>{value}</span>
+            </div>
+          );
+        })}
+      </div>
+    );
+  }
+
   return (
     <div style={{
       display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0 12px',
@@ -109,11 +141,13 @@ export function LogPanel({ log }) {
   );
 }
 
-export function AchievementBadges({ unlockedAchievements }) {
+export function AchievementBadges({ unlockedAchievements, maxVisible }) {
   const [hoveredId, setHoveredId] = useState(null);
   const seenRef = useRef(new Set());
-  const unlocked = ACHIEVEMENTS.filter(a => unlockedAchievements.has(a.id));
-  const lockedCount = ACHIEVEMENTS.length - unlocked.length;
+  const allUnlocked = ACHIEVEMENTS.filter(a => unlockedAchievements.has(a.id));
+  const unlocked = maxVisible ? allUnlocked.slice(-maxVisible) : allUnlocked;
+  const overflowUnlocked = maxVisible && allUnlocked.length > maxVisible ? allUnlocked.length - maxVisible : 0;
+  const lockedCount = ACHIEVEMENTS.length - allUnlocked.length;
 
   // Track which badges are newly appearing this render
   const newBadges = new Set();
@@ -178,12 +212,12 @@ export function AchievementBadges({ unlockedAchievements }) {
           </div>
         );
       })}
-      {lockedCount > 0 && (
+      {(lockedCount > 0 || overflowUnlocked > 0) && (
         <span style={{
           fontSize: 10, color: '#94a3b8',
           fontFamily: "'JetBrains Mono',monospace",
           padding: '2px 6px',
-        }}>+{lockedCount}</span>
+        }}>{allUnlocked.length}/{ACHIEVEMENTS.length}</span>
       )}
     </div>
   );

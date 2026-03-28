@@ -3,7 +3,7 @@ import { BUILDINGS } from '../game/buildings.js';
 import { fmt } from '../utils/format.js';
 import CheckIcon from './CheckIcon.jsx';
 
-export default function UpgradeRow({ upgrades, reads, onBuy }) {
+export default function UpgradeRow({ upgrades, reads, onBuy, compact = false }) {
   const doneCount = upgrades.filter(u => u.state === 'done').length;
   const seenRef = useRef(new Set());
   const [newIds, setNewIds] = useState(new Set());
@@ -40,13 +40,17 @@ export default function UpgradeRow({ upgrades, reads, onBuy }) {
     return (order[a.state] ?? 1) - (order[b.state] ?? 1);
   });
 
+  // In compact mode, separate done items from active items
+  const activeItems = compact ? sorted.filter(u => u.state !== 'done') : sorted;
+
   return (
-    <div style={{ padding: '10px 12px 8px', flexShrink: 0 }}>
+    <div style={{ padding: compact ? '6px 10px 4px' : '10px 12px 8px', flexShrink: 0 }}>
       {/* Section header */}
       <div style={{
-        fontSize: 11, fontWeight: 600, color: '#94a3b8',
+        fontSize: compact ? 10 : 11, fontWeight: 600, color: '#94a3b8',
         marginBottom: 8, letterSpacing: 0.5, textTransform: 'uppercase',
         display: 'flex', alignItems: 'center', gap: 6,
+        ...(compact ? { padding: '6px 12px 4px' } : {}),
       }}>
         升級
         <span style={{
@@ -55,8 +59,8 @@ export default function UpgradeRow({ upgrades, reads, onBuy }) {
         }}>{doneCount}/{upgrades.length}</span>
       </div>
 
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-        {sorted.map(u => {
+      <div style={{ display: 'flex', flexDirection: 'column', gap: compact ? 3 : 4 }}>
+        {activeItems.map(u => {
           const isDone = u.state === 'done';
           const canBuy = u.state === 'buy';
           const isWait = u.state === 'wait';
@@ -64,7 +68,7 @@ export default function UpgradeRow({ upgrades, reads, onBuy }) {
           const buildingName = u.req?.building ? BUILDINGS.find(b => b.id === u.req.building)?.name : null;
 
           if (isDone) {
-            // Compact done row
+            // Compact done row (only rendered in non-compact mode)
             return (
               <div key={u.id} style={{
                 display: 'flex', alignItems: 'center', gap: 6,
@@ -86,7 +90,7 @@ export default function UpgradeRow({ upgrades, reads, onBuy }) {
               onClick={() => canBuy && onBuy(u)}
               style={{
                 display: 'flex', alignItems: 'flex-start', gap: 10,
-                width: '100%', padding: '10px 12px', borderRadius: 10,
+                width: '100%', padding: compact ? '6px 10px' : '10px 12px', borderRadius: 10,
                 background: canBuy ? '#fff' : '#f8fafc',
                 border: canBuy ? '1px solid rgba(99,102,241,.25)' : '1px solid #e2e8f0',
                 opacity: isWait ? 0.55 : 1,
@@ -99,24 +103,24 @@ export default function UpgradeRow({ upgrades, reads, onBuy }) {
               }}
             >
               {/* Emoji - larger for visual weight */}
-              <span style={{ fontSize: 22, lineHeight: 1, flexShrink: 0, marginTop: 0 }}>{u.emoji}</span>
+              <span style={{ fontSize: compact ? 16 : 22, lineHeight: 1, flexShrink: 0, marginTop: 0 }}>{u.emoji}</span>
 
               {/* Content */}
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <span style={{ fontSize: 13, fontWeight: 700, color: '#1e293b' }}>{u.name}</span>
+                  <span style={{ fontSize: compact ? 12 : 13, fontWeight: 700, color: '#1e293b' }}>{u.name}</span>
                   <span style={{
-                    fontSize: canBuy ? 13 : 11,
+                    fontSize: canBuy ? (compact ? 12 : 13) : 11,
                     fontWeight: canBuy ? 800 : 700,
                     fontFamily: "'JetBrains Mono',monospace",
                     color: canBuy ? '#b45309' : '#cbd5e1',
                     transition: 'font-size .2s ease, font-weight .2s ease',
                   }}>{fmt(u.cost)}</span>
                 </div>
-                <div style={{ fontSize: 11, color: '#64748b', marginTop: 2 }}>{u.desc}</div>
+                {!compact && <div style={{ fontSize: 11, color: '#64748b', marginTop: 2 }}>{u.desc}</div>}
                 {isWait && (
                   <div style={{
-                    fontSize: 10, color: '#f59e0b', marginTop: 3,
+                    fontSize: compact ? 9 : 10, color: '#f59e0b', marginTop: 3,
                     fontFamily: "'JetBrains Mono',monospace",
                   }}>
                     還差 {fmt(u.cost - reads)}
@@ -132,6 +136,18 @@ export default function UpgradeRow({ upgrades, reads, onBuy }) {
             </button>
           );
         })}
+
+        {/* Compact mode: single summary line for done items */}
+        {compact && doneCount > 0 && (
+          <div style={{
+            display: 'flex', alignItems: 'center', gap: 6,
+            padding: '4px 8px', borderRadius: 8,
+            background: '#f8fafc', opacity: 0.5,
+            fontSize: 11, color: '#94a3b8',
+          }}>
+            ✓ 已完成 {doneCount}/{upgrades.length}
+          </div>
+        )}
       </div>
     </div>
   );
