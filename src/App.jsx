@@ -560,6 +560,8 @@ export default function App() {
         @keyframes glow { 0%,100% { box-shadow: 0 0 8px rgba(99,102,241,.2) } 50% { box-shadow: 0 0 20px rgba(99,102,241,.4), 0 0 40px rgba(99,102,241,.15) } }
         @keyframes tp { 0% { transform:scaleX(1) } 100% { transform:scaleX(0) } }
         @keyframes ba { 0%,100% { transform:translateY(0);opacity:.6 } 50% { transform:translateY(6px);opacity:1 } }
+        @keyframes bgfloat { 0% { transform:translateY(100vh) rotate(0deg);opacity:0 } 10% { opacity:1 } 90% { opacity:1 } 100% { transform:translateY(-20px) rotate(360deg);opacity:0 } }
+        @keyframes bgpulse { 0%,100% { opacity:.03 } 50% { opacity:.07 } }
         @media(prefers-reduced-motion:reduce) { *,*::before,*::after { animation-duration:0.01ms!important; animation-iteration-count:1!important; transition-duration:0.01ms!important } }
         * { box-sizing:border-box; margin:0; padding:0 }
         button { font-family:inherit; cursor:pointer }
@@ -574,8 +576,31 @@ export default function App() {
         }
       `}</style>
 
-      {/* Ambient glow — very faint on light bg */}
-      <div style={{ position: 'fixed', inset: 0, pointerEvents: 'none', background: 'radial-gradient(ellipse at 25% 15%, rgba(99,102,241,.04) 0%, transparent 50%), radial-gradient(ellipse at 75% 85%, rgba(217,119,6,.03) 0%, transparent 50%)' }} />
+      {/* Ambient background — floating checkmarks + gradient */}
+      <div style={{ position: 'fixed', inset: 0, pointerEvents: 'none', zIndex: 0,
+        background: 'radial-gradient(ellipse at 25% 15%, rgba(99,102,241,.06) 0%, transparent 50%), radial-gradient(ellipse at 75% 85%, rgba(217,119,6,.04) 0%, transparent 50%)',
+      }}>
+        {/* Floating ✓✓ particles */}
+        {Array.from({ length: 12 }, (_, i) => (
+          <div key={i} style={{
+            position: 'absolute',
+            left: `${(i * 8.3 + 3) % 100}%`,
+            fontSize: 10 + (i % 3) * 4,
+            color: i % 2 === 0 ? 'rgba(99,102,241,.06)' : 'rgba(217,119,6,.05)',
+            animation: `bgfloat ${18 + (i % 5) * 4}s linear infinite`,
+            animationDelay: `${-i * 2.5}s`,
+            fontFamily: "'JetBrains Mono',monospace",
+            fontWeight: 800,
+          }}>✓✓</div>
+        ))}
+        {/* Subtle grid pattern */}
+        <div style={{
+          position: 'absolute', inset: 0,
+          backgroundImage: 'radial-gradient(circle, rgba(99,102,241,.03) 1px, transparent 1px)',
+          backgroundSize: '32px 32px',
+          animation: 'bgpulse 8s ease-in-out infinite',
+        }} />
+      </div>
 
       {/* Floating +N texts */}
       {floats.map(f => (
