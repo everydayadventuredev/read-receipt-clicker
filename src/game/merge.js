@@ -14,9 +14,9 @@
 // ═══════════════════════════════════════════════
 
 export const GIFT_TIERS = [
-  { tier: 1, name: '水果',     emoji: '🍎', color: '#ef4444', buffMult: 1.05, desc: '路邊買的' },
-  { tier: 2, name: '甜點',     emoji: '🧁', color: '#f59e0b', buffMult: 1.10, desc: '巷口那家' },
-  { tier: 3, name: '禮盒',     emoji: '🎁', color: '#10b981', buffMult: 1.20, desc: '包裝精美' },
+  { tier: 1, name: '水果',     emoji: '🍎', color: '#94a3b8', buffMult: 1.05, desc: '路邊買的' },
+  { tier: 2, name: '甜點',     emoji: '🧁', color: '#10b981', buffMult: 1.10, desc: '巷口那家' },
+  { tier: 3, name: '禮盒',     emoji: '🎁', color: '#3b82f6', buffMult: 1.20, desc: '包裝精美' },
   { tier: 4, name: '紅包',     emoji: '🧧', color: '#dc2626', buffMult: 1.40, desc: '最實在的' },
   { tier: 5, name: '名牌包',   emoji: '👜', color: '#7c3aed', buffMult: 1.80, desc: '媽媽的最愛' },
   { tier: 6, name: '帝王蟹',   emoji: '🦀', color: '#f97316', buffMult: 2.50, desc: '全家族炫耀' },

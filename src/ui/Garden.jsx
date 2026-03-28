@@ -35,9 +35,9 @@ function PlotCell({ slot, index, fieldCount, seeds, onPlant, onHarvest, onClear 
       <div style={{
         background: 'rgba(148,163,184,.06)',
         border: '1px dashed rgba(148,163,184,.2)',
-        borderRadius: 8,
+        borderRadius: 10,
         display: 'flex', alignItems: 'center', justifyContent: 'center',
-        opacity: 0.4, fontSize: 14,
+        opacity: 0.4, fontSize: 20,
       }}>
         🔒
       </div>
@@ -52,10 +52,10 @@ function PlotCell({ slot, index, fieldCount, seeds, onPlant, onHarvest, onClear 
         style={{
           background: seeds > 0 ? 'rgba(139,69,19,.06)' : 'rgba(148,163,184,.04)',
           border: seeds > 0 ? '1px dashed rgba(139,69,19,.3)' : '1px dashed rgba(148,163,184,.15)',
-          borderRadius: 8,
+          borderRadius: 10,
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           cursor: seeds > 0 ? 'pointer' : 'default',
-          fontSize: 20, color: '#d4a574',
+          fontSize: 32, color: '#d4a574',
           transition: 'all .2s',
         }}
       >
@@ -73,15 +73,15 @@ function PlotCell({ slot, index, fieldCount, seeds, onPlant, onHarvest, onClear 
         style={{
           background: 'rgba(148,163,184,.06)',
           border: '1px solid rgba(148,163,184,.15)',
-          borderRadius: 8,
+          borderRadius: 10,
           display: 'flex', flexDirection: 'column',
           alignItems: 'center', justifyContent: 'center',
           cursor: 'pointer', opacity: 0.5,
           filter: 'grayscale(1)',
         }}
       >
-        <span style={{ fontSize: 22 }}>{flower?.emoji ?? '🍂'}</span>
-        <span style={{ fontSize: 8, color: '#94a3b8' }}>枯萎</span>
+        <span style={{ fontSize: 36 }}>{flower?.emoji ?? '🍂'}</span>
+        <span style={{ fontSize: 11, color: '#94a3b8' }}>枯萎</span>
       </button>
     );
   }
@@ -94,21 +94,21 @@ function PlotCell({ slot, index, fieldCount, seeds, onPlant, onHarvest, onClear 
       <div style={{
         background: 'rgba(34,197,94,.06)',
         border: '1px solid rgba(34,197,94,.2)',
-        borderRadius: 8,
+        borderRadius: 10,
         display: 'flex', flexDirection: 'column',
         alignItems: 'center', justifyContent: 'center',
         position: 'relative', overflow: 'hidden',
       }}>
-        <span style={{ fontSize: 22, animation: 'breathe 2s ease-in-out infinite' }}>🌱</span>
+        <span style={{ fontSize: 36, animation: 'breathe 2s ease-in-out infinite' }}>🌱</span>
         <span style={{
-          fontSize: 9, color: '#22c55e', fontWeight: 600,
+          fontSize: 13, color: '#22c55e', fontWeight: 600,
           fontFamily: "'JetBrains Mono',monospace",
         }}>
           {fmtTime(remaining)}
         </span>
         {/* Progress bar at bottom */}
         <div style={{
-          position: 'absolute', bottom: 0, left: 0, right: 0, height: 2,
+          position: 'absolute', bottom: 0, left: 0, right: 0, height: 3,
           background: 'rgba(34,197,94,.15)',
         }}>
           <div style={{
@@ -132,7 +132,7 @@ function PlotCell({ slot, index, fieldCount, seeds, onPlant, onHarvest, onClear 
       style={{
         background: `linear-gradient(135deg, ${rarity.color}10, ${rarity.color}05)`,
         border: `2px solid ${rarity.color}40`,
-        borderRadius: 8,
+        borderRadius: 10,
         display: 'flex', flexDirection: 'column',
         alignItems: 'center', justifyContent: 'center',
         cursor: 'pointer',
@@ -140,16 +140,16 @@ function PlotCell({ slot, index, fieldCount, seeds, onPlant, onHarvest, onClear 
         position: 'relative',
       }}
     >
-      <span style={{ fontSize: 26 }}>{flower?.emoji ?? '🌸'}</span>
+      <span style={{ fontSize: 44 }}>{flower?.emoji ?? '🌸'}</span>
       <span style={{
-        fontSize: 8, fontWeight: 700, color: rarity.color,
+        fontSize: 12, fontWeight: 700, color: rarity.color,
         textTransform: 'uppercase',
       }}>
         {rarity.label}
       </span>
       {/* Wilt timer */}
       <span style={{
-        fontSize: 7, color: urgency ? '#ef4444' : '#94a3b8',
+        fontSize: 11, color: urgency ? '#ef4444' : '#94a3b8',
         fontFamily: "'JetBrains Mono',monospace",
         fontWeight: urgency ? 700 : 400,
       }}>
@@ -291,8 +291,8 @@ export default function Garden({ gardenState, exCount, onPlant, onHarvest, onCle
         flexShrink: 0,
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-          <span style={{ fontSize: 16 }}>🌱</span>
-          <span style={{ fontSize: 14, fontWeight: 800, color: '#1e293b' }}>放下花園</span>
+          <span style={{ fontSize: 18 }}>🌱</span>
+          <span style={{ fontSize: 16, fontWeight: 800, color: '#1e293b' }}>放下花園</span>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
           <span style={{
@@ -327,7 +327,8 @@ export default function Garden({ gardenState, exCount, onPlant, onHarvest, onCle
             display: 'grid',
             gridTemplateColumns: 'repeat(4, 1fr)',
             gridTemplateRows: 'repeat(4, 1fr)',
-            gap: 4,
+            gap: 6,
+            maxHeight: 'min(50vh, 400px)',
             minHeight: 0,
           }}>
             {slots.map((slot, i) => (

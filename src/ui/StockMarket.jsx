@@ -5,7 +5,7 @@ import { fmt } from '../utils/format.js';
 /**
  * Compact Sparkline for grid cards.
  */
-function Sparkline({ data, color, width = 60, height = 20 }) {
+function Sparkline({ data, color, width = 80, height = 28 }) {
   if (!data || data.length < 2) return null;
   const min = Math.min(...data);
   const max = Math.max(...data);
@@ -47,7 +47,7 @@ function ChannelCard({ channel, price, prevPrice, history, holdings, costBasis, 
 
   return (
     <div style={{
-      padding: '8px 10px',
+      padding: '10px 14px',
       borderRadius: 10,
       border: '1px solid #e8eaed',
       transition: 'background .3s',
@@ -58,11 +58,11 @@ function ChannelCard({ channel, price, prevPrice, history, holdings, costBasis, 
     }}>
       {/* Row 1: emoji + name + price */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-        <span style={{ fontSize: 18 }}>{channel.emoji}</span>
-        <span style={{ fontSize: 14, fontWeight: 700, color: '#1e293b' }}>{channel.name}</span>
+        <span style={{ fontSize: 22 }}>{channel.emoji}</span>
+        <span style={{ fontSize: 16, fontWeight: 700, color: '#1e293b' }}>{channel.name}</span>
         <div style={{ flex: 1 }} />
         <span style={{
-          fontSize: 16, fontWeight: 800, color: '#1e293b',
+          fontSize: 20, fontWeight: 800, color: '#1e293b',
           fontFamily: "'JetBrains Mono',monospace",
         }}>
           {fmt(Math.round(price))}
@@ -73,14 +73,14 @@ function ChannelCard({ channel, price, prevPrice, history, holdings, costBasis, 
       <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
         <Sparkline data={history} color={sparkColor} />
         <span style={{
-          fontSize: 11, fontWeight: 600, color: changeColor,
+          fontSize: 13, fontWeight: 600, color: changeColor,
           fontFamily: "'JetBrains Mono',monospace",
         }}>
           {change >= 0 ? '+' : ''}{change.toFixed(1)}%
         </span>
         {holdings > 0 && (
           <span style={{
-            fontSize: 10, fontWeight: 600,
+            fontSize: 12, fontWeight: 600,
             color: profit >= 0 ? '#10b981' : '#ef4444',
             fontFamily: "'JetBrains Mono',monospace",
             marginLeft: 'auto',
@@ -96,7 +96,7 @@ function ChannelCard({ channel, price, prevPrice, history, holdings, costBasis, 
           onClick={onBuy}
           disabled={!canBuy}
           style={{
-            flex: 1, padding: '4px 0', fontSize: 12, fontWeight: 700,
+            flex: 1, padding: '8px 0', fontSize: 14, fontWeight: 700,
             color: !canBuy ? '#cbd5e1' : '#10b981',
             background: !canBuy ? '#f8fafc' : 'rgba(16,185,129,.08)',
             border: `1px solid ${!canBuy ? '#e2e8f0' : 'rgba(16,185,129,.25)'}`,
@@ -107,7 +107,7 @@ function ChannelCard({ channel, price, prevPrice, history, holdings, costBasis, 
           onClick={onSell}
           disabled={holdings <= 0}
           style={{
-            flex: 1, padding: '4px 0', fontSize: 12, fontWeight: 700,
+            flex: 1, padding: '8px 0', fontSize: 14, fontWeight: 700,
             color: holdings <= 0 ? '#cbd5e1' : '#ef4444',
             background: holdings <= 0 ? '#f8fafc' : 'rgba(239,68,68,.06)',
             border: `1px solid ${holdings <= 0 ? '#e2e8f0' : 'rgba(239,68,68,.25)'}`,
@@ -140,8 +140,8 @@ export default function StockMarket({ marketState, algoCount, reads, onBuy, onSe
         flexShrink: 0,
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-          <span style={{ fontSize: 16 }}>📈</span>
-          <span style={{ fontSize: 14, fontWeight: 800, color: '#1e293b' }}>Feed 操盤手</span>
+          <span style={{ fontSize: 18 }}>📈</span>
+          <span style={{ fontSize: 16, fontWeight: 800, color: '#1e293b' }}>Feed 操盤手</span>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
           <span style={{

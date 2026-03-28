@@ -13,9 +13,9 @@ function MergeCell({ item, index, gridSize, selected, onSelect, pendingGifts, on
       <div style={{
         background: 'rgba(148,163,184,.06)',
         border: '1px dashed rgba(148,163,184,.2)',
-        borderRadius: 8,
+        borderRadius: 10,
         display: 'flex', alignItems: 'center', justifyContent: 'center',
-        opacity: 0.4, fontSize: 14,
+        opacity: 0.4, fontSize: 20,
       }}>
         🔒
       </div>
@@ -41,7 +41,7 @@ function MergeCell({ item, index, gridSize, selected, onSelect, pendingGifts, on
           border: selected !== null
             ? '2px dashed rgba(99,102,241,.3)'
             : '1px dashed rgba(148,163,184,.15)',
-          borderRadius: 8,
+          borderRadius: 10,
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           cursor: (selected !== null || pendingGifts > 0) ? 'pointer' : 'default',
           fontSize: 16, color: '#d4a574',
@@ -66,7 +66,7 @@ function MergeCell({ item, index, gridSize, selected, onSelect, pendingGifts, on
         border: isSelected
           ? `2px solid ${tier.color}60`
           : `1px solid ${tier.color}20`,
-        borderRadius: 8,
+        borderRadius: 10,
         display: 'flex', flexDirection: 'column',
         alignItems: 'center', justifyContent: 'center',
         cursor: 'pointer',
@@ -75,9 +75,9 @@ function MergeCell({ item, index, gridSize, selected, onSelect, pendingGifts, on
         boxShadow: isSelected ? `0 0 12px ${tier.color}30` : 'none',
       }}
     >
-      <span style={{ fontSize: 28, lineHeight: 1 }}>{tier.emoji}</span>
+      <span style={{ fontSize: 44, lineHeight: 1 }}>{tier.emoji}</span>
       <span style={{
-        fontSize: 8, fontWeight: 700, color: tier.color,
+        fontSize: 12, fontWeight: 700, color: tier.color,
         marginTop: 2,
       }}>
         {tier.name}
@@ -264,8 +264,8 @@ export default function MergeGame({ mergeState, parCount, reads, onPlace, onMerg
         flexShrink: 0,
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-          <span style={{ fontSize: 16 }}>🎁</span>
-          <span style={{ fontSize: 14, fontWeight: 800, color: '#1e293b' }}>伴手禮合成</span>
+          <span style={{ fontSize: 18 }}>🎁</span>
+          <span style={{ fontSize: 16, fontWeight: 800, color: '#1e293b' }}>伴手禮合成</span>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
           <span style={{
@@ -291,9 +291,9 @@ export default function MergeGame({ mergeState, parCount, reads, onPlace, onMerg
             display: 'flex', alignItems: 'center', gap: 2,
             opacity: t.tier <= highestTier + 1 ? 1 : 0.3,
           }}>
-            <span style={{ fontSize: 14 }}>{t.emoji}</span>
+            <span style={{ fontSize: 18 }}>{t.emoji}</span>
             {i < GIFT_TIERS.length - 1 && (
-              <span style={{ fontSize: 9, color: '#cbd5e1' }}>→</span>
+              <span style={{ fontSize: 12, color: '#cbd5e1' }}>→</span>
             )}
           </div>
         ))}
@@ -305,7 +305,8 @@ export default function MergeGame({ mergeState, parCount, reads, onPlace, onMerg
         display: 'grid',
         gridTemplateColumns: 'repeat(4, 1fr)',
         gridTemplateRows: 'repeat(4, 1fr)',
-        gap: 4,
+        gap: 6,
+        maxHeight: 'min(50vh, 400px)',
         minHeight: 0,
       }}>
         {grid.map((item, i) => (
@@ -344,7 +345,7 @@ export default function MergeGame({ mergeState, parCount, reads, onPlace, onMerg
             onClick={() => canExpand && onExpand()}
             disabled={!canExpand}
             style={{
-              padding: '3px 8px', fontSize: 10, fontWeight: 700,
+              padding: '6px 12px', fontSize: 12, fontWeight: 700,
               color: canExpand ? '#f59e0b' : '#cbd5e1',
               background: canExpand ? 'rgba(245,158,11,.08)' : '#f8fafc',
               border: `1px solid ${canExpand ? 'rgba(245,158,11,.25)' : '#e2e8f0'}`,
