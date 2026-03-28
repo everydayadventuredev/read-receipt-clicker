@@ -666,6 +666,7 @@ export default function App() {
         @keyframes ba { 0%,100% { transform:translateY(0);opacity:.6 } 50% { transform:translateY(6px);opacity:1 } }
         @keyframes bgfloat { 0% { transform:translateY(100vh) rotate(0deg);opacity:0 } 10% { opacity:1 } 90% { opacity:1 } 100% { transform:translateY(-20px) rotate(360deg);opacity:0 } }
         @keyframes bgpulse { 0%,100% { opacity:.03 } 50% { opacity:.07 } }
+        @keyframes marquee { 0% { transform:translateX(0) } 100% { transform:translateX(-50%) } }
         @media(prefers-reduced-motion:reduce) { *,*::before,*::after { animation-duration:0.01ms!important; animation-iteration-count:1!important; transition-duration:0.01ms!important } }
         * { box-sizing:border-box; margin:0; padding:0 }
         button { font-family:inherit; cursor:pointer }
@@ -819,6 +820,35 @@ export default function App() {
           }}
         >{mutedUI ? '🔇' : '🔊'}</button>
       </div>
+
+      {/* ── LOG MARQUEE ── */}
+      {log.length > 0 && (
+        <div style={{
+          padding: '6px 16px',
+          background: 'linear-gradient(90deg, rgba(99,102,241,.04), rgba(217,119,6,.04))',
+          borderBottom: '1px solid #e2e8f0',
+          flexShrink: 0,
+          overflow: 'hidden',
+          position: 'relative',
+        }}>
+          <div style={{
+            display: 'flex', alignItems: 'center', gap: 12,
+            animation: log.length > 1 ? `marquee ${Math.max(8, log.length * 3)}s linear infinite` : 'none',
+            whiteSpace: 'nowrap',
+          }}>
+            {(log.length > 3 ? [...log.slice(0, 8), ...log.slice(0, 8)] : log.slice(0, 8)).map((l, i) => (
+              <span key={`${l.id}-${i}`} style={{
+                fontSize: 12, color: '#64748b',
+                display: 'inline-flex', alignItems: 'center', gap: 6,
+                flexShrink: 0,
+              }}>
+                <span style={{ color: '#6366f1', fontSize: 10 }}>●</span>
+                {l.m}
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* ── TWO-COLUMN LAYOUT ── */}
       <div className="game-layout" style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', minHeight: 0 }}>
@@ -1014,27 +1044,7 @@ export default function App() {
             )}
           </div>
 
-          {/* Compact log footer */}
-          <div style={{
-            borderTop: '1px solid #e2e8f0',
-            padding: '6px 12px', flexShrink: 0,
-            maxHeight: 80, overflowY: 'auto',
-            background: 'rgba(248,250,251,.8)',
-          }}>
-            <div style={{
-              fontSize: 9, color: '#94a3b8', fontWeight: 600, letterSpacing: 0.5,
-              textTransform: 'uppercase', marginBottom: 2,
-            }}>紀錄</div>
-            {log.length === 0
-              ? <div style={{ fontSize: 10, color: '#cbd5e1', fontStyle: 'italic' }}>事件會出現在這裡</div>
-              : log.slice(-3).map(l => (
-                <div key={l.id} style={{
-                  fontSize: 10, color: '#64748b', padding: '1px 0',
-                  whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
-                }}>{l.m}</div>
-              ))
-            }
-          </div>
+          {/* (log moved to top marquee) */}
         </div>
       </div>
 
@@ -1095,7 +1105,7 @@ export default function App() {
         </div>
       )}
 
-      <Ticker allTime={allTime} />
+      {/* Ticker removed — replaced by top marquee */}
     </div>
   );
 }
