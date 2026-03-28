@@ -55,11 +55,13 @@ function PlotCell({ slot, index, fieldCount, seeds, onPlant, onHarvest, onClear 
           borderRadius: 10,
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           cursor: seeds > 0 ? 'pointer' : 'default',
-          fontSize: 32, color: '#d4a574',
+          fontSize: 14, color: '#a3856a',
           transition: 'all .2s',
+          flexDirection: 'column', gap: 2,
         }}
       >
-        {seeds > 0 ? '🟫' : ''}
+        {seeds > 0 && <span style={{ fontSize: 28 }}>🌱</span>}
+        {seeds > 0 && <span style={{ fontSize: 11, fontWeight: 600 }}>點擊播種</span>}
       </button>
     );
   }

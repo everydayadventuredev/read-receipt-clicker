@@ -1,11 +1,11 @@
-import { useState, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { GIFT_TIERS, getTier, EXPAND_COSTS, BASE_GRID, GRID_SIZE } from '../game/merge.js';
 import { fmt } from '../utils/format.js';
 
 /**
  * Single merge cell — supports click-to-select merge flow.
  */
-function MergeCell({ item, index, gridSize, selected, onSelect, pendingGifts, onPlace }) {
+function MergeCell({ item, index, gridSize, selected, selectedTier, onSelect, pendingGifts, onPlace }) {
   const isLocked = index >= gridSize;
 
   if (isLocked) {
@@ -44,17 +44,22 @@ function MergeCell({ item, index, gridSize, selected, onSelect, pendingGifts, on
           borderRadius: 10,
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           cursor: (selected !== null || pendingGifts > 0) ? 'pointer' : 'default',
-          fontSize: 16, color: '#d4a574',
+          fontSize: 12, color: '#a3856a',
           transition: 'all .15s',
+          flexDirection: 'column', gap: 2,
         }}
       >
-        {pendingGifts > 0 && selected === null ? '+' : ''}
+        {pendingGifts > 0 && selected === null && <>
+          <span style={{ fontSize: 24 }}>📦</span>
+          <span style={{ fontSize: 10, fontWeight: 600 }}>放置</span>
+        </>}
       </button>
     );
   }
 
   const tier = getTier(item.tier);
   const isSelected = selected === index;
+  const isMatch = selected !== null && selected !== index && selectedTier === item.tier;
 
   return (
     <button
@@ -62,10 +67,15 @@ function MergeCell({ item, index, gridSize, selected, onSelect, pendingGifts, on
       style={{
         background: isSelected
           ? `linear-gradient(135deg, ${tier.color}20, ${tier.color}10)`
-          : `linear-gradient(135deg, ${tier.color}08, ${tier.color}04)`,
+          : isMatch
+            ? `linear-gradient(135deg, ${tier.color}15, ${tier.color}08)`
+            : `linear-gradient(135deg, ${tier.color}08, ${tier.color}04)`,
         border: isSelected
           ? `2px solid ${tier.color}60`
-          : `1px solid ${tier.color}20`,
+          : isMatch
+            ? `2px dashed ${tier.color}50`
+            : `1px solid ${tier.color}20`,
+        animation: isMatch ? 'glowPulse 1.5s ease-in-out infinite' : 'none',
         borderRadius: 10,
         display: 'flex', flexDirection: 'column',
         alignItems: 'center', justifyContent: 'center',
@@ -83,33 +93,6 @@ function MergeCell({ item, index, gridSize, selected, onSelect, pendingGifts, on
         {tier.name}
       </span>
     </button>
-  );
-}
-
-/**
- * Visitor event overlay.
- */
-function VisitorBanner({ activeVisitor }) {
-  if (!activeVisitor) return null;
-
-  return (
-    <div style={{
-      position: 'absolute', top: 0, left: 0, right: 0,
-      padding: '8px 12px',
-      background: 'rgba(239,68,68,.1)',
-      borderBottom: '1px solid rgba(239,68,68,.2)',
-      display: 'flex', alignItems: 'center', gap: 8,
-      zIndex: 10,
-      animation: 'slideIn .3s ease-out',
-    }}>
-      <span style={{ fontSize: 24 }}>{activeVisitor.visitor.emoji}</span>
-      <span style={{ fontSize: 12, color: '#ef4444', fontWeight: 600 }}>
-        {activeVisitor.visitor.message}
-        <span style={{ color: '#94a3b8', marginLeft: 4 }}>
-          (拿走了 {activeVisitor.stolenCount} 個)
-        </span>
-      </span>
-    </div>
   );
 }
 
@@ -150,11 +133,11 @@ function MergeToast({ event, resultTier, onDone }) {
 function MergeBuffBar({ activeBuffs }) {
   const [now, setNow] = useState(Date.now());
 
-  useState(() => {
+  useEffect(() => {
     if (activeBuffs.length === 0) return;
     const iv = setInterval(() => setNow(Date.now()), 1000);
     return () => clearInterval(iv);
-  });
+  }, [activeBuffs.length]);
 
   const live = activeBuffs.filter(b => b.expiresAt > now);
   if (live.length === 0) return null;
@@ -253,9 +236,6 @@ export default function MergeGame({ mergeState, parCount, reads, onPlace, onMerg
       overflow: 'hidden', minHeight: 0,
       position: 'relative',
     }}>
-      {/* Visitor banner */}
-      <VisitorBanner activeVisitor={activeVisitor} />
-
       {/* Header */}
       <div style={{
         padding: '8px 12px',
@@ -279,6 +259,25 @@ export default function MergeGame({ mergeState, parCount, reads, onPlace, onMerg
           </span>
         </div>
       </div>
+
+      {/* Visitor banner — inline, not overlapping */}
+      {activeVisitor && (
+        <div style={{
+          padding: '6px 12px', flexShrink: 0,
+          background: 'rgba(239,68,68,.08)',
+          borderBottom: '1px solid rgba(239,68,68,.15)',
+          display: 'flex', alignItems: 'center', gap: 8,
+          animation: 'slideIn .3s ease-out',
+        }}>
+          <span style={{ fontSize: 20 }}>{activeVisitor.visitor.emoji}</span>
+          <span style={{ fontSize: 12, color: '#ef4444', fontWeight: 600 }}>
+            {activeVisitor.visitor.message}
+            <span style={{ color: '#94a3b8', marginLeft: 4 }}>
+              (拿走了 {activeVisitor.stolenCount} 個)
+            </span>
+          </span>
+        </div>
+      )}
 
       {/* Tier guide — compact */}
       <div style={{
@@ -316,6 +315,7 @@ export default function MergeGame({ mergeState, parCount, reads, onPlace, onMerg
             index={i}
             gridSize={gridSize}
             selected={selected}
+            selectedTier={selected !== null && grid[selected] ? grid[selected].tier : null}
             onSelect={handleSelect}
             pendingGifts={pendingGifts}
             onPlace={onPlace}
