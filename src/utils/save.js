@@ -18,6 +18,12 @@ export function saveGame(state) {
       seenMilestones: [...state.seenMilestones],
       unlockedAchievements: [...state.unlockedAchievements],
       unlockedBuildings: [...state.unlockedBuildings],
+      boughtPrestige: [...(state.boughtPrestige ?? [])],
+      activeSynergies: [...(state.activeSynergies ?? [])],
+      completedChains: [...(state.completedChains ?? [])],
+      eventChainBuffs: state.eventChainBuffs ?? {},
+      stormCount: state.stormCount ?? 0,
+      stormPerfect: state.stormPerfect ?? 0,
       savedAt: Date.now(),
     };
     localStorage.setItem(SAVE_KEY, JSON.stringify(data));
@@ -41,6 +47,12 @@ export function loadGame() {
       seenMilestones: new Set(data.seenMilestones ?? []),
       unlockedAchievements: new Set(data.unlockedAchievements ?? []),
       unlockedBuildings: new Set(data.unlockedBuildings ?? ['ex', 'par', 'bsy']),
+      boughtPrestige: new Set(data.boughtPrestige ?? []),
+      activeSynergies: new Set(data.activeSynergies ?? []),
+      completedChains: new Set(data.completedChains ?? []),
+      eventChainBuffs: data.eventChainBuffs ?? {},
+      stormCount: data.stormCount ?? 0,
+      stormPerfect: data.stormPerfect ?? 0,
       savedAt: data.savedAt ?? null,
     };
   } catch (e) {

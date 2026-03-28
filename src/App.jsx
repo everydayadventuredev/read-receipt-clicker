@@ -6,6 +6,9 @@ import { MILESTONES } from './game/milestones.js';
 import { ACHIEVEMENTS } from './game/achievements.js';
 import { GOLDEN_COOKIES } from './game/events.js';
 import { MSG_GENERIC } from './game/messages.js';
+import { PRESTIGE_UPGRADES } from './game/prestige.js';
+import { SYNERGIES, getActiveSynergies, getSynergyMult } from './game/synergies.js';
+import { EVENT_CHAINS } from './game/eventChains.js';
 
 import { fmt, pk, buildingCostN } from './utils/format.js';
 import { saveGame, loadGame, buildInitialOwned, calcOfflineEarnings } from './utils/save.js';
@@ -17,6 +20,8 @@ import BuildingList from './ui/BuildingList.jsx';
 import UpgradeRow from './ui/UpgradeRow.jsx';
 import GoldenCookie from './ui/GoldenCookie.jsx';
 import PrestigeBar from './ui/PrestigeBar.jsx';
+import PrestigeShop from './ui/PrestigeShop.jsx';
+import ReadStorm from './ui/ReadStorm.jsx';
 import Ticker from './ui/Ticker.jsx';
 import { StatsPanel, LogPanel, AchievementBadges } from './ui/Panels.jsx';
 
@@ -33,6 +38,12 @@ function initState() {
     seenMilestones: new Set(),
     unlockedAchievements: new Set(),
     unlockedBuildings: new Set(['ex', 'par', 'bsy']),
+    boughtPrestige: new Set(),
+    activeSynergies: new Set(),
+    completedChains: new Set(),
+    eventChainBuffs: {},
+    stormCount: 0,
+    stormPerfect: 0,
     _offline: false,
   };
 }
@@ -49,6 +60,15 @@ export default function App() {
   const [seenMilestones, setSeenMilestones] = useState(init.seenMilestones);
   const [unlockedAchievements, setUnlockedAchievements] = useState(init.unlockedAchievements);
   const [unlockedBuildings, setUnlockedBuildings] = useState(init.unlockedBuildings);
+  const [boughtPrestige,   setBoughtPrestige]   = useState(init.boughtPrestige);
+  const [activeSynergies,  setActiveSynergies]  = useState(init.activeSynergies);
+  const [completedChains,  setCompletedChains]  = useState(init.completedChains);
+  const [eventChainBuffs,  setEventChainBuffs]  = useState(init.eventChainBuffs);
+  const [stormCount,       setStormCount]       = useState(init.stormCount);
+  const [stormPerfect,     setStormPerfect]     = useState(init.stormPerfect);
+  const [activeChain,      setActiveChain]      = useState(null);
+  const [chainChoice,      setChainChoice]      = useState(null);
+  const [stormActive,      setStormActive]      = useState(false);
 
   const [message,    setMessage]    = useState(pk(MSG_GENERIC));
   const [isRead,     setIsRead]     = useState(false);
@@ -84,22 +104,44 @@ export default function App() {
   useEffect(() => { tempMultRef.current = tempMult; }, [tempMult]);
 
   const prestigeMult   = 1 + prestigePower * 0.1;
-  const prestigeEarned = Math.floor(Math.sqrt(allTime / 500000));
+  // Prestige bonus for earned ✦
+  const prestigeBonusMult = boughtPrestige.has('ps9')
+    ? 1.5 : 1;
+  const prestigeEarned = Math.floor(Math.sqrt(allTime / 500000) * prestigeBonusMult);
+
+  // Global mult from prestige upgrades
+  const prestigeGlobalMult = PRESTIGE_UPGRADES
+    .filter(u => boughtPrestige.has(u.id) && u.effect.type === 'globalMult')
+    .reduce((acc, u) => acc * u.effect.value, 1);
+
+  // Event chain buff multipliers
+  const chainGlobalBuff = eventChainBuffs._global ?? 1;
 
   // Production per second
   useEffect(() => {
     let p = 0;
     BUILDINGS.forEach(b => {
       let m = 1;
+      // Upgrade multipliers
       UPGRADES.forEach(u => {
         if (u.type === 'm' && u.target === b.id && boughtUpgrades.has(u.id)) m *= u.bonus;
       });
+      // Synergy multipliers
+      m *= getSynergyMult(owned, b.id);
+      // Prestige building-specific multipliers
+      PRESTIGE_UPGRADES.forEach(u => {
+        if (boughtPrestige.has(u.id) && u.effect.type === 'buildingMult' && u.effect.target === b.id) {
+          m *= u.effect.value;
+        }
+      });
+      // Event chain permanent building buffs
+      if (eventChainBuffs[b.id]) m *= eventChainBuffs[b.id];
       p += b.baseProd * (owned[b.id] ?? 0) * m;
     });
-    const total = p * prestigeMult * tempMult;
+    const total = p * prestigeMult * prestigeGlobalMult * chainGlobalBuff * tempMult;
     setProdPerSec(total);
     psRef.current = total;
-  }, [owned, boughtUpgrades, prestigeMult, tempMult]);
+  }, [owned, boughtUpgrades, prestigeMult, prestigeGlobalMult, chainGlobalBuff, tempMult, boughtPrestige, eventChainBuffs]);
 
   const calcClickPower = useCallback(() => {
     let bonus = 1, pct = 0;
@@ -108,8 +150,12 @@ export default function App() {
       if (u.type === 'ck') bonus += u.bonus;
       if (u.type === 'cp') pct  += u.bonus;
     });
-    return Math.floor((bonus + psRef.current * pct) * prestigeMult * tempMultRef.current);
-  }, [prestigeMult]);
+    // Prestige click bonus
+    const prestigeClickBonus = PRESTIGE_UPGRADES
+      .filter(u => boughtPrestige.has(u.id) && u.effect.type === 'clickBonus')
+      .reduce((acc, u) => acc + u.effect.value, 0);
+    return Math.floor((bonus + prestigeClickBonus + psRef.current * pct) * prestigeMult * tempMultRef.current);
+  }, [prestigeMult, boughtPrestige]);
 
   // Production tick
   useEffect(() => {
@@ -122,24 +168,28 @@ export default function App() {
     return () => clearInterval(iv);
   }, [prodPerSec]);
 
+  const saveState = useCallback(() => {
+    saveGame({
+      reads: readsRef.current, allTime: allTimeRef.current, owned: ownedRef.current,
+      boughtUpgrades: boughtRef.current, prestigeCount, prestigePower,
+      seenMilestones, unlockedAchievements, unlockedBuildings,
+      boughtPrestige, activeSynergies, completedChains, eventChainBuffs,
+      stormCount, stormPerfect,
+    });
+  }, [prestigeCount, prestigePower, seenMilestones, unlockedAchievements, unlockedBuildings, boughtPrestige, activeSynergies, completedChains, eventChainBuffs, stormCount, stormPerfect]);
+
   // Autosave every 30 s
   useEffect(() => {
-    const iv = setInterval(() => {
-      saveGame({ reads: readsRef.current, allTime: allTimeRef.current, owned: ownedRef.current, boughtUpgrades: boughtRef.current, prestigeCount, prestigePower, seenMilestones, unlockedAchievements, unlockedBuildings });
-    }, 30000);
+    const iv = setInterval(saveState, 30000);
     return () => clearInterval(iv);
-  }, [prestigeCount, prestigePower, seenMilestones, unlockedAchievements, unlockedBuildings]);
+  }, [saveState]);
 
   // Save on tab hide
   useEffect(() => {
-    const onHide = () => {
-      if (document.visibilityState === 'hidden') {
-        saveGame({ reads: readsRef.current, allTime: allTimeRef.current, owned: ownedRef.current, boughtUpgrades: boughtRef.current, prestigeCount, prestigePower, seenMilestones, unlockedAchievements, unlockedBuildings });
-      }
-    };
+    const onHide = () => { if (document.visibilityState === 'hidden') saveState(); };
     document.addEventListener('visibilitychange', onHide);
     return () => document.removeEventListener('visibilitychange', onHide);
-  }, [prestigeCount, prestigePower, seenMilestones, unlockedAchievements, unlockedBuildings]);
+  }, [saveState]);
 
   // Offline earnings on first load
   useEffect(() => {
@@ -168,8 +218,10 @@ export default function App() {
   }, []);
 
   // Building unlocks
+  const unlockDiscount = boughtPrestige.has('ps7') ? 0.8 : 1;
   useEffect(() => {
-    Object.entries(UNLOCK_THRESHOLDS).forEach(([id, threshold]) => {
+    Object.entries(UNLOCK_THRESHOLDS).forEach(([id, rawThreshold]) => {
+      const threshold = Math.floor(rawThreshold * unlockDiscount);
       if (allTime >= threshold && !unlockedBuildings.has(id)) {
         setUnlockedBuildings(prev => new Set([...prev, id]));
         setNewBuildings(prev => new Set([...prev, id]));
@@ -190,18 +242,27 @@ export default function App() {
     });
   }, [allTime, seenMilestones]);
 
-  // Achievements
+  // Achievements — pass extra context for new achievement types
+  const achievementExtra = {
+    synergies: activeSynergies.size,
+    completedChains: completedChains.size,
+    boughtPrestige: boughtPrestige.size,
+    stormCount,
+    stormPerfect,
+    boughtUpgrades: boughtUpgrades.size,
+  };
   useEffect(() => {
     ACHIEVEMENTS.forEach(a => {
-      if (!unlockedAchievements.has(a.id) && a.req(allTime, owned, prestigeCount, prodPerSec)) {
+      if (!unlockedAchievements.has(a.id) && a.req(allTime, owned, prestigeCount, prodPerSec, achievementExtra)) {
         setUnlockedAchievements(prev => new Set([...prev, a.id]));
         addToast(`🎖️ 成就解鎖：${a.icon} ${a.name}`);
         playMilestone();
       }
     });
-  }, [allTime, owned, prestigeCount, prodPerSec, unlockedAchievements]);
+  }, [allTime, owned, prestigeCount, prodPerSec, unlockedAchievements, activeSynergies.size, completedChains.size, boughtPrestige.size, stormCount, stormPerfect, boughtUpgrades.size]);
 
-  // Golden cookie spawner
+  // Golden cookie spawner (respects prestige golden freq boost)
+  const goldenFreqMult = boughtPrestige.has('ps5') ? 0.7 : 1; // 30% faster = 70% of interval
   useEffect(() => {
     let t;
     const spawn = () => {
@@ -213,12 +274,143 @@ export default function App() {
           setGcPos({ x: 8 + Math.random() * 75, y: 10 + Math.random() * 60 });
         }
         spawn();
-      }, 20000 + Math.random() * 35000);
+      }, (20000 + Math.random() * 35000) * goldenFreqMult);
     };
     spawn();
     return () => clearTimeout(t);
     // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [goldenFreqMult]);
+
+  // Synergy detection
+  useEffect(() => {
+    const active = getActiveSynergies(owned);
+    active.forEach(syn => {
+      if (!activeSynergies.has(syn.id)) {
+        setActiveSynergies(prev => new Set([...prev, syn.id]));
+        addToast(`🔗 Synergy啟動：${syn.emoji} ${syn.name} — ${syn.toast}`);
+        playMilestone();
+      }
+    });
+  }, [owned, activeSynergies]);
+
+  // Event chain trigger detection
+  useEffect(() => {
+    if (activeChain) return; // one at a time
+    EVENT_CHAINS.forEach(chain => {
+      if (completedChains.has(chain.id)) return;
+      const { building, count } = chain.triggerReq;
+      if ((owned[building] ?? 0) >= count) {
+        // Trigger this chain
+        setActiveChain({ ...chain, phase: 0, startTime: Date.now() });
+        const phase = chain.phases[0];
+        addToast(phase.toast);
+        // Apply debuff/buff
+        if (phase.effect.type === 'buildingDebuff') {
+          setTempMult(prev => prev * phase.effect.mult);
+        } else if (phase.effect.type === 'globalDebuff') {
+          setTempMult(prev => prev * phase.effect.mult);
+        } else if (phase.effect.type === 'buildingBuff') {
+          setTempMult(prev => prev * phase.effect.mult);
+        }
+        // Schedule phase end
+        if (phase.duration) {
+          setTimeout(() => {
+            setTempMult(1);
+            const nextPhase = chain.phases[1];
+            if (nextPhase?.choice) {
+              setChainChoice({ chain, options: nextPhase.options });
+            } else {
+              // Complete the chain
+              finishChain(chain);
+            }
+          }, phase.duration * 1000);
+        }
+      }
+    });
+  }, [owned, completedChains, activeChain]);
+
+  function finishChain(chain) {
+    setActiveChain(null);
+    setChainChoice(null);
+    setCompletedChains(prev => new Set([...prev, chain.id]));
+    const reward = chain.reward;
+    addToast(reward.toast);
+    if (reward.effect.type === 'permanentBuildingBuff') {
+      setEventChainBuffs(prev => ({
+        ...prev,
+        [reward.effect.target]: (prev[reward.effect.target] ?? 1) * reward.effect.mult,
+      }));
+    } else if (reward.effect.type === 'permanentGlobalBuff') {
+      setEventChainBuffs(prev => ({
+        ...prev,
+        _global: (prev._global ?? 1) * reward.effect.mult,
+      }));
+    }
+    playMilestone();
+  }
+
+  const handleChainChoice = useCallback((option) => {
+    if (!chainChoice) return;
+    addToast(option.toast);
+    if (option.effect.type === 'permanentBuildingBuff') {
+      setEventChainBuffs(prev => ({
+        ...prev,
+        [option.effect.target]: (prev[option.effect.target] ?? 1) * option.effect.mult,
+      }));
+    } else if (option.effect.type === 'permanentGlobalBuff') {
+      setEventChainBuffs(prev => ({
+        ...prev,
+        _global: (prev._global ?? 1) * option.effect.mult,
+      }));
+    } else if (option.effect.type === 'buildingBuff') {
+      setTempMult(option.effect.mult);
+      setTimeout(() => {
+        setTempMult(1);
+        finishChain(chainChoice.chain);
+      }, (option.effect.duration ?? 30) * 1000);
+      setChainChoice(null);
+      return;
+    }
+    finishChain(chainChoice.chain);
+  }, [chainChoice]);
+
+  // Read Storm spawner — every 5-10 minutes
+  useEffect(() => {
+    let t;
+    const schedule = () => {
+      t = setTimeout(() => {
+        if (psRef.current > 0 && !stormActive) {
+          setStormActive(true);
+        }
+        schedule();
+      }, (300 + Math.random() * 300) * 1000); // 5-10 min
+    };
+    schedule();
+    return () => clearTimeout(t);
   }, []);
+
+  const handleStormComplete = useCallback((earned) => {
+    setStormActive(false);
+    setStormCount(c => c + 1);
+    if (earned > 0) {
+      setReads(r => r + earned);
+      setAllTime(a => a + earned);
+      addToast(`🌪️ 已讀風暴結束！獲得 +${fmt(earned)} 已讀`);
+    }
+  }, []);
+
+  const handleStormPerfect = useCallback(() => {
+    setStormPerfect(p => p + 1);
+  }, []);
+
+  // Prestige shop buy handler
+  const handleBuyPrestige = useCallback((u) => {
+    if (prestigePower < u.cost || boughtPrestige.has(u.id)) return;
+    setPrestigePower(p => p - u.cost);
+    setBoughtPrestige(s => new Set([...s, u.id]));
+    addToast(`✦ ${u.emoji} ${u.name}！${u.desc}`);
+    playUpgrade();
+  }, [prestigePower, boughtPrestige]);
 
   // Hide hint after first click
   useEffect(() => {
@@ -319,9 +511,10 @@ export default function App() {
   const handlePrestige = useCallback(() => {
     if (prestigeEarned < 1) return;
     playPrestige();
+    const startBonus = boughtPrestige.has('ps1') ? 100 : 0;
     setPrestigePower(p => p + prestigeEarned);
     setPrestigeCount(c => c + 1);
-    setReads(0);
+    setReads(startBonus);
     setAllTime(0);
     setOwned(buildInitialOwned());
     setBoughtUpgrades(new Set());
@@ -330,8 +523,11 @@ export default function App() {
     setSeenMilestones(new Set());
     setRecentMsgs([]);
     setTempMult(1);
-    addToast(`🌀 Inbox Zero！+${prestigeEarned}已讀之力。第${prestigeCount + 1}次覺醒。`);
-  }, [prestigeEarned, prestigeCount]);
+    setActiveChain(null);
+    setChainChoice(null);
+    // Note: boughtPrestige, activeSynergies, completedChains, eventChainBuffs persist across prestige
+    addToast(`🌀 Inbox Zero！+${prestigeEarned}已讀之力。第${prestigeCount + 1}次覺醒。${startBonus > 0 ? ` 快速啟動+${startBonus}！` : ''}`);
+  }, [prestigeEarned, prestigeCount, boughtPrestige]);
 
   const upgradeStates = UPGRADES.map(u => {
     if (boughtUpgrades.has(u.id)) return { ...u, state: 'done' };
@@ -565,6 +761,7 @@ export default function App() {
             {[
               { id: 'build', label: '建築', count: Object.values(owned).reduce((a, b) => a + b, 0) },
               { id: 'upgrade', label: '升級', count: `${boughtUpgrades.size}/${UPGRADES.length}` },
+              ...(prestigeCount > 0 ? [{ id: 'prestige', label: '✦商店', count: `${boughtPrestige.size}/${PRESTIGE_UPGRADES.length}` }] : []),
             ].map(tab => (
               <button
                 key={tab.id}
@@ -602,7 +799,7 @@ export default function App() {
                 onBuy={handleBuy}
                 setBuyN={setBuyN}
               />
-            ) : (
+            ) : storeTab === 'upgrade' ? (
               <div style={{ flex: 1, overflowY: 'auto', minHeight: 0 }}>
                 {upgradeStates.length > 0 ? (
                   <UpgradeRow upgrades={upgradeStates} reads={reads} onBuy={handleBuyUpgrade} />
@@ -611,6 +808,14 @@ export default function App() {
                     繼續已讀就會解鎖更多升級
                   </div>
                 )}
+              </div>
+            ) : (
+              <div style={{ flex: 1, overflowY: 'auto', minHeight: 0 }}>
+                <PrestigeShop
+                  prestigePower={prestigePower}
+                  boughtPrestige={boughtPrestige}
+                  onBuy={handleBuyPrestige}
+                />
               </div>
             )}
           </div>
@@ -638,6 +843,60 @@ export default function App() {
           </div>
         </div>
       </div>
+
+      {/* Read Storm mini-game */}
+      <ReadStorm
+        active={stormActive}
+        perSecond={prodPerSec}
+        onComplete={(earned) => {
+          handleStormComplete(earned);
+          // Check if it was a perfect (ReadStorm internally tracks this via its own callback)
+        }}
+        onPerfect={handleStormPerfect}
+      />
+
+      {/* Event Chain choice overlay */}
+      {chainChoice && (
+        <div style={{
+          position: 'fixed', inset: 0, zIndex: 400,
+          background: 'rgba(0,0,0,.4)', backdropFilter: 'blur(4px)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+        }}>
+          <div style={{
+            background: '#fff', borderRadius: 16, padding: '24px 28px',
+            maxWidth: 400, width: '90vw',
+            boxShadow: '0 20px 60px rgba(0,0,0,.15)',
+          }}>
+            <div style={{ fontSize: 16, fontWeight: 800, color: '#1e293b', marginBottom: 4 }}>
+              ⚡ {chainChoice.chain.name}
+            </div>
+            <div style={{ fontSize: 12, color: '#64748b', marginBottom: 16 }}>選擇你的應對方式：</div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              {chainChoice.options.map((opt, i) => (
+                <button
+                  key={i}
+                  onClick={() => handleChainChoice(opt)}
+                  style={{
+                    display: 'flex', alignItems: 'center', gap: 10,
+                    padding: '12px 16px', borderRadius: 12,
+                    background: '#f8f9fb', border: '1px solid #e2e8f0',
+                    cursor: 'pointer', textAlign: 'left',
+                    transition: 'all .15s', fontFamily: 'inherit',
+                  }}
+                  onMouseEnter={e => { e.target.style.borderColor = '#6366f1'; e.target.style.background = '#f0f0ff'; }}
+                  onMouseLeave={e => { e.target.style.borderColor = '#e2e8f0'; e.target.style.background = '#f8f9fb'; }}
+                >
+                  <span style={{ fontSize: 24 }}>{opt.emoji}</span>
+                  <div>
+                    <div style={{ fontSize: 13, fontWeight: 700, color: '#1e293b' }}>{opt.label}</div>
+                    <div style={{ fontSize: 11, color: '#64748b', marginTop: 2 }}>{opt.desc}</div>
+                  </div>
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
 
       <Ticker allTime={allTime} />
     </div>
