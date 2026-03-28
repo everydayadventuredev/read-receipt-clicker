@@ -18,7 +18,7 @@ function BuildingBar({ b, count, cost, prodRate, canAfford, buyN, isNew, onBuy, 
       onMouseLeave={onLeave}
       style={{
         display: 'flex', alignItems: 'stretch',
-        width: '100%', padding: 0, height: hasAny ? 48 : 38,
+        width: '100%', padding: 0, height: hasAny ? 72 : 48,
         background: `linear-gradient(90deg, ${b.color}${hasAny ? '08' : '03'}, ${b.color}${hasAny ? '04' : '01'})`,
         border: isNew ? `1px solid ${b.color}55`
           : canAfford ? `1px solid ${b.color}18`
@@ -36,26 +36,26 @@ function BuildingBar({ b, count, cost, prodRate, canAfford, buyN, isNew, onBuy, 
     >
       {/* Left info area */}
       <div style={{
-        width: 150, flexShrink: 0, padding: '3px 8px',
+        width: 170, flexShrink: 0, padding: '6px 10px',
         display: 'flex', flexDirection: 'column', justifyContent: 'center',
         zIndex: 1, position: 'relative',
         background: `linear-gradient(90deg, ${b.color}${hasAny ? '10' : '05'}, transparent)`,
       }}>
         <span style={{
-          fontSize: 13, fontWeight: 800, color: '#1e293b', lineHeight: 1.1,
+          fontSize: 16, fontWeight: 800, color: '#1e293b', lineHeight: 1.2,
         }}>{b.name}</span>
         <span style={{
-          fontSize: 9, color: '#64748b', lineHeight: 1.2, marginTop: 1,
+          fontSize: 11, color: '#64748b', lineHeight: 1.2, marginTop: 2,
           whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
         }}>{b.desc}</span>
         <div style={{
-          fontSize: 10, fontWeight: 700,
+          fontSize: 13, fontWeight: 700,
           color: canAfford ? '#b45309' : '#94a3b8',
           fontFamily: "'JetBrains Mono',monospace",
-          marginTop: 1,
+          marginTop: 2,
         }}>
           {fmt(cost)}{buyN > 1 ? ` ×${buyN}` : ''}
-          <span style={{ fontSize: 8, color: '#94a3b8', marginLeft: 4 }}>
+          <span style={{ fontSize: 11, color: '#94a3b8', marginLeft: 4 }}>
             {hasAny ? `${fmt(prodRate)}/s` : `+${fmt(b.baseProd)}/s`}
           </span>
         </div>
@@ -70,7 +70,7 @@ function BuildingBar({ b, count, cost, prodRate, canAfford, buyN, isNew, onBuy, 
         }}>
           {Array.from({ length: Math.min(count, 40) }, (_, i) => (
             <span key={i} style={{
-              fontSize: count > 20 ? 14 : count > 10 ? 16 : 18,
+              fontSize: count > 20 ? 18 : count > 10 ? 22 : 26,
               lineHeight: 1,
               opacity: 0.6 + (i / Math.min(count, 40)) * 0.35,
               transform: `rotate(${(i * 13 + i * i * 2) % 24 - 12}deg)`,
@@ -84,9 +84,9 @@ function BuildingBar({ b, count, cost, prodRate, canAfford, buyN, isNew, onBuy, 
 
       {/* Count badge — right side */}
       <div style={{
-        width: 36, flexShrink: 0,
+        width: 44, flexShrink: 0,
         display: 'flex', alignItems: 'center', justifyContent: 'center',
-        fontSize: hasAny ? 18 : 12, fontWeight: 900,
+        fontSize: hasAny ? 24 : 14, fontWeight: 900,
         color: hasAny ? b.color : '#cbd5e1',
         fontFamily: "'Space Grotesk','JetBrains Mono',monospace",
         opacity: hasAny ? 0.9 : 0.4,
