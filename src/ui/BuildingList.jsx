@@ -54,7 +54,7 @@ export default function BuildingList({ buildings, owned, reads, unlockedBuilding
 
       {/* Building list */}
       <div style={{ flex: 1, overflowY: 'auto', padding: '0 6px 6px', minHeight: 0 }}>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
           {buildings.filter(b => unlockedBuildings.has(b.id)).map((b, i) => {
             const count = owned[b.id] ?? 0;
             const cost = buildingCostN(b, count, buyN);
@@ -62,8 +62,6 @@ export default function BuildingList({ buildings, owned, reads, unlockedBuilding
             const isNew = newBuildings.has(b.id);
             const hasAny = count > 0;
             const prodRate = b.baseProd * count;
-            // Background density: opacity increases with count (0.03 → 0.15)
-            const densityOpacity = Math.min(0.15, 0.03 + count * 0.003);
             const Icon = BUILDING_ICONS[b.id];
 
             return (
@@ -73,18 +71,17 @@ export default function BuildingList({ buildings, owned, reads, unlockedBuilding
                 disabled={!canAfford}
                 onMouseEnter={() => canAfford && setHovered(b.id)}
                 onMouseLeave={() => setHovered(null)}
-                title={b.desc}
                 style={{
-                  display: 'flex', alignItems: 'center',
+                  display: 'flex', alignItems: 'stretch',
                   width: '100%', padding: 0,
-                  background: `linear-gradient(135deg, ${b.color}${hasAny ? '12' : '04'}, ${b.color}${hasAny ? '06' : '02'})`,
+                  background: `linear-gradient(135deg, ${b.color}${hasAny ? '10' : '04'}, ${b.color}${hasAny ? '05' : '02'})`,
                   border: isNew
                     ? `1px solid ${b.color}55`
                     : canAfford
-                      ? `1px solid ${b.color}25`
+                      ? `1px solid ${b.color}20`
                       : '1px solid #e8eaed',
-                  borderRadius: 8,
-                  opacity: canAfford ? 1 : 0.45,
+                  borderRadius: 10,
+                  opacity: canAfford ? 1 : 0.4,
                   transition: 'all .15s',
                   textAlign: 'left',
                   position: 'relative',
@@ -94,23 +91,22 @@ export default function BuildingList({ buildings, owned, reads, unlockedBuilding
                   boxShadow: lastBought === b.id
                     ? `0 0 0 2px ${b.color}44`
                     : hovered === b.id && canAfford
-                      ? `0 2px 12px ${b.color}18`
+                      ? `0 3px 15px ${b.color}15`
                       : 'none',
                   transform: lastBought === b.id ? 'scale(1.01)' : 'none',
-                  minHeight: 54,
                 }}
               >
-                {/* Scattered icon crowd background — density grows with count */}
+                {/* Scattered icon crowd background */}
                 {hasAny && Icon && (
                   <div style={{
                     position: 'absolute', inset: 0,
                     display: 'flex', flexWrap: 'wrap', alignItems: 'center', alignContent: 'center',
-                    gap: 0, padding: '2px 60px 2px 58px',
+                    gap: 0, padding: '2px 70px 2px 68px',
                     pointerEvents: 'none', overflow: 'hidden',
                   }}>
-                    {Array.from({ length: Math.min(count, 40) }, (_, j) => {
+                    {Array.from({ length: Math.min(count, 50) }, (_, j) => {
                       const rot = ((j * 13 + 7) % 25) - 12;
-                      const opa = 0.04 + Math.min(0.08, count * 0.001);
+                      const opa = 0.03 + Math.min(0.07, count * 0.001);
                       return (
                         <span key={j} style={{
                           display: 'inline-flex',
@@ -125,78 +121,81 @@ export default function BuildingList({ buildings, owned, reads, unlockedBuilding
                   </div>
                 )}
 
-                {/* Left icon area — large, themed */}
+                {/* Left icon area */}
                 <div style={{
-                  width: 54, minHeight: 54,
+                  width: 64, minHeight: 64,
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  background: `${b.color}${hasAny ? '15' : '08'}`,
-                  borderRight: `1px solid ${b.color}15`,
+                  background: `${b.color}${hasAny ? '12' : '06'}`,
+                  borderRight: `1px solid ${b.color}10`,
                   flexShrink: 0,
                   position: 'relative',
                 }}>
                   {Icon ? (
-                    <Icon size={32} color={b.color} />
+                    <Icon size={36} color={b.color} />
                   ) : (
-                    <span style={{ fontSize: 24 }}>{b.emoji}</span>
-                  )}
-                  {/* Mini crowd overlay for high counts */}
-                  {count >= 10 && Icon && (
-                    <div style={{
-                      position: 'absolute', bottom: 2, right: 2,
-                      display: 'flex', gap: 0,
-                    }}>
-                      {Array.from({ length: Math.min(3, Math.floor(count / 10)) }, (_, j) => (
-                        <span key={j} style={{ opacity: 0.3 + j * 0.1, display: 'inline-flex' }}>
-                          <Icon size={8} color={b.color} />
-                        </span>
-                      ))}
-                    </div>
+                    <span style={{ fontSize: 28 }}>{b.emoji}</span>
                   )}
                 </div>
 
                 {/* Info column */}
                 <div style={{
-                  flex: 1, padding: '6px 10px', minWidth: 0,
+                  flex: 1, padding: '8px 12px', minWidth: 0,
                   position: 'relative', zIndex: 1,
+                  display: 'flex', flexDirection: 'column', justifyContent: 'center',
                 }}>
+                  {/* Row 1: Name */}
                   <div style={{
-                    fontSize: 14, fontWeight: 800, color: '#1e293b',
+                    fontSize: 15, fontWeight: 800, color: '#1e293b',
                     lineHeight: 1.2,
                   }}>{b.name}</div>
+
+                  {/* Row 2: Description — the humor */}
                   <div style={{
-                    fontSize: 11, fontWeight: 700, marginTop: 2,
-                    color: canAfford ? '#b45309' : '#cbd5e1',
-                    fontFamily: "'JetBrains Mono',monospace",
+                    fontSize: 11, color: '#64748b', marginTop: 2,
+                    lineHeight: 1.3,
+                    whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
+                  }}>{b.desc}</div>
+
+                  {/* Row 3: Cost + prod rate */}
+                  <div style={{
+                    display: 'flex', alignItems: 'center', gap: 8, marginTop: 4,
                   }}>
-                    {fmt(cost)}{buyN > 1 ? ` (×${buyN})` : ''}
                     <span style={{
-                      color: '#94a3b8', fontWeight: 400, marginLeft: 6, fontSize: 10,
+                      fontSize: 13, fontWeight: 700,
+                      color: canAfford ? '#b45309' : '#cbd5e1',
+                      fontFamily: "'JetBrains Mono',monospace",
+                    }}>
+                      {fmt(cost)}{buyN > 1 ? ` (×${buyN})` : ''}
+                    </span>
+                    <span style={{
+                      fontSize: 10, color: '#94a3b8',
+                      fontFamily: "'JetBrains Mono',monospace",
                     }}>
                       {hasAny ? `${fmt(prodRate)}/s` : `+${fmt(b.baseProd)}/s`}
                     </span>
                   </div>
                 </div>
 
-                {/* Right — big count number (Cookie Clicker style) */}
+                {/* Right — big count number */}
                 <div style={{
-                  minWidth: 48, textAlign: 'right', paddingRight: 10,
+                  minWidth: 56, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  paddingRight: 12,
                   position: 'relative', zIndex: 1,
                 }}>
-                  {hasAny && (
-                    <div style={{
-                      fontSize: 22, fontWeight: 900, color: b.color,
-                      fontFamily: "'Space Grotesk','JetBrains Mono',monospace",
-                      lineHeight: 1, opacity: 0.7,
-                    }}>{count}</div>
-                  )}
+                  <div style={{
+                    fontSize: hasAny ? 28 : 16, fontWeight: 900,
+                    color: hasAny ? b.color : '#cbd5e1',
+                    fontFamily: "'Space Grotesk','JetBrains Mono',monospace",
+                    lineHeight: 1, opacity: hasAny ? 0.8 : 0.4,
+                  }}>{count}</div>
                 </div>
 
                 {/* NEW badge */}
                 {isNew && (
                   <div style={{
                     position: 'absolute', top: 4, right: 8,
-                    background: b.color, color: '#fff', fontSize: 8, fontWeight: 800,
-                    padding: '1px 6px', borderRadius: 4, zIndex: 2,
+                    background: b.color, color: '#fff', fontSize: 9, fontWeight: 800,
+                    padding: '2px 8px', borderRadius: 6, zIndex: 2,
                   }}>NEW</div>
                 )}
               </button>
