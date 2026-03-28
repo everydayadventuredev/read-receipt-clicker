@@ -834,44 +834,8 @@ export default function App() {
         >{mutedUI ? '🔇' : '🔊'}</button>
       </div>
 
-      {/* ── LOG MARQUEE ── */}
-      {log.length > 0 && (
-        <div style={{
-          padding: '6px 16px',
-          background: 'linear-gradient(90deg, rgba(99,102,241,.04), rgba(217,119,6,.04))',
-          borderBottom: '1px solid #e2e8f0',
-          flexShrink: 0,
-          overflow: 'hidden',
-          position: 'relative',
-        }}>
-          <div style={{
-            display: 'flex', alignItems: 'center', gap: 12,
-            animation: log.length > 1 ? `marquee ${Math.max(8, log.length * 3)}s linear infinite` : 'none',
-            whiteSpace: 'nowrap',
-          }}>
-            {(log.length > 3 ? [...log.slice(0, 8), ...log.slice(0, 8)] : log.slice(0, 8)).map((l, i) => {
-              // Color-code by event type
-              const m = l.m;
-              const dotColor = m.includes('成就') || m.includes('🎖️') ? '#f59e0b'
-                : m.includes('解鎖') || m.includes('🔓') ? '#10b981'
-                : m.includes('Synergy') || m.includes('🔗') ? '#8b5cf6'
-                : m.includes('罪惡') || m.includes('😔') || m.includes('😭') ? '#ef4444'
-                : m.includes('⬆️') || m.includes('升級') ? '#3b82f6'
-                : '#6366f1';
-              return (
-                <span key={`${l.id}-${i}`} style={{
-                  fontSize: 13, color: '#475569',
-                  display: 'inline-flex', alignItems: 'center', gap: 6,
-                  flexShrink: 0, fontWeight: 500,
-                }}>
-                  <span style={{ color: dotColor, fontSize: 8 }}>●</span>
-                  {m}
-                </span>
-              );
-            })}
-          </div>
-        </div>
-      )}
+      {/* ── NEWS TICKER ── */}
+      <Ticker allTime={allTime} logEntries={log} />
 
       {/* ── TWO-COLUMN LAYOUT ── */}
       <div className="game-layout" style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', minHeight: 0 }}>
