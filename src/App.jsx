@@ -1071,6 +1071,7 @@ export default function App() {
                 buildings={BUILDINGS}
                 owned={owned}
                 reads={reads}
+                allTime={allTime}
                 unlockedBuildings={unlockedBuildings}
                 newBuildings={newBuildings}
                 buyN={buyN}

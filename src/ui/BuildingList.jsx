@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { fmt, buildingCostN } from '../utils/format.js';
 import { BUILDING_ICONS } from './PixelIcons.jsx';
 
-export default function BuildingList({ buildings, owned, reads, unlockedBuildings, newBuildings, buyN, onBuy, setBuyN }) {
+export default function BuildingList({ buildings, owned, reads, allTime, unlockedBuildings, newBuildings, buyN, onBuy, setBuyN }) {
   const [lastBought, setLastBought] = useState(null);
   const [hovered, setHovered] = useState(null);
 
@@ -55,14 +55,76 @@ export default function BuildingList({ buildings, owned, reads, unlockedBuilding
       {/* Building list */}
       <div style={{ flex: 1, overflowY: 'auto', padding: '0 6px 6px', minHeight: 0 }}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-          {buildings.filter(b => unlockedBuildings.has(b.id)).map((b, i) => {
+          {buildings.map((b, i) => {
+            const isUnlocked = unlockedBuildings.has(b.id);
             const count = owned[b.id] ?? 0;
             const cost = buildingCostN(b, count, buyN);
-            const canAfford = reads >= cost;
+            const canAfford = isUnlocked && reads >= cost;
             const isNew = newBuildings.has(b.id);
             const hasAny = count > 0;
             const prodRate = b.baseProd * count;
             const Icon = BUILDING_ICONS[b.id];
+            // For locked buildings: show unlock threshold progress
+            const unlockAt = b.unlockAt ?? 0;
+            const unlockPct = unlockAt > 0 ? Math.min(100, ((allTime ?? 0) / unlockAt) * 100) : 100;
+            // For affordable: show affordability progress bar
+            const affordPct = isUnlocked ? Math.min(100, (reads / cost) * 100) : 0;
+
+            if (!isUnlocked) {
+              // Locked building — dimmed preview row
+              return (
+                <div
+                  key={b.id}
+                  style={{
+                    display: 'flex', alignItems: 'stretch',
+                    width: '100%', padding: 0,
+                    background: 'rgba(148,163,184,.04)',
+                    border: '1px solid rgba(148,163,184,.12)',
+                    borderRadius: 10,
+                    opacity: 0.55,
+                    position: 'relative', overflow: 'hidden',
+                    cursor: 'default',
+                  }}
+                >
+                  {/* Left icon — blurred */}
+                  <div style={{
+                    width: 64, minHeight: 56,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    background: 'rgba(148,163,184,.07)',
+                    borderRight: '1px solid rgba(148,163,184,.1)',
+                    flexShrink: 0, filter: 'grayscale(1)',
+                  }}>
+                    {Icon ? (
+                      <Icon size={30} color="#94a3b8" />
+                    ) : (
+                      <span style={{ fontSize: 22, filter: 'grayscale(1)' }}>{b.emoji}</span>
+                    )}
+                  </div>
+                  {/* Info */}
+                  <div style={{
+                    flex: 1, padding: '7px 12px', minWidth: 0,
+                    display: 'flex', flexDirection: 'column', justifyContent: 'center',
+                  }}>
+                    <div style={{ fontSize: 13, fontWeight: 700, color: '#94a3b8', lineHeight: 1.2 }}>{b.name}</div>
+                    <div style={{ fontSize: 10, color: '#cbd5e1', marginTop: 1 }}>{b.desc}</div>
+                    {/* Unlock progress */}
+                    <div style={{ marginTop: 4 }}>
+                      <div style={{ height: 2, background: 'rgba(148,163,184,.15)', borderRadius: 2, overflow: 'hidden' }}>
+                        <div style={{ height: '100%', width: `${unlockPct}%`, background: 'rgba(148,163,184,.4)', borderRadius: 2, transition: 'width .5s' }} />
+                      </div>
+                      <div style={{ fontSize: 9, color: '#cbd5e1', marginTop: 2, fontFamily: "'JetBrains Mono',monospace" }}>
+                        解鎖於 {fmt(unlockAt)} 生涯
+                      </div>
+                    </div>
+                  </div>
+                  {/* Lock icon */}
+                  <div style={{
+                    minWidth: 44, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    paddingRight: 12, fontSize: 16, opacity: 0.4,
+                  }}>🔒</div>
+                </div>
+              );
+            }
 
             return (
               <button
@@ -81,7 +143,7 @@ export default function BuildingList({ buildings, owned, reads, unlockedBuilding
                       ? `1px solid ${b.color}20`
                       : '1px solid #e8eaed',
                   borderRadius: 10,
-                  opacity: canAfford ? 1 : 0.4,
+                  opacity: canAfford ? 1 : 0.5,
                   transition: 'all .15s',
                   textAlign: 'left',
                   position: 'relative',
@@ -162,7 +224,7 @@ export default function BuildingList({ buildings, owned, reads, unlockedBuilding
                   }}>
                     <span style={{
                       fontSize: 13, fontWeight: 700,
-                      color: canAfford ? '#b45309' : '#cbd5e1',
+                      color: canAfford ? '#b45309' : '#94a3b8',
                       fontFamily: "'JetBrains Mono',monospace",
                     }}>
                       {fmt(cost)}{buyN > 1 ? ` (×${buyN})` : ''}
@@ -174,6 +236,17 @@ export default function BuildingList({ buildings, owned, reads, unlockedBuilding
                       {hasAny ? `${fmt(prodRate)}/s` : `+${fmt(b.baseProd)}/s`}
                     </span>
                   </div>
+
+                  {/* Affordability progress bar — only when not affordable */}
+                  {!canAfford && (
+                    <div style={{ marginTop: 4, height: 2, background: 'rgba(0,0,0,.06)', borderRadius: 2, overflow: 'hidden' }}>
+                      <div style={{
+                        height: '100%', width: `${affordPct}%`,
+                        background: `linear-gradient(90deg, ${b.color}60, ${b.color}90)`,
+                        borderRadius: 2, transition: 'width .5s',
+                      }} />
+                    </div>
+                  )}
                 </div>
 
                 {/* Right — big count number */}
