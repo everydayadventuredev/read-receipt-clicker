@@ -42,6 +42,15 @@ export function saveGame(state) {
         completedSeries: state.gardenState.completedSeries,
         activeBuffs: state.gardenState.activeBuffs,
       } : null,
+      mergeState: state.mergeState ? {
+        grid: state.mergeState.grid,
+        gridSize: state.mergeState.gridSize,
+        lastGiftTick: state.mergeState.lastGiftTick,
+        pendingGifts: state.mergeState.pendingGifts,
+        totalMerges: state.mergeState.totalMerges,
+        highestTier: state.mergeState.highestTier,
+        activeBuffs: state.mergeState.activeBuffs,
+      } : null,
       savedAt: Date.now(),
     };
     localStorage.setItem(SAVE_KEY, JSON.stringify(data));
@@ -75,6 +84,7 @@ export function loadGame() {
       coldMaster: data.coldMaster ?? false,
       marketState: data.marketState ?? null,
       gardenState: data.gardenState ?? null,
+      mergeState: data.mergeState ?? null,
       savedAt: data.savedAt ?? null,
     };
   } catch (e) {

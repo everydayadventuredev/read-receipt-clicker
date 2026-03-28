@@ -2,6 +2,7 @@ import React from 'react';
 import { MINIGAME_REGISTRY, getUnlockedMinigames } from '../game/minigames.js';
 import StockMarket from './StockMarket.jsx';
 import Garden from './Garden.jsx';
+import MergeGame from './MergeGame.jsx';
 
 /**
  * Generic mini-game container for the middle column.
@@ -22,6 +23,12 @@ export default function MiniGamePanel({
   onPlant,
   onHarvest,
   onClearWilted,
+  // Merge props
+  mergeState,
+  onPlaceGift,
+  onMergeGifts,
+  onMoveGift,
+  onExpandGrid,
 }) {
   const unlocked = getUnlockedMinigames(owned);
   const allEntries = MINIGAME_REGISTRY;
@@ -116,6 +123,17 @@ export default function MiniGamePanel({
 
       {/* Mini-game body */}
       <div style={{ flex: 1, overflow: 'hidden', display: 'flex', flexDirection: 'column', minHeight: 0 }}>
+        {activeMiniGame === 'par' && mergeState && (
+          <MergeGame
+            mergeState={mergeState}
+            parCount={owned.par ?? 0}
+            reads={reads}
+            onPlace={onPlaceGift}
+            onMerge={onMergeGifts}
+            onMove={onMoveGift}
+            onExpand={onExpandGrid}
+          />
+        )}
         {activeMiniGame === 'ex' && gardenState && (
           <Garden
             gardenState={gardenState}

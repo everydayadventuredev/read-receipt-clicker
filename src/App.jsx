@@ -30,6 +30,7 @@ import { StatsPanel, LogPanel, AchievementBadges } from './ui/Panels.jsx';
 
 import { createMarketState, tickMarket, buyShare, sellShare, resetHoldings } from './game/stockMarket.js';
 import { createGardenState, tickGarden, plantSeed, harvestFlower, clearWilted, getGardenBuffMult, getSeriesBonusMult, resetGarden } from './game/garden.js';
+import { createMergeState, tickMerge, placeGift, mergeGifts, moveGift, expandGrid, getMergeBuffMult, getMergePermMult, resetMerge, getTier as getMergeTier } from './game/merge.js';
 
 function initState() {
   const saved = loadGame();
@@ -100,6 +101,7 @@ export default function App() {
   const [showPrestigeShop, setShowPrestigeShop] = useState(false);
   const [marketState,      setMarketState]      = useState(() => init.marketState ?? createMarketState());
   const [gardenState,      setGardenState]      = useState(() => init.gardenState ?? createGardenState());
+  const [mergeState,       setMergeState]       = useState(() => init.mergeState ?? createMergeState());
   const [activeMiniGame,   setActiveMiniGame]   = useState(null);
 
   const idRef      = useRef(0);
@@ -158,10 +160,12 @@ export default function App() {
     const coldMasterMult = coldMaster ? 1.5 : 1;
     const gardenBuff = getGardenBuffMult(gardenState);
     const gardenSeries = getSeriesBonusMult(gardenState);
-    const total = p * prestigeMult * prestigeGlobalMult * chainGlobalBuff * tempMult * coldMasterMult * gardenBuff * gardenSeries;
+    const mergeBuff = getMergeBuffMult(mergeState);
+    const mergePerm = getMergePermMult(mergeState);
+    const total = p * prestigeMult * prestigeGlobalMult * chainGlobalBuff * tempMult * coldMasterMult * gardenBuff * gardenSeries * mergeBuff * mergePerm;
     setProdPerSec(total);
     psRef.current = total;
-  }, [owned, boughtUpgrades, prestigeMult, prestigeGlobalMult, chainGlobalBuff, tempMult, boughtPrestige, eventChainBuffs, gardenState]);
+  }, [owned, boughtUpgrades, prestigeMult, prestigeGlobalMult, chainGlobalBuff, tempMult, boughtPrestige, eventChainBuffs, gardenState, mergeState]);
 
   const calcClickPower = useCallback(() => {
     let bonus = 1, pct = 0;
@@ -207,15 +211,24 @@ export default function App() {
     return () => clearInterval(iv);
   }, [(owned.ex ?? 0) >= 1]);
 
+  // Merge tick — every 3s when par >= 1
+  useEffect(() => {
+    if ((owned.par ?? 0) < 1) return;
+    const iv = setInterval(() => {
+      setMergeState(prev => tickMerge(prev, ownedRef.current.par ?? 0));
+    }, 3000);
+    return () => clearInterval(iv);
+  }, [(owned.par ?? 0) >= 1]);
+
   const saveState = useCallback(() => {
     saveGame({
       reads: readsRef.current, allTime: allTimeRef.current, owned: ownedRef.current,
       boughtUpgrades: boughtRef.current, prestigeCount, prestigePower,
       seenMilestones, unlockedAchievements, unlockedBuildings,
       boughtPrestige, activeSynergies, completedChains, eventChainBuffs,
-      stormCount, stormPerfect, guilt, coldMaster, marketState, gardenState,
+      stormCount, stormPerfect, guilt, coldMaster, marketState, gardenState, mergeState,
     });
-  }, [prestigeCount, prestigePower, seenMilestones, unlockedAchievements, unlockedBuildings, boughtPrestige, activeSynergies, completedChains, eventChainBuffs, stormCount, stormPerfect, guilt, coldMaster, marketState, gardenState]);
+  }, [prestigeCount, prestigePower, seenMilestones, unlockedAchievements, unlockedBuildings, boughtPrestige, activeSynergies, completedChains, eventChainBuffs, stormCount, stormPerfect, guilt, coldMaster, marketState, gardenState, mergeState]);
 
   // Autosave every 30 s
   useEffect(() => {
@@ -675,6 +688,39 @@ export default function App() {
     if (result) setGardenState(result);
   }, [gardenState]);
 
+  // ── Merge handlers ──
+  const handlePlaceGift = useCallback((slotIndex) => {
+    const result = placeGift(mergeState, slotIndex);
+    if (!result) return;
+    setMergeState(result.newState);
+  }, [mergeState]);
+
+  const handleMergeGifts = useCallback((srcIdx, tgtIdx) => {
+    const result = mergeGifts(mergeState, srcIdx, tgtIdx);
+    if (!result) return null;
+    setMergeState(result.newState);
+    if (result.event === 'critical') {
+      const t = getMergeTier(result.resultTier);
+      addToast(`✨ 大成功！直接合成出 ${t.emoji} ${t.name}！`);
+    } else if (result.event === 'surprise') {
+      addToast(`🎉 意外驚喜！獲得額外 buff！`);
+    }
+    return result;
+  }, [mergeState]);
+
+  const handleMoveGift = useCallback((fromIdx, toIdx) => {
+    const result = moveGift(mergeState, fromIdx, toIdx);
+    if (result) setMergeState(result);
+  }, [mergeState]);
+
+  const handleExpandGrid = useCallback(() => {
+    const result = expandGrid(mergeState, readsRef.current);
+    if (!result) return;
+    setMergeState(result.newState);
+    setReads(r => r - result.cost);
+    addToast(`📦 ${result.reason}`);
+  }, [mergeState]);
+
   const handlePrestige = useCallback(() => {
     if (prestigeEarned < 1) return;
     playPrestige();
@@ -689,6 +735,7 @@ export default function App() {
     setNewBuildings(new Set());
     setMarketState(prev => resetHoldings(prev)); // reset holdings, keep market running
     setGardenState(prev => resetGarden(prev)); // reset slots/seeds/buffs, keep collection
+    setMergeState(prev => resetMerge(prev)); // reset grid/gifts, keep highestTier
     setSeenMilestones(new Set());
     setRecentMsgs([]);
     setTempMult(1);
@@ -1157,6 +1204,12 @@ export default function App() {
             onPlant={handlePlantSeed}
             onHarvest={handleHarvestFlower}
             onClearWilted={handleClearWilted}
+            mergeState={mergeState}
+            reads={reads}
+            onPlaceGift={handlePlaceGift}
+            onMergeGifts={handleMergeGifts}
+            onMoveGift={handleMoveGift}
+            onExpandGrid={handleExpandGrid}
           />
 
         </div>

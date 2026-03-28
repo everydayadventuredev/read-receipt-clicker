@@ -16,8 +16,13 @@ export const MINIGAME_REGISTRY = [
     emoji: '📈',
     unlockCount: 1,
   },
+  {
+    buildingId: 'par',
+    name: '伴手禮合成',
+    emoji: '🎁',
+    unlockCount: 1,
+  },
   // Future mini-games:
-  // { buildingId: 'par', name: '伴手禮合成', emoji: '🎁', unlockCount: 5 },
 ];
 
 /**
