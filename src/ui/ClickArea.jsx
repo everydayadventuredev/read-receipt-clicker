@@ -102,7 +102,7 @@ export default function ClickArea({ message, isRead, isFirstClick, popAnim, rece
         {/* Chat body */}
         <div style={{
           padding: '8px 10px',
-          minHeight: 100,
+          minHeight: 160,
           display: 'flex', flexDirection: 'column', justifyContent: 'flex-end',
           gap: 4,
           background: bg,

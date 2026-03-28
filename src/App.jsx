@@ -896,12 +896,12 @@ export default function App() {
               : 'none';
             return (
               <div style={{
-                fontSize: 68, fontWeight: 900,
+                fontSize: 80, fontWeight: 900,
                 fontFamily: "'Space Grotesk','JetBrains Mono',monospace",
                 color: counterColor,
                 animation: popAnim ? 'pn .18s ease-out' : 'none',
-                letterSpacing: -3, lineHeight: 1,
-                marginBottom: 4,
+                letterSpacing: -4, lineHeight: 1,
+                marginBottom: 2,
                 textShadow: counterGlow,
                 transition: 'color .5s, text-shadow .5s',
               }}>
