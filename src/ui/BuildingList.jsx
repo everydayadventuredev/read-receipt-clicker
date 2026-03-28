@@ -54,8 +54,8 @@ export default function BuildingList({ buildings, owned, reads, unlockedBuilding
       </div>
 
       {/* Building list */}
-      <div style={{ flex: 1, overflowY: 'auto', padding: '0 12px 12px', minHeight: 0 }}>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+      <div style={{ flex: 1, overflowY: 'auto', padding: '0 8px 8px', minHeight: 0 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
           {buildings.filter(b => unlockedBuildings.has(b.id)).map((b, i) => {
             const count = owned[b.id] ?? 0;
             const cost = buildingCostN(b, count, buyN);
@@ -71,134 +71,100 @@ export default function BuildingList({ buildings, owned, reads, unlockedBuilding
                 disabled={!canAfford}
                 onMouseEnter={() => canAfford && setHovered(b.id)}
                 onMouseLeave={() => setHovered(null)}
+                title={b.desc}
                 style={{
-                  display: 'flex', alignItems: 'center',
-                  width: '100%', padding: hasAny ? '14px 16px 24px' : '14px 16px',
+                  display: 'flex', alignItems: 'center', gap: 8,
+                  width: '100%', padding: '6px 10px',
                   background: '#fff',
                   border: isNew
                     ? `1px solid ${b.color}44`
                     : canAfford
-                      ? '1px solid rgba(99,102,241,.3)'
+                      ? '1px solid rgba(99,102,241,.2)'
                       : '1px solid #e2e8f0',
-                  borderRadius: 12,
-                  opacity: canAfford ? 1 : 0.45,
-                  transition: 'all .2s cubic-bezier(.4,0,.2,1)',
+                  borderRadius: 8,
+                  opacity: canAfford ? 1 : 0.4,
+                  transition: 'all .15s',
                   textAlign: 'left',
                   position: 'relative',
                   overflow: 'hidden',
                   cursor: canAfford ? 'pointer' : 'default',
                   animation: isNew ? 'si .4s ease-out' : 'none',
                   boxShadow: lastBought === b.id
-                    ? '0 0 0 3px rgba(217,119,6,.3), 0 1px 3px rgba(0,0,0,.04)'
+                    ? '0 0 0 2px rgba(217,119,6,.3)'
                     : hovered === b.id && canAfford
-                      ? '0 4px 12px rgba(0,0,0,.08)'
-                      : '0 1px 3px rgba(0,0,0,.04)',
-                  transform: lastBought === b.id
-                    ? 'scale(1.02)'
-                    : hovered === b.id && canAfford
-                      ? 'translateY(-2px)'
+                      ? '0 2px 8px rgba(0,0,0,.08)'
                       : 'none',
+                  transform: lastBought === b.id ? 'scale(1.01)' : 'none',
                 }}
               >
                 {/* Left accent bar */}
                 {hasAny && (
                   <div style={{
-                    position: 'absolute', left: 0, top: 8, bottom: 8,
+                    position: 'absolute', left: 0, top: 4, bottom: 4,
                     width: 3, borderRadius: 3,
-                    background: `linear-gradient(180deg, ${b.color}, ${b.color}44)`,
+                    background: b.color,
                   }} />
                 )}
 
-                {/* Large watermark icon spanning right side */}
+                {/* Watermark icon */}
                 {BUILDING_ICONS[b.id] && (
                   <div style={{
-                    position: 'absolute', right: -6, top: '50%', transform: 'translateY(-50%)',
-                    opacity: hasAny ? 0.10 : 0.05,
+                    position: 'absolute', right: 50, top: '50%', transform: 'translateY(-50%)',
+                    opacity: hasAny ? 0.08 : 0.03,
                     pointerEvents: 'none',
-                    animation: hasAny ? `wg 3s ease-in-out infinite ${i * 0.3}s` : 'none',
                   }}>
-                    {(() => { const Icon = BUILDING_ICONS[b.id]; return <Icon size={72} color={b.color} />; })()}
+                    {(() => { const Icon = BUILDING_ICONS[b.id]; return <Icon size={36} color={b.color} />; })()}
                   </div>
                 )}
 
                 {/* NEW badge */}
                 {isNew && (
                   <div style={{
-                    position: 'absolute', top: 6, right: 10,
-                    background: `linear-gradient(135deg, ${b.color}, ${b.color}aa)`,
-                    color: '#fff', fontSize: 9, fontWeight: 800,
-                    padding: '2px 8px', borderRadius: 8,
-                    boxShadow: `0 2px 8px ${b.color}33`,
-                    zIndex: 2,
+                    position: 'absolute', top: 3, right: 6,
+                    background: b.color, color: '#fff', fontSize: 8, fontWeight: 800,
+                    padding: '1px 5px', borderRadius: 4, zIndex: 2,
                   }}>NEW</div>
                 )}
 
-                {/* Info — no separate icon box, text takes full width */}
-                <div style={{ flex: 1, minWidth: 0, position: 'relative', zIndex: 1, paddingLeft: hasAny ? 4 : 0 }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <span style={{ color: '#1e293b', fontWeight: 700, fontSize: 14 }}>{b.name}</span>
-                    <span style={{
-                      color: hasAny ? '#059669' : '#94a3b8',
-                      fontSize: 11, fontFamily: "'JetBrains Mono',monospace",
-                      background: hasAny ? '#fffbeb' : '#f8fafc',
-                      padding: '2px 8px', borderRadius: 8,
-                      border: hasAny ? '1px solid #fde68a' : '1px solid #e2e8f0',
-                    }}>×{count}</span>
-                  </div>
-                  <div style={{
-                    color: '#94a3b8', fontSize: 11, marginTop: 2,
-                    whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
-                  }}>{b.desc}</div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 5 }}>
-                    <span style={{
-                      color: canAfford ? '#b45309' : '#cbd5e1',
-                      fontSize: 12, fontWeight: 700,
-                      fontFamily: "'JetBrains Mono',monospace",
-                    }}>
-                      {fmt(cost)}{buyN > 1 ? ` (×${buyN})` : ''}
-                    </span>
-                    <span style={{
-                      color: '#94a3b8', fontSize: 10,
-                      fontFamily: "'JetBrains Mono',monospace",
-                    }}>
-                      {hasAny ? `${fmt(prodRate)}/s` : `+${fmt(b.baseProd)}/s each`}
-                    </span>
-                  </div>
-                </div>
+                {/* Name */}
+                <span style={{
+                  color: '#1e293b', fontWeight: 700, fontSize: 13,
+                  minWidth: 65, position: 'relative', zIndex: 1,
+                  paddingLeft: hasAny ? 4 : 0,
+                }}>{b.name}</span>
 
-                {/* Mini icon crowd */}
-                {hasAny && (
-                  <div style={{
-                    position: 'absolute', bottom: 0, left: 0, right: 0,
-                    padding: '3px 8px', display: 'flex', alignItems: 'center', gap: 1,
-                    background: `${b.color}06`,
-                    borderTop: `1px solid ${b.color}08`,
-                    borderRadius: '0 0 12px 12px',
-                    overflow: 'hidden',
-                    zIndex: 1,
-                  }}>
-                    {Array.from({ length: Math.min(count, 15) }, (_, j) => {
-                      const Icon = BUILDING_ICONS[b.id];
-                      const rotation = ((j * 7 + 3) % 11) - 5;
-                      return Icon ? (
-                        <span key={j} style={{
-                          display: 'inline-flex', opacity: 0.5 + (j % 3) * 0.15,
-                          transform: `rotate(${rotation}deg)`,
-                          flexShrink: 0,
-                        }}>
-                          <Icon size={12} color={b.color} />
-                        </span>
-                      ) : null;
-                    })}
-                    {count > 15 && (
-                      <span style={{
-                        fontSize: 9, color: b.color, fontWeight: 700, opacity: 0.6,
-                        fontFamily: "'JetBrains Mono',monospace",
-                        marginLeft: 2,
-                      }}>+{count - 15}</span>
-                    )}
-                  </div>
-                )}
+                {/* Cost */}
+                <span style={{
+                  color: canAfford ? '#b45309' : '#cbd5e1',
+                  fontSize: 11, fontWeight: 700,
+                  fontFamily: "'JetBrains Mono',monospace",
+                  minWidth: 60, position: 'relative', zIndex: 1,
+                }}>
+                  {fmt(cost)}{buyN > 1 ? `(×${buyN})` : ''}
+                </span>
+
+                {/* Spacer */}
+                <span style={{ flex: 1 }} />
+
+                {/* Prod rate */}
+                <span style={{
+                  color: '#94a3b8', fontSize: 10,
+                  fontFamily: "'JetBrains Mono',monospace",
+                  position: 'relative', zIndex: 1,
+                }}>
+                  {hasAny ? `${fmt(prodRate)}/s` : `+${fmt(b.baseProd)}/s`}
+                </span>
+
+                {/* Count badge */}
+                <span style={{
+                  color: hasAny ? '#059669' : '#94a3b8',
+                  fontSize: 11, fontFamily: "'JetBrains Mono',monospace",
+                  background: hasAny ? '#fffbeb' : '#f8fafc',
+                  padding: '1px 6px', borderRadius: 6,
+                  border: hasAny ? '1px solid #fde68a' : '1px solid #e2e8f0',
+                  minWidth: 30, textAlign: 'center',
+                  position: 'relative', zIndex: 1,
+                }}>×{count}</span>
               </button>
             );
           })}
