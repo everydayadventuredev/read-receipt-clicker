@@ -1,0 +1,197 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1440" height="900" viewBox="0 0 1440 900">
+  <style>
+    text { font-family: 'Inter', 'Helvetica', sans-serif; }
+    .label { font-size: 14px; font-weight: 700; fill: #1e293b; }
+    .sublabel { font-size: 11px; fill: #64748b; }
+    .dim { font-size: 10px; fill: #94a3b8; font-family: 'JetBrains Mono', monospace; }
+    .score { font-size: 12px; font-weight: 800; fill: #6366f1; }
+    .block { stroke-width: 1.5; rx: 8; ry: 8; }
+  </style>
+
+  <!-- Background -->
+  <rect width="1440" height="900" fill="#f8fafc"/>
+
+  <!-- ═══ HEADER ═══ 40px -->
+  <rect x="0" y="0" width="1440" height="40" fill="#fff" stroke="#e2e8f0" class="block"/>
+  <text x="20" y="25" class="label">HEADER</text>
+  <text x="100" y="25" class="sublabel">Logo + 成就Badges + ✦商店 + 重生</text>
+  <text x="1380" y="25" class="dim" text-anchor="end">h=40</text>
+
+  <!-- ═══ TICKER ═══ 32px -->
+  <rect x="0" y="42" width="1440" height="32" fill="#fffbeb" stroke="#fbbf24" stroke-opacity="0.3" class="block"/>
+  <text x="20" y="63" class="label">TICKER</text>
+  <text x="100" y="63" class="sublabel">新聞跑馬燈 · 優先級 1.8</text>
+  <text x="1380" y="63" class="dim" text-anchor="end">h=32</text>
+  <text x="1300" y="63" class="score">1.8</text>
+
+  <!-- ═══ MAIN LAYOUT ═══ starts at y=76, height=824 -->
+  <!-- 3 columns: LEFT 25% | MIDDLE 45% | RIGHT 30% -->
+
+  <!-- LEFT COLUMN — 25% = 360px -->
+  <rect x="2" y="78" width="356" height="820" fill="#fff" stroke="#e2e8f0" class="block"/>
+  <text x="12" y="96" class="dim">LEFT 25% (360px)</text>
+
+  <!-- Counter -->
+  <rect x="12" y="102" width="336" height="120" fill="#eef2ff" stroke="#6366f1" stroke-opacity="0.3" class="block"/>
+  <text x="180" y="150" class="label" text-anchor="middle" font-size="28">54.06M</text>
+  <text x="180" y="175" class="sublabel" text-anchor="middle">計數器 · 優先級 4.5</text>
+  <text x="180" y="195" class="dim" text-anchor="middle">✓ 2.12M/秒</text>
+  <text x="330" y="118" class="score">4.5</text>
+
+  <!-- Stats compact -->
+  <rect x="12" y="226" width="336" height="20" fill="#f8fafc" stroke="#e2e8f0" class="block"/>
+  <text x="180" y="240" class="dim" text-anchor="middle">生涯 229M · 大師 49 · 升級 0/108</text>
+
+  <!-- Guilt -->
+  <rect x="12" y="250" width="336" height="50" fill="#fef2f2" stroke="#ef4444" stroke-opacity="0.15" class="block"/>
+  <text x="22" y="272" class="label">罪惡感</text>
+  <text x="22" y="288" class="sublabel">優先級 3.8</text>
+  <text x="330" y="272" class="score">3.8</text>
+
+  <!-- Click/Chat Area -->
+  <rect x="12" y="304" width="336" height="590" fill="#ecfdf5" stroke="#10b981" stroke-opacity="0.2" class="block"/>
+  <text x="22" y="330" class="label">聊天/點擊區</text>
+  <text x="22" y="348" class="sublabel">優先級 4.2 — 主要互動區域</text>
+  <text x="330" y="330" class="score">4.2</text>
+  <!-- Chat elements -->
+  <rect x="22" y="360" width="316" height="36" fill="#d1fae5" stroke="#10b981" stroke-opacity="0.2" rx="4" ry="4"/>
+  <text x="32" y="383" class="sublabel">已讀收件匣 (在線)</text>
+  <rect x="22" y="750" width="150" height="40" fill="#f1f5f9" stroke="#e2e8f0" rx="8" ry="8"/>
+  <text x="35" y="775" class="sublabel">訊息泡泡</text>
+  <rect x="22" y="850" width="316" height="32" fill="#f1f5f9" stroke="#e2e8f0" rx="8" ry="8"/>
+  <text x="32" y="871" class="sublabel">輸入框</text>
+  <!-- Empty space indicator -->
+  <rect x="80" y="500" width="200" height="180" fill="none" stroke="#ef4444" stroke-dasharray="6 4" stroke-opacity="0.4" rx="8" ry="8"/>
+  <text x="180" y="585" class="dim" text-anchor="middle" fill="#ef4444" font-size="12">大量空白</text>
+  <text x="180" y="605" class="dim" text-anchor="middle" fill="#ef4444" font-size="10">可利用空間</text>
+
+  <!-- MIDDLE COLUMN — 45% = 648px -->
+  <rect x="362" y="78" width="644" height="820" fill="#fff" stroke="#e2e8f0" class="block"/>
+  <text x="372" y="96" class="dim">MIDDLE 45% (648px)</text>
+
+  <!-- Mini-game Tab Bar -->
+  <rect x="372" y="102" width="624" height="32" fill="#f8fafc" stroke="#e2e8f0" class="block"/>
+  <text x="382" y="123" class="sublabel">📈 Feed 操盤手 (tab)</text>
+
+  <!-- Stock Market Header -->
+  <rect x="372" y="138" width="624" height="30" fill="#eef2ff" stroke="#6366f1" stroke-opacity="0.1" class="block"/>
+  <text x="382" y="158" class="label" font-size="12">Feed 操盤手</text>
+  <text x="950" y="158" class="dim">總市值 0</text>
+
+  <!-- Stock Grid 2×3 -->
+  <rect x="372" y="172" width="305" height="100" fill="#fff" stroke="#e2e8f0" class="block"/>
+  <text x="380" y="192" class="sublabel">😂 迷因 99</text>
+  <text x="380" y="210" class="dim">sparkline + 買入/賣出</text>
+  <rect x="681" y="172" width="305" height="100" fill="#fff" stroke="#e2e8f0" class="block"/>
+  <text x="689" y="192" class="sublabel">🐱 貓貓 44</text>
+
+  <rect x="372" y="276" width="305" height="100" fill="#fff" stroke="#e2e8f0" class="block"/>
+  <text x="380" y="296" class="sublabel">📰 新聞 228</text>
+  <rect x="681" y="276" width="305" height="100" fill="#fff" stroke="#e2e8f0" class="block"/>
+  <text x="689" y="296" class="sublabel">💬 八卦 10</text>
+
+  <rect x="372" y="380" width="305" height="100" fill="#fff" stroke="#e2e8f0" class="block"/>
+  <text x="380" y="400" class="sublabel">🍜 美食 195</text>
+  <rect x="681" y="380" width="305" height="100" fill="#fff" stroke="#e2e8f0" class="block"/>
+  <text x="689" y="400" class="sublabel">📚 知識 33</text>
+
+  <!-- Mini-game label -->
+  <text x="684" y="510" class="label" text-anchor="middle">Mini-Game 區</text>
+  <text x="684" y="528" class="sublabel" text-anchor="middle">優先級 4.0</text>
+  <text x="950" y="510" class="score">4.0</text>
+
+  <!-- Empty space below stock grid -->
+  <rect x="400" y="540" width="570" height="320" fill="none" stroke="#ef4444" stroke-dasharray="6 4" stroke-opacity="0.4" rx="8" ry="8"/>
+  <text x="684" y="690" class="dim" text-anchor="middle" fill="#ef4444" font-size="14">中欄下方大量空白</text>
+  <text x="684" y="715" class="dim" text-anchor="middle" fill="#ef4444" font-size="11">未來 mini-game / 互動內容</text>
+
+  <!-- Footer -->
+  <rect x="372" y="870" width="624" height="24" fill="#f8fafc" stroke="#e2e8f0" class="block"/>
+  <text x="684" y="886" class="dim" text-anchor="middle">低買高賣 · 賣出 = 按當前價格換回已讀</text>
+
+  <!-- RIGHT COLUMN — 30% = 432px -->
+  <rect x="1010" y="78" width="428" height="820" fill="#fff" stroke="#e2e8f0" class="block"/>
+  <text x="1020" y="96" class="dim">RIGHT 30% (432px)</text>
+
+  <!-- Upgrades Section -->
+  <rect x="1020" y="102" width="408" height="240" fill="#f5f3ff" stroke="#6366f1" stroke-opacity="0.15" class="block"/>
+  <text x="1030" y="122" class="label">升級區</text>
+  <text x="1030" y="138" class="sublabel">優先級 3.5 · maxHeight 35%</text>
+  <text x="1410" y="122" class="score">3.5</text>
+  <!-- Upgrade items -->
+  <rect x="1030" y="148" width="388" height="36" fill="#fff" stroke="#e2e8f0" rx="6" ry="6"/>
+  <text x="1040" y="170" class="sublabel">👆 指尖覺醒 · 點擊+1 · 100</text>
+  <rect x="1030" y="188" width="388" height="36" fill="#fff" stroke="#e2e8f0" rx="6" ry="6"/>
+  <text x="1040" y="210" class="sublabel">✌️ 雙重已讀 · 點擊+3 · 1,000</text>
+  <rect x="1030" y="228" width="388" height="36" fill="#fff" stroke="#e2e8f0" rx="6" ry="6"/>
+  <text x="1040" y="250" class="sublabel">⚡ 已讀連擊 · 點擊+10 · 10,000</text>
+  <rect x="1030" y="268" width="388" height="36" fill="#fff" stroke="#e2e8f0" rx="6" ry="6"/>
+  <text x="1040" y="290" class="sublabel">🌪️ 已讀風暴 · 點擊+50 · 100,000</text>
+  <rect x="1030" y="308" width="388" height="28" fill="#fff" stroke="#e2e8f0" rx="6" ry="6"/>
+  <text x="1040" y="326" class="sublabel">📈 效率已讀術 · 點擊+1%產能 · 5,000</text>
+
+  <!-- Separator -->
+  <line x1="1020" y1="345" x2="1428" y2="345" stroke="#6366f1" stroke-opacity="0.3" stroke-width="2"/>
+
+  <!-- Buildings Header -->
+  <rect x="1020" y="348" width="408" height="28" fill="#f8fafc" stroke="#e2e8f0" class="block"/>
+  <text x="1030" y="367" class="label" font-size="12">已讀大師</text>
+  <text x="1410" y="367" class="dim" text-anchor="end">×1 ×10 ×100</text>
+
+  <!-- Buildings — showing all 14 -->
+  <rect x="1020" y="380" width="408" height="518" fill="#fff" stroke="#e2e8f0" class="block"/>
+  <text x="1030" y="398" class="label" font-size="12">建築列表</text>
+  <text x="1030" y="414" class="sublabel">優先級 3.9</text>
+  <text x="1410" y="398" class="score">3.9</text>
+
+  <!-- Building items (compact) -->
+  <g transform="translate(1030, 420)">
+    <rect width="398" height="34" fill="#fef2f2" stroke="#f43f5e" stroke-opacity="0.15" rx="6" ry="6"/>
+    <text x="50" y="20" class="sublabel" font-size="12" font-weight="700">前任</text>
+    <text x="50" y="32" class="dim">185 18/s</text>
+    <text x="380" y="22" class="score" text-anchor="end" fill="#f43f5e">18</text>
+  </g>
+  <g transform="translate(1030, 458)">
+    <rect width="398" height="34" fill="#fffbeb" stroke="#f59e0b" stroke-opacity="0.15" rx="6" ry="6"/>
+    <text x="50" y="20" class="sublabel" font-size="12" font-weight="700">爸媽</text>
+    <text x="380" y="22" class="score" text-anchor="end" fill="#f59e0b">12</text>
+  </g>
+  <g transform="translate(1030, 496)">
+    <rect width="398" height="34" fill="#ecfdf5" stroke="#10b981" stroke-opacity="0.15" rx="6" ry="6"/>
+    <text x="50" y="20" class="sublabel" font-size="12" font-weight="700">忙朋友</text>
+    <text x="380" y="22" class="score" text-anchor="end" fill="#10b981">9</text>
+  </g>
+  <g transform="translate(1030, 534)">
+    <rect width="398" height="34" fill="#eef2ff" stroke="#6366f1" stroke-opacity="0.15" rx="6" ry="6"/>
+    <text x="50" y="20" class="sublabel" font-size="12" font-weight="700">公司HR</text>
+    <text x="380" y="22" class="score" text-anchor="end" fill="#6366f1">18</text>
+  </g>
+  <g transform="translate(1030, 572)">
+    <rect width="398" height="28" fill="#f8fafc" stroke="#e2e8f0" rx="6" ry="6"/>
+    <text x="10" y="19" class="sublabel" font-size="11">外送客服 · 政府承辦 · 情報機構 · 社群演算法</text>
+  </g>
+  <g transform="translate(1030, 604)">
+    <rect width="398" height="28" fill="#f8fafc" stroke="#e2e8f0" rx="6" ry="6"/>
+    <text x="10" y="19" class="sublabel" font-size="11">AI客服 · 外星通訊 · 時間迴圈(NEW)</text>
+  </g>
+  <g transform="translate(1030, 636)">
+    <rect width="398" height="20" fill="#f1f5f9" stroke="#e2e8f0" rx="4" ry="4" opacity="0.5"/>
+    <text x="10" y="15" class="dim">🔒 量子已讀</text>
+  </g>
+  <g transform="translate(1030, 660)">
+    <rect width="398" height="20" fill="#f1f5f9" stroke="#e2e8f0" rx="4" ry="4" opacity="0.5"/>
+    <text x="10" y="15" class="dim">🔒 虛空已讀</text>
+  </g>
+  <g transform="translate(1030, 684)">
+    <rect width="398" height="20" fill="#f1f5f9" stroke="#e2e8f0" rx="4" ry="4" opacity="0.5"/>
+    <text x="10" y="15" class="dim">🔒 神之已讀</text>
+  </g>
+
+  <!-- Problem indicator: scrolls off screen -->
+  <rect x="1015" y="710" width="418" height="40" fill="none" stroke="#ef4444" stroke-dasharray="6 4" stroke-opacity="0.5" rx="8" ry="8"/>
+  <text x="1224" y="735" class="dim" text-anchor="middle" fill="#ef4444" font-size="11">⚠️ 部分建築需滾動</text>
+
+  <!-- Priority Legend -->
+  <rect x="20" y="860" width="330" height="30" fill="#f1f5f9" stroke="#e2e8f0" rx="6" ry="6"/>
+  <text x="30" y="880" class="dim" font-size="9">優先級: 計數器4.5 > 點擊4.2 > MiniGame4.0 > 建築3.9 > 罪惡3.8 > 升級3.5 > 轉世3.2 > 統計2.8 > 成就2.5 > Ticker1.8</text>
+</svg>

@@ -2,34 +2,147 @@ import { useState } from 'react';
 import { fmt, buildingCostN } from '../utils/format.js';
 import { BUILDING_ICONS } from './PixelIcons.jsx';
 
-export default function BuildingList({ buildings, owned, reads, allTime, unlockedBuildings, newBuildings, buyN, onBuy, setBuyN }) {
+/**
+ * Cookie Clicker-style horizontal building bar.
+ * Info on the left, emoji crowd fills remaining space to the right.
+ */
+function BuildingBar({ b, count, cost, prodRate, canAfford, buyN, isNew, onBuy, lastBought, hovered, onHover, onLeave }) {
+  const hasAny = count > 0;
+  const Icon = BUILDING_ICONS[b.id];
+
+  return (
+    <button
+      onClick={() => { onBuy(); }}
+      disabled={!canAfford}
+      onMouseEnter={() => canAfford && onHover()}
+      onMouseLeave={onLeave}
+      style={{
+        display: 'flex', alignItems: 'stretch',
+        width: '100%', padding: 0, height: hasAny ? 48 : 38,
+        background: `linear-gradient(90deg, ${b.color}${hasAny ? '08' : '03'}, ${b.color}${hasAny ? '04' : '01'})`,
+        border: isNew ? `1px solid ${b.color}55`
+          : canAfford ? `1px solid ${b.color}18`
+          : '1px solid #eef0f2',
+        borderRadius: 6,
+        opacity: canAfford ? 1 : 0.5,
+        transition: 'all .15s',
+        textAlign: 'left', position: 'relative', overflow: 'hidden',
+        cursor: canAfford ? 'pointer' : 'default',
+        animation: isNew ? 'si .4s ease-out' : 'none',
+        boxShadow: lastBought ? `0 0 0 2px ${b.color}44`
+          : hovered && canAfford ? `0 2px 10px ${b.color}12` : 'none',
+        transform: lastBought ? 'scale(1.005)' : 'none',
+      }}
+    >
+      {/* Left info area */}
+      <div style={{
+        width: 150, flexShrink: 0, padding: '3px 8px',
+        display: 'flex', flexDirection: 'column', justifyContent: 'center',
+        zIndex: 1, position: 'relative',
+        background: `linear-gradient(90deg, ${b.color}${hasAny ? '10' : '05'}, transparent)`,
+      }}>
+        <span style={{
+          fontSize: 13, fontWeight: 800, color: '#1e293b', lineHeight: 1.1,
+        }}>{b.name}</span>
+        <span style={{
+          fontSize: 9, color: '#64748b', lineHeight: 1.2, marginTop: 1,
+          whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
+        }}>{b.desc}</span>
+        <div style={{
+          fontSize: 10, fontWeight: 700,
+          color: canAfford ? '#b45309' : '#94a3b8',
+          fontFamily: "'JetBrains Mono',monospace",
+          marginTop: 1,
+        }}>
+          {fmt(cost)}{buyN > 1 ? ` ×${buyN}` : ''}
+          <span style={{ fontSize: 8, color: '#94a3b8', marginLeft: 4 }}>
+            {hasAny ? `${fmt(prodRate)}/s` : `+${fmt(b.baseProd)}/s`}
+          </span>
+        </div>
+      </div>
+
+      {/* Emoji crowd — fills remaining space horizontally */}
+      {hasAny && (
+        <div style={{
+          flex: 1, display: 'flex', alignItems: 'center',
+          overflow: 'hidden', padding: '2px 0',
+          gap: 0, flexWrap: 'wrap', alignContent: 'center',
+        }}>
+          {Array.from({ length: Math.min(count, 40) }, (_, i) => (
+            <span key={i} style={{
+              fontSize: count > 20 ? 14 : count > 10 ? 16 : 18,
+              lineHeight: 1,
+              opacity: 0.6 + (i / Math.min(count, 40)) * 0.35,
+              transform: `rotate(${(i * 13 + i * i * 2) % 24 - 12}deg)`,
+              flexShrink: 0,
+            }}>
+              {b.emoji}
+            </span>
+          ))}
+        </div>
+      )}
+
+      {/* Count badge — right side */}
+      <div style={{
+        width: 36, flexShrink: 0,
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        fontSize: hasAny ? 18 : 12, fontWeight: 900,
+        color: hasAny ? b.color : '#cbd5e1',
+        fontFamily: "'Space Grotesk','JetBrains Mono',monospace",
+        opacity: hasAny ? 0.9 : 0.4,
+        zIndex: 1,
+      }}>
+        {count}
+      </div>
+
+      {/* Affordability progress bar */}
+      {!canAfford && (
+        <div style={{
+          position: 'absolute', bottom: 0, left: 0, right: 0, height: 2,
+          background: 'rgba(0,0,0,.04)',
+        }}>
+          <div style={{
+            height: '100%',
+            width: `${Math.min(100, (count > 0 ? 0 : 1) * 100)}%`,
+            background: `${b.color}60`,
+            transition: 'width .5s',
+          }} />
+        </div>
+      )}
+
+      {/* NEW badge */}
+      {isNew && (
+        <div style={{
+          position: 'absolute', top: 1, right: 40,
+          background: b.color, color: '#fff', fontSize: 7, fontWeight: 800,
+          padding: '0 4px', borderRadius: 3, zIndex: 2,
+        }}>NEW</div>
+      )}
+    </button>
+  );
+}
+
+export default function BuildingList({ buildings, owned, reads, allTime, unlockedBuildings, newBuildings, buyN, onBuy, setBuyN, singleColumn = false }) {
   const [lastBought, setLastBought] = useState(null);
   const [hovered, setHovered] = useState(null);
 
   const visibleBuildings = buildings.filter(b => unlockedBuildings.has(b.id));
-  const noneAffordable = visibleBuildings.length > 0 && visibleBuildings.every(b => {
-    const count = owned[b.id] ?? 0;
-    const cost = buildingCostN(b, count, buyN);
-    return reads < cost;
-  });
+  const lockedBuildings = buildings.filter(b => !unlockedBuildings.has(b.id));
 
   return (
     <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', minHeight: 0 }}>
       {/* Header with bulk buy */}
       <div style={{
-        padding: '8px 12px 6px', display: 'flex', alignItems: 'center',
+        padding: '4px 8px 2px', display: 'flex', alignItems: 'center',
         justifyContent: 'space-between', flexShrink: 0,
       }}>
         <div style={{
-          fontSize: 11, color: '#64748b', fontWeight: 600,
+          fontSize: 10, color: '#64748b', fontWeight: 600,
           letterSpacing: 1, textTransform: 'uppercase',
-        }}>
-          已讀大師
-        </div>
+        }}>已讀大師</div>
         <div style={{
           display: 'flex', gap: 2,
-          background: '#f1f5f9',
-          borderRadius: 8, padding: 2,
+          background: '#f1f5f9', borderRadius: 6, padding: 1,
           border: '1px solid #e2e8f0',
         }}>
           {[1, 10, 100].map(n => (
@@ -37,248 +150,67 @@ export default function BuildingList({ buildings, owned, reads, allTime, unlocke
               key={n}
               onClick={() => setBuyN(n)}
               style={{
-                fontSize: 10, padding: '5px 10px', borderRadius: 6, border: 'none',
-                background: buyN === n
-                  ? 'linear-gradient(135deg, #6366f1, #4338ca)'
-                  : 'transparent',
+                fontSize: 9, padding: '2px 6px', borderRadius: 4, border: 'none',
+                background: buyN === n ? 'linear-gradient(135deg, #6366f1, #4338ca)' : 'transparent',
                 color: buyN === n ? '#fff' : '#94a3b8',
-                fontWeight: 700,
-                fontFamily: "'JetBrains Mono',monospace",
+                fontWeight: 700, fontFamily: "'JetBrains Mono',monospace",
                 cursor: 'pointer',
-                transition: 'all .15s',
               }}
             >×{n}</button>
           ))}
         </div>
       </div>
 
-      {/* Building list */}
-      <div style={{ flex: 1, overflowY: 'auto', padding: '0 6px 6px', minHeight: 0 }}>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-          {buildings.map((b, i) => {
-            const isUnlocked = unlockedBuildings.has(b.id);
+      {/* Building list — scrollable */}
+      <div style={{ flex: 1, overflowY: 'auto', padding: '0 4px 4px', minHeight: 0 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+          {/* Unlocked buildings — horizontal bars */}
+          {visibleBuildings.map(b => {
             const count = owned[b.id] ?? 0;
             const cost = buildingCostN(b, count, buyN);
-            const canAfford = isUnlocked && reads >= cost;
+            const canAfford = reads >= cost;
             const isNew = newBuildings.has(b.id);
-            const hasAny = count > 0;
             const prodRate = b.baseProd * count;
-            const Icon = BUILDING_ICONS[b.id];
-            // For locked buildings: show unlock threshold progress
-            const unlockAt = b.unlockAt ?? 0;
-            const unlockPct = unlockAt > 0 ? Math.min(100, ((allTime ?? 0) / unlockAt) * 100) : 100;
-            // For affordable: show affordability progress bar
-            const affordPct = isUnlocked ? Math.min(100, (reads / cost) * 100) : 0;
-
-            if (!isUnlocked) {
-              // Locked building — dimmed preview row
-              return (
-                <div
-                  key={b.id}
-                  style={{
-                    display: 'flex', alignItems: 'stretch',
-                    width: '100%', padding: 0,
-                    background: 'rgba(148,163,184,.04)',
-                    border: '1px solid rgba(148,163,184,.12)',
-                    borderRadius: 10,
-                    opacity: 0.55,
-                    position: 'relative', overflow: 'hidden',
-                    cursor: 'default',
-                  }}
-                >
-                  {/* Left icon — blurred */}
-                  <div style={{
-                    width: 64, minHeight: 56,
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    background: 'rgba(148,163,184,.07)',
-                    borderRight: '1px solid rgba(148,163,184,.1)',
-                    flexShrink: 0, filter: 'grayscale(1)',
-                  }}>
-                    {Icon ? (
-                      <Icon size={30} color="#94a3b8" />
-                    ) : (
-                      <span style={{ fontSize: 22, filter: 'grayscale(1)' }}>{b.emoji}</span>
-                    )}
-                  </div>
-                  {/* Info */}
-                  <div style={{
-                    flex: 1, padding: '7px 12px', minWidth: 0,
-                    display: 'flex', flexDirection: 'column', justifyContent: 'center',
-                  }}>
-                    <div style={{ fontSize: 13, fontWeight: 700, color: '#94a3b8', lineHeight: 1.2 }}>{b.name}</div>
-                    <div style={{ fontSize: 10, color: '#cbd5e1', marginTop: 1 }}>{b.desc}</div>
-                    {/* Unlock progress */}
-                    <div style={{ marginTop: 4 }}>
-                      <div style={{ height: 2, background: 'rgba(148,163,184,.15)', borderRadius: 2, overflow: 'hidden' }}>
-                        <div style={{ height: '100%', width: `${unlockPct}%`, background: 'rgba(148,163,184,.4)', borderRadius: 2, transition: 'width .5s' }} />
-                      </div>
-                      <div style={{ fontSize: 9, color: '#cbd5e1', marginTop: 2, fontFamily: "'JetBrains Mono',monospace" }}>
-                        解鎖於 {fmt(unlockAt)} 生涯
-                      </div>
-                    </div>
-                  </div>
-                  {/* Lock icon */}
-                  <div style={{
-                    minWidth: 44, display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    paddingRight: 12, fontSize: 16, opacity: 0.4,
-                  }}>🔒</div>
-                </div>
-              );
-            }
 
             return (
-              <button
+              <BuildingBar
                 key={b.id}
-                onClick={() => { onBuy(b, buyN); setLastBought(b.id); setTimeout(() => setLastBought(null), 400); }}
-                disabled={!canAfford}
-                onMouseEnter={() => canAfford && setHovered(b.id)}
-                onMouseLeave={() => setHovered(null)}
-                style={{
-                  display: 'flex', alignItems: 'stretch',
-                  width: '100%', padding: 0,
-                  background: `linear-gradient(135deg, ${b.color}${hasAny ? '10' : '04'}, ${b.color}${hasAny ? '05' : '02'})`,
-                  border: isNew
-                    ? `1px solid ${b.color}55`
-                    : canAfford
-                      ? `1px solid ${b.color}20`
-                      : '1px solid #e8eaed',
-                  borderRadius: 10,
-                  opacity: canAfford ? 1 : 0.5,
-                  transition: 'all .15s',
-                  textAlign: 'left',
-                  position: 'relative',
-                  overflow: 'hidden',
-                  cursor: canAfford ? 'pointer' : 'default',
-                  animation: isNew ? 'si .4s ease-out' : 'none',
-                  boxShadow: lastBought === b.id
-                    ? `0 0 0 2px ${b.color}44`
-                    : hovered === b.id && canAfford
-                      ? `0 3px 15px ${b.color}15`
-                      : 'none',
-                  transform: lastBought === b.id ? 'scale(1.01)' : 'none',
-                }}
-              >
-                {/* Scattered icon crowd background */}
-                {hasAny && Icon && (
-                  <div style={{
-                    position: 'absolute', inset: 0,
-                    display: 'flex', flexWrap: 'wrap', alignItems: 'center', alignContent: 'center',
-                    gap: 0, padding: '2px 70px 2px 68px',
-                    pointerEvents: 'none', overflow: 'hidden',
-                  }}>
-                    {Array.from({ length: Math.min(count, 50) }, (_, j) => {
-                      const rot = ((j * 13 + 7) % 25) - 12;
-                      const opa = 0.03 + Math.min(0.07, count * 0.001);
-                      return (
-                        <span key={j} style={{
-                          display: 'inline-flex',
-                          transform: `rotate(${rot}deg)`,
-                          opacity: opa,
-                          flexShrink: 0,
-                        }}>
-                          <Icon size={14} color={b.color} />
-                        </span>
-                      );
-                    })}
-                  </div>
-                )}
-
-                {/* Left icon area */}
-                <div style={{
-                  width: 64, minHeight: 64,
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  background: `${b.color}${hasAny ? '12' : '06'}`,
-                  borderRight: `1px solid ${b.color}10`,
-                  flexShrink: 0,
-                  position: 'relative',
-                }}>
-                  {Icon ? (
-                    <Icon size={36} color={b.color} />
-                  ) : (
-                    <span style={{ fontSize: 28 }}>{b.emoji}</span>
-                  )}
-                </div>
-
-                {/* Info column */}
-                <div style={{
-                  flex: 1, padding: '8px 12px', minWidth: 0,
-                  position: 'relative', zIndex: 1,
-                  display: 'flex', flexDirection: 'column', justifyContent: 'center',
-                }}>
-                  {/* Row 1: Name */}
-                  <div style={{
-                    fontSize: 15, fontWeight: 800, color: '#1e293b',
-                    lineHeight: 1.2,
-                  }}>{b.name}</div>
-
-                  {/* Row 2: Description — the humor */}
-                  <div style={{
-                    fontSize: 11, color: '#64748b', marginTop: 2,
-                    lineHeight: 1.3,
-                    whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
-                  }}>{b.desc}</div>
-
-                  {/* Row 3: Cost + prod rate */}
-                  <div style={{
-                    display: 'flex', alignItems: 'center', gap: 8, marginTop: 4,
-                  }}>
-                    <span style={{
-                      fontSize: 13, fontWeight: 700,
-                      color: canAfford ? '#b45309' : '#94a3b8',
-                      fontFamily: "'JetBrains Mono',monospace",
-                    }}>
-                      {fmt(cost)}{buyN > 1 ? ` (×${buyN})` : ''}
-                    </span>
-                    <span style={{
-                      fontSize: 10, color: '#94a3b8',
-                      fontFamily: "'JetBrains Mono',monospace",
-                    }}>
-                      {hasAny ? `${fmt(prodRate)}/s` : `+${fmt(b.baseProd)}/s`}
-                    </span>
-                  </div>
-
-                  {/* Affordability progress bar — only when not affordable */}
-                  {!canAfford && (
-                    <div style={{ marginTop: 4, height: 2, background: 'rgba(0,0,0,.06)', borderRadius: 2, overflow: 'hidden' }}>
-                      <div style={{
-                        height: '100%', width: `${affordPct}%`,
-                        background: `linear-gradient(90deg, ${b.color}60, ${b.color}90)`,
-                        borderRadius: 2, transition: 'width .5s',
-                      }} />
-                    </div>
-                  )}
-                </div>
-
-                {/* Right — big count number */}
-                <div style={{
-                  minWidth: 56, display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  paddingRight: 12,
-                  position: 'relative', zIndex: 1,
-                }}>
-                  <div style={{
-                    fontSize: hasAny ? 28 : 16, fontWeight: 900,
-                    color: hasAny ? b.color : '#cbd5e1',
-                    fontFamily: "'Space Grotesk','JetBrains Mono',monospace",
-                    lineHeight: 1, opacity: hasAny ? 0.8 : 0.4,
-                  }}>{count}</div>
-                </div>
-
-                {/* NEW badge */}
-                {isNew && (
-                  <div style={{
-                    position: 'absolute', top: 4, right: 8,
-                    background: b.color, color: '#fff', fontSize: 9, fontWeight: 800,
-                    padding: '2px 8px', borderRadius: 6, zIndex: 2,
-                  }}>NEW</div>
-                )}
-              </button>
+                b={b}
+                count={count}
+                cost={cost}
+                prodRate={prodRate}
+                canAfford={canAfford}
+                buyN={buyN}
+                isNew={isNew}
+                onBuy={() => { onBuy(b, buyN); setLastBought(b.id); setTimeout(() => setLastBought(null), 400); }}
+                lastBought={lastBought === b.id}
+                hovered={hovered === b.id}
+                onHover={() => setHovered(b.id)}
+                onLeave={() => setHovered(null)}
+              />
             );
           })}
-          {reads > 0 && noneAffordable && (
-            <div style={{ textAlign: 'center', padding: '12px 0', fontSize: 12, color: '#94a3b8', fontStyle: 'italic' }}>
-              繼續點擊，很快就能招募第一個已讀大師
-            </div>
-          )}
+
+          {/* Locked buildings — minimal single-line */}
+          {lockedBuildings.map(b => {
+            const unlockAt = b.unlockAt ?? 0;
+            const unlockPct = unlockAt > 0 ? Math.min(100, ((allTime ?? 0) / unlockAt) * 100) : 100;
+
+            return (
+              <div key={b.id} style={{
+                display: 'flex', alignItems: 'center', gap: 4,
+                padding: '2px 8px', height: 22,
+                opacity: 0.4, fontSize: 10, color: '#94a3b8',
+              }}>
+                <span style={{ fontSize: 8 }}>🔒</span>
+                <span style={{ fontWeight: 600, minWidth: 50 }}>{b.name}</span>
+                <div style={{ flex: 1, height: 2, background: 'rgba(148,163,184,.15)', borderRadius: 2, overflow: 'hidden' }}>
+                  <div style={{ height: '100%', width: `${unlockPct}%`, background: 'rgba(148,163,184,.35)', borderRadius: 2, transition: 'width .5s' }} />
+                </div>
+                <span style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 8 }}>{fmt(unlockAt)}</span>
+              </div>
+            );
+          })}
         </div>
       </div>
     </div>

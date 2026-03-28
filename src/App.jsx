@@ -25,7 +25,11 @@ import PrestigeShop from './ui/PrestigeShop.jsx';
 import ReadStorm from './ui/ReadStorm.jsx';
 import ReplyTrap from './ui/ReplyTrap.jsx';
 import Ticker from './ui/Ticker.jsx';
+import MiniGamePanel from './ui/MiniGamePanel.jsx';
 import { StatsPanel, LogPanel, AchievementBadges } from './ui/Panels.jsx';
+
+import { createMarketState, tickMarket, buyShare, sellShare, resetHoldings } from './game/stockMarket.js';
+import { createGardenState, tickGarden, plantSeed, harvestFlower, clearWilted, getGardenBuffMult, getSeriesBonusMult, resetGarden } from './game/garden.js';
 
 function initState() {
   const saved = loadGame();
@@ -94,6 +98,9 @@ export default function App() {
   const [offlineBanner, setOfflineBanner] = useState(null);
   const [prodPerSec, setProdPerSec] = useState(0);
   const [showPrestigeShop, setShowPrestigeShop] = useState(false);
+  const [marketState,      setMarketState]      = useState(() => init.marketState ?? createMarketState());
+  const [gardenState,      setGardenState]      = useState(() => init.gardenState ?? createGardenState());
+  const [activeMiniGame,   setActiveMiniGame]   = useState(null);
 
   const idRef      = useRef(0);
   const readsRef   = useRef(reads);
@@ -108,6 +115,8 @@ export default function App() {
   useEffect(() => { ownedRef.current   = owned;   }, [owned]);
   useEffect(() => { boughtRef.current  = boughtUpgrades; }, [boughtUpgrades]);
   useEffect(() => { tempMultRef.current = tempMult; }, [tempMult]);
+
+
 
   const prestigeMult   = 1 + prestigePower * 0.1;
   // Prestige bonus for earned ✦
@@ -147,10 +156,12 @@ export default function App() {
       p += b.baseProd * (owned[b.id] ?? 0) * m;
     });
     const coldMasterMult = coldMaster ? 1.5 : 1;
-    const total = p * prestigeMult * prestigeGlobalMult * chainGlobalBuff * tempMult * coldMasterMult;
+    const gardenBuff = getGardenBuffMult(gardenState);
+    const gardenSeries = getSeriesBonusMult(gardenState);
+    const total = p * prestigeMult * prestigeGlobalMult * chainGlobalBuff * tempMult * coldMasterMult * gardenBuff * gardenSeries;
     setProdPerSec(total);
     psRef.current = total;
-  }, [owned, boughtUpgrades, prestigeMult, prestigeGlobalMult, chainGlobalBuff, tempMult, boughtPrestige, eventChainBuffs]);
+  }, [owned, boughtUpgrades, prestigeMult, prestigeGlobalMult, chainGlobalBuff, tempMult, boughtPrestige, eventChainBuffs, gardenState]);
 
   const calcClickPower = useCallback(() => {
     let bonus = 1, pct = 0;
@@ -178,15 +189,33 @@ export default function App() {
     return () => clearInterval(iv);
   }, [prodPerSec]);
 
+  // Stock market tick — every 2s when algo >= 1
+  useEffect(() => {
+    if ((owned.algo ?? 0) < 1) return;
+    const iv = setInterval(() => {
+      setMarketState(prev => tickMarket(prev));
+    }, 2000);
+    return () => clearInterval(iv);
+  }, [(owned.algo ?? 0) >= 1]);
+
+  // Garden tick — every 3s when ex >= 1
+  useEffect(() => {
+    if ((owned.ex ?? 0) < 1) return;
+    const iv = setInterval(() => {
+      setGardenState(prev => tickGarden(prev, ownedRef.current.ex ?? 0));
+    }, 3000);
+    return () => clearInterval(iv);
+  }, [(owned.ex ?? 0) >= 1]);
+
   const saveState = useCallback(() => {
     saveGame({
       reads: readsRef.current, allTime: allTimeRef.current, owned: ownedRef.current,
       boughtUpgrades: boughtRef.current, prestigeCount, prestigePower,
       seenMilestones, unlockedAchievements, unlockedBuildings,
       boughtPrestige, activeSynergies, completedChains, eventChainBuffs,
-      stormCount, stormPerfect, guilt, coldMaster,
+      stormCount, stormPerfect, guilt, coldMaster, marketState, gardenState,
     });
-  }, [prestigeCount, prestigePower, seenMilestones, unlockedAchievements, unlockedBuildings, boughtPrestige, activeSynergies, completedChains, eventChainBuffs, stormCount, stormPerfect, guilt, coldMaster]);
+  }, [prestigeCount, prestigePower, seenMilestones, unlockedAchievements, unlockedBuildings, boughtPrestige, activeSynergies, completedChains, eventChainBuffs, stormCount, stormPerfect, guilt, coldMaster, marketState, gardenState]);
 
   // Autosave every 30 s
   useEffect(() => {
@@ -611,6 +640,41 @@ export default function App() {
     playUpgrade();
   }, []);
 
+  // Stock market handlers
+  const handleBuyShare = useCallback((channelId) => {
+    const result = buyShare(marketState, channelId, readsRef.current);
+    if (!result) return;
+    setMarketState(result.newState);
+    setReads(r => r - result.cost);
+  }, [marketState]);
+
+  const handleSellShare = useCallback((channelId) => {
+    const result = sellShare(marketState, channelId);
+    if (!result) return;
+    setMarketState(result.newState);
+    setReads(r => r + result.revenue);
+  }, [marketState]);
+
+  // ── Garden handlers ──
+  const handlePlantSeed = useCallback((slotIndex) => {
+    const result = plantSeed(gardenState, slotIndex);
+    if (!result) return;
+    setGardenState(result.newState);
+  }, [gardenState]);
+
+  const handleHarvestFlower = useCallback((slotIndex) => {
+    const result = harvestFlower(gardenState, slotIndex);
+    if (!result) return;
+    setGardenState(result.newState);
+    const tag = result.isNew ? '（新發現！）' : '';
+    addToast(`${result.flower.emoji} 收穫了${result.flower.name}！${tag} 生產 ×${result.buff.mult} ${Math.round((result.buff.expiresAt - Date.now()) / 60000)}分鐘`);
+  }, [gardenState]);
+
+  const handleClearWilted = useCallback((slotIndex) => {
+    const result = clearWilted(gardenState, slotIndex);
+    if (result) setGardenState(result);
+  }, [gardenState]);
+
   const handlePrestige = useCallback(() => {
     if (prestigeEarned < 1) return;
     playPrestige();
@@ -623,6 +687,8 @@ export default function App() {
     setBoughtUpgrades(new Set());
     setUnlockedBuildings(new Set(['ex', 'par', 'bsy']));
     setNewBuildings(new Set());
+    setMarketState(prev => resetHoldings(prev)); // reset holdings, keep market running
+    setGardenState(prev => resetGarden(prev)); // reset slots/seeds/buffs, keep collection
     setSeenMilestones(new Set());
     setRecentMsgs([]);
     setTempMult(1);
@@ -677,8 +743,9 @@ export default function App() {
         button:active { transform:scale(.96)!important }
         @media(min-width:768px) {
           .game-layout { flex-direction:row!important }
-          .section-hero  { width:35%!important; border-right:1px solid #e2e8f0 }
-          .section-store { width:65%!important }
+          .section-hero   { width:25%!important; border-right:1px solid #e2e8f0 }
+          .section-middle { width:45%!important; border-right:1px solid #e2e8f0 }
+          .section-store  { width:30%!important }
         }
       `}</style>
 
@@ -793,8 +860,8 @@ export default function App() {
 
       {/* ── HEADER ── */}
       <div style={{
-        padding: '8px 16px', display: 'flex', alignItems: 'center',
-        flexShrink: 0, gap: 10,
+        padding: '10px 16px', display: 'flex', alignItems: 'center',
+        flexShrink: 0, gap: 10, minHeight: 48,
         background: 'rgba(255,255,255,.8)',
         backdropFilter: 'blur(20px)',
         position: 'relative',
@@ -825,9 +892,9 @@ export default function App() {
           )}
         </div>
 
-        {/* Achievement badges in header */}
-        <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
-          <AchievementBadges unlockedAchievements={unlockedAchievements} maxVisible={5} />
+        {/* Achievements — compact in header */}
+        <div style={{ flex: 1, overflow: 'hidden', margin: '0 8px' }}>
+          <AchievementBadges unlockedAchievements={unlockedAchievements} maxVisible={8} />
         </div>
 
         {/* Right buttons */}
@@ -944,12 +1011,27 @@ export default function App() {
             color: prodPerSec >= 1e6 ? '#b45309' : '#94a3b8',
             fontFamily: "'JetBrains Mono',monospace",
             fontWeight: prodPerSec >= 1e6 ? 700 : 400,
-            marginBottom: 10, display: 'flex', alignItems: 'center', gap: 6,
+            marginBottom: 4, display: 'flex', alignItems: 'center', gap: 6,
             transition: 'all .3s',
           }}>
             <CheckIcon size={13} color={prodPerSec >= 1e6 ? '#b45309' : '#94a3b8'} />
             {prodPerSec > 0 ? `${fmt(prodPerSec)}/秒` : '點擊開始已讀'}
           </div>
+
+          {/* Compact stats — key info only */}
+          {allTime > 0 && (
+            <div style={{
+              display: 'flex', gap: 8, marginBottom: 8,
+              fontSize: 10, color: '#94a3b8',
+              fontFamily: "'JetBrains Mono',monospace",
+            }}>
+              <span>生涯 {fmt(allTime)}</span>
+              <span>·</span>
+              <span>大師 {Object.values(owned).reduce((s, v) => s + v, 0)}</span>
+              <span>·</span>
+              <span>升級 {boughtUpgrades.size}/{UPGRADES.length}</span>
+            </div>
+          )}
 
           {/* Guilt indicator — always visible, between CPS and ClickArea */}
           <div style={{
@@ -1059,14 +1141,35 @@ export default function App() {
           </div>
         </div>
 
-        {/* RIGHT — Stats + Upgrades + Buildings (no tabs) */}
-        <div className="section-store" style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', minHeight: 0 }}>
+        {/* MIDDLE — Stats + Mini-Game + Feedback */}
+        <div className="section-middle" style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', minHeight: 0 }}>
 
-          {/* Stats info bar — horizontal */}
-          <StatsPanel layout="horizontal" reads={reads} allTime={allTime} prodPerSec={prodPerSec} clickPower={calcClickPower()} owned={owned} seenMilestones={seenMilestones} prestigeCount={prestigeCount} prestigePower={prestigePower} boughtUpgrades={boughtUpgrades} />
+          {/* Mini-Game panel — building sub-systems */}
+          <MiniGamePanel
+            owned={owned}
+            activeMiniGame={activeMiniGame}
+            setActiveMiniGame={setActiveMiniGame}
+            marketState={marketState}
+            reads={reads}
+            onBuyShare={handleBuyShare}
+            onSellShare={handleSellShare}
+            gardenState={gardenState}
+            onPlant={handlePlantSeed}
+            onHarvest={handleHarvestFlower}
+            onClearWilted={handleClearWilted}
+          />
 
-          {/* Upgrades — always visible, compact, capped height */}
-          <div style={{ maxHeight: '30%', overflowY: 'auto', borderBottom: '1px solid #e2e8f0', flexShrink: 0 }}>
+        </div>
+
+        {/* RIGHT — Store: Upgrades + Buildings */}
+        <div className="section-store" style={{ display: 'flex', flexDirection: 'column', overflow: 'hidden', minHeight: 0 }}>
+
+          {/* Upgrades — compact, capped height */}
+          <div style={{
+            maxHeight: '35%', overflowY: 'auto', flexShrink: 0,
+            borderBottom: '2px solid #e2e8f0',
+            background: 'rgba(99,102,241,.02)',
+          }}>
             {upgradeStates.length > 0 ? (
               <UpgradeRow upgrades={upgradeStates} reads={reads} onBuy={handleBuyUpgrade} compact />
             ) : (
@@ -1076,7 +1179,7 @@ export default function App() {
             )}
           </div>
 
-          {/* Buildings — fills remaining space */}
+          {/* Buildings — fills remaining space, single column */}
           <BuildingList
             buildings={BUILDINGS}
             owned={owned}
@@ -1087,6 +1190,7 @@ export default function App() {
             buyN={buyN}
             onBuy={handleBuy}
             setBuyN={setBuyN}
+            singleColumn
           />
         </div>
       </div>

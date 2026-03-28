@@ -78,8 +78,8 @@ export function StatsPanel({ reads, allTime, prodPerSec, clickPower, owned, seen
     const allItems = [...left, ...right];
     return (
       <div style={{
-        display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '2px 8px',
-        padding: '5px 10px',
+        display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: '0 2px',
+        padding: '2px 4px',
         background: 'rgba(255,255,255,.5)',
         borderBottom: '1px solid #e2e8f0',
       }}>
@@ -88,14 +88,13 @@ export function StatsPanel({ reads, allTime, prodPerSec, clickPower, owned, seen
           const isGold = label === '生涯' && allTimeGold;
           return (
             <div key={label} style={{
-              display: 'flex', flexDirection: 'column', alignItems: 'center',
-              padding: '1px 0',
+              display: 'flex', alignItems: 'center', gap: 3,
+              padding: '2px 8px',
             }}>
-              <span style={{ fontSize: 9, color: '#94a3b8', lineHeight: 1.2 }}>{label}</span>
+              <span style={{ fontSize: 9, color: '#94a3b8' }}>{label}</span>
               <span style={{
                 fontSize: 11, fontWeight: 700, color,
                 fontFamily: "'JetBrains Mono',monospace",
-                lineHeight: 1.3,
                 ...(isFlashing ? { animation: 'statFlash .6s ease-out' } : {}),
                 ...(isGold ? { animation: 'goldPulse 1.5s ease-in-out infinite' } : {}),
               }}>{value}</span>
