@@ -667,6 +667,7 @@ export default function App() {
         @keyframes bgfloat { 0% { transform:translateY(100vh) rotate(0deg);opacity:0 } 10% { opacity:1 } 90% { opacity:1 } 100% { transform:translateY(-20px) rotate(360deg);opacity:0 } }
         @keyframes bgpulse { 0%,100% { opacity:.03 } 50% { opacity:.07 } }
         @keyframes marquee { 0% { transform:translateX(0) } 100% { transform:translateX(-50%) } }
+        @keyframes guiltShake { 0%,100% { transform:translateX(0) } 25% { transform:translateX(-1px) } 75% { transform:translateX(1px) } }
         @media(prefers-reduced-motion:reduce) { *,*::before,*::after { animation-duration:0.01ms!important; animation-iteration-count:1!important; transition-duration:0.01ms!important } }
         * { box-sizing:border-box; margin:0; padding:0 }
         button { font-family:inherit; cursor:pointer }
@@ -836,16 +837,26 @@ export default function App() {
             animation: log.length > 1 ? `marquee ${Math.max(8, log.length * 3)}s linear infinite` : 'none',
             whiteSpace: 'nowrap',
           }}>
-            {(log.length > 3 ? [...log.slice(0, 8), ...log.slice(0, 8)] : log.slice(0, 8)).map((l, i) => (
-              <span key={`${l.id}-${i}`} style={{
-                fontSize: 12, color: '#64748b',
-                display: 'inline-flex', alignItems: 'center', gap: 6,
-                flexShrink: 0,
-              }}>
-                <span style={{ color: '#6366f1', fontSize: 10 }}>●</span>
-                {l.m}
-              </span>
-            ))}
+            {(log.length > 3 ? [...log.slice(0, 8), ...log.slice(0, 8)] : log.slice(0, 8)).map((l, i) => {
+              // Color-code by event type
+              const m = l.m;
+              const dotColor = m.includes('成就') || m.includes('🎖️') ? '#f59e0b'
+                : m.includes('解鎖') || m.includes('🔓') ? '#10b981'
+                : m.includes('Synergy') || m.includes('🔗') ? '#8b5cf6'
+                : m.includes('罪惡') || m.includes('😔') || m.includes('😭') ? '#ef4444'
+                : m.includes('⬆️') || m.includes('升級') ? '#3b82f6'
+                : '#6366f1';
+              return (
+                <span key={`${l.id}-${i}`} style={{
+                  fontSize: 13, color: '#475569',
+                  display: 'inline-flex', alignItems: 'center', gap: 6,
+                  flexShrink: 0, fontWeight: 500,
+                }}>
+                  <span style={{ color: dotColor, fontSize: 8 }}>●</span>
+                  {m}
+                </span>
+              );
+            })}
           </div>
         </div>
       )}
@@ -862,27 +873,45 @@ export default function App() {
           overflowY: 'auto',
         }}>
           {/* Hero counter — the star of the show */}
-          <div style={{
-            fontSize: 68, fontWeight: 900,
-            fontFamily: "'Space Grotesk','JetBrains Mono',monospace", color: '#1e293b',
-            animation: popAnim ? 'pn .18s ease-out' : 'none',
-            letterSpacing: -3, lineHeight: 1,
-            marginBottom: 4,
-          }}>
-            {fmt(reads)}
-          </div>
+          {(() => {
+            // Color shifts by magnitude
+            const counterColor = reads >= 1e12 ? '#7c3aed' // T = purple
+              : reads >= 1e9 ? '#b45309' // B = gold
+              : reads >= 1e6 ? '#4f46e5' // M = indigo
+              : '#1e293b'; // default
+            const counterGlow = reads >= 1e9
+              ? `0 0 30px ${counterColor}22, 0 0 60px ${counterColor}11`
+              : 'none';
+            return (
+              <div style={{
+                fontSize: 68, fontWeight: 900,
+                fontFamily: "'Space Grotesk','JetBrains Mono',monospace",
+                color: counterColor,
+                animation: popAnim ? 'pn .18s ease-out' : 'none',
+                letterSpacing: -3, lineHeight: 1,
+                marginBottom: 4,
+                textShadow: counterGlow,
+                transition: 'color .5s, text-shadow .5s',
+              }}>
+                {fmt(reads)}
+              </div>
+            );
+          })()}
 
-          {/* CPS subtitle */}
+          {/* CPS subtitle — scales with production */}
           <div style={{
-            fontSize: 16, color: '#94a3b8',
+            fontSize: prodPerSec >= 1e6 ? 18 : 16,
+            color: prodPerSec >= 1e6 ? '#b45309' : '#94a3b8',
             fontFamily: "'JetBrains Mono',monospace",
+            fontWeight: prodPerSec >= 1e6 ? 700 : 400,
             marginBottom: 12, display: 'flex', alignItems: 'center', gap: 6,
+            transition: 'all .3s',
           }}>
-            <CheckIcon size={13} color="#94a3b8" />
+            <CheckIcon size={13} color={prodPerSec >= 1e6 ? '#b45309' : '#94a3b8'} />
             {prodPerSec > 0 ? `${fmt(prodPerSec)}/秒` : '點擊開始已讀'}
           </div>
 
-          <PrestigeBar allTime={allTime} prestigeEarned={prestigeEarned} onPrestige={handlePrestige} />
+          <PrestigeBar allTime={allTime} prestigeEarned={prestigeEarned} prestigeCount={prestigeCount} onPrestige={handlePrestige} />
 
           <div style={{ marginTop: 10, width: '100%', display: 'flex', justifyContent: 'center' }}>
             <ClickArea
@@ -892,6 +921,8 @@ export default function App() {
               popAnim={popAnim}
               recentMessages={recentMsgs}
               onClick={handleClick}
+              guilt={guilt}
+              guiltLevel={guiltLevel}
             />
           </div>
 
@@ -911,42 +942,63 @@ export default function App() {
 
           {/* Guilt indicator + relief */}
           {guilt >= 50 && (
-            <div style={{ width: '100%', marginTop: 8 }}>
+            <div style={{
+              width: '100%', marginTop: 8,
+              padding: '8px 10px', borderRadius: 10,
+              background: coldMaster ? 'rgba(20,184,166,.06)'
+                : guiltLevel === 'high' ? 'rgba(239,68,68,.05)'
+                : guiltLevel === 'medium' ? 'rgba(245,158,11,.04)'
+                : 'rgba(99,102,241,.03)',
+              border: `1px solid ${coldMaster ? 'rgba(20,184,166,.15)'
+                : guiltLevel === 'high' ? 'rgba(239,68,68,.15)'
+                : guiltLevel === 'medium' ? 'rgba(245,158,11,.1)'
+                : 'rgba(99,102,241,.08)'}`,
+              transition: 'all .5s',
+              animation: guiltLevel === 'high' ? 'guiltShake 0.5s ease-in-out infinite' : 'none',
+            }}>
               <div style={{
                 display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4,
               }}>
-                <span style={{ fontSize: 10, color: '#94a3b8', fontWeight: 600, letterSpacing: 0.5, textTransform: 'uppercase' }}>
-                  罪惡感
-                </span>
                 <span style={{
-                  fontSize: 10, fontWeight: 700,
-                  fontFamily: "'JetBrains Mono',monospace",
+                  fontSize: 10, fontWeight: 600, letterSpacing: 0.5, textTransform: 'uppercase',
                   color: coldMaster ? '#14b8a6'
                     : guiltLevel === 'high' ? '#ef4444'
                     : guiltLevel === 'medium' ? '#f59e0b'
                     : '#94a3b8',
                 }}>
-                  {coldMaster ? '🧊 已超越' : Math.floor(guilt)}
+                  {coldMaster ? '🧊 冷漠大師' : '😔 罪惡感'}
+                </span>
+                <span style={{ flex: 1 }} />
+                <span style={{
+                  fontSize: 12, fontWeight: 800,
+                  fontFamily: "'JetBrains Mono',monospace",
+                  color: coldMaster ? '#14b8a6'
+                    : guiltLevel === 'high' ? '#ef4444'
+                    : guiltLevel === 'medium' ? '#f59e0b'
+                    : '#6366f1',
+                }}>
+                  {coldMaster ? '∞' : Math.floor(guilt)}
                 </span>
               </div>
               {/* Guilt bar */}
               <div style={{
-                height: 3, background: '#f1f5f9', borderRadius: 2,
-                overflow: 'hidden', marginBottom: 6,
+                height: 4, background: 'rgba(0,0,0,.05)', borderRadius: 3,
+                overflow: 'hidden', marginBottom: coldMaster ? 0 : 6,
               }}>
                 <div style={{
-                  height: '100%', borderRadius: 2,
-                  transition: 'width .3s, background .3s',
-                  width: `${Math.min(100, (guilt / GUILT_THRESHOLDS.transcend) * 100)}%`,
-                  background: coldMaster ? '#14b8a6'
-                    : guiltLevel === 'high' ? '#ef4444'
-                    : guiltLevel === 'medium' ? '#f59e0b'
-                    : '#6366f1',
+                  height: '100%', borderRadius: 3,
+                  transition: 'width .3s, background .5s',
+                  width: coldMaster ? '100%' : `${Math.min(100, (guilt / GUILT_THRESHOLDS.transcend) * 100)}%`,
+                  background: coldMaster ? 'linear-gradient(90deg, #14b8a6, #06b6d4)'
+                    : guiltLevel === 'high' ? 'linear-gradient(90deg, #ef4444, #f97316)'
+                    : guiltLevel === 'medium' ? 'linear-gradient(90deg, #f59e0b, #fbbf24)'
+                    : 'linear-gradient(90deg, #6366f1, #818cf8)',
+                  boxShadow: guiltLevel === 'high' ? '0 0 8px rgba(239,68,68,.4)' : 'none',
                 }} />
               </div>
               {/* Relief buttons */}
               {!coldMaster && (
-                <div style={{ display: 'flex', gap: 3, flexWrap: 'wrap' }}>
+                <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
                   {GUILT_RELIEF.map(r => {
                     const now = Date.now();
                     const onCooldown = guiltCooldowns[r.id] && now < guiltCooldowns[r.id];
@@ -958,11 +1010,13 @@ export default function App() {
                         disabled={onCooldown || guilt < 10}
                         title={`${r.name}：${r.desc}（-${r.guiltReduce}罪惡感）`}
                         style={{
-                          fontSize: 12, padding: '3px 8px', borderRadius: 6,
-                          border: '1px solid #e2e8f0', background: onCooldown ? '#f1f5f9' : '#fff',
+                          fontSize: 13, padding: '4px 10px', borderRadius: 8,
+                          border: '1px solid #e2e8f0',
+                          background: onCooldown ? '#f1f5f9' : '#fff',
                           cursor: onCooldown ? 'default' : 'pointer',
-                          opacity: onCooldown ? 0.4 : 1,
+                          opacity: onCooldown ? 0.35 : 1,
                           fontFamily: 'inherit', transition: 'all .15s',
+                          boxShadow: !onCooldown && guilt > 200 ? '0 1px 4px rgba(0,0,0,.06)' : 'none',
                         }}
                       >
                         {r.emoji}{onCooldown ? ` ${cdLeft}s` : ''}

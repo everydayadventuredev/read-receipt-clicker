@@ -1,8 +1,27 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { PRESTIGE_UPGRADES } from '../game/prestige.js';
 
 export default function PrestigeShop({ prestigePower, boughtPrestige, onBuy }) {
   const [hovered, setHovered] = useState(null);
+  const [justBought, setJustBought] = useState(new Set());
+  const prevBoughtRef = useRef(new Set());
+
+  // Detect newly purchased upgrades for smooth transition
+  useEffect(() => {
+    const newlyBought = new Set();
+    boughtPrestige.forEach(id => {
+      if (!prevBoughtRef.current.has(id)) {
+        newlyBought.add(id);
+      }
+    });
+    if (newlyBought.size > 0) {
+      setJustBought(newlyBought);
+      const timer = setTimeout(() => setJustBought(new Set()), 700);
+      prevBoughtRef.current = new Set(boughtPrestige);
+      return () => clearTimeout(timer);
+    }
+    prevBoughtRef.current = new Set(boughtPrestige);
+  }, [boughtPrestige]);
 
   if (!PRESTIGE_UPGRADES.length) {
     return (
@@ -27,7 +46,7 @@ export default function PrestigeShop({ prestigePower, boughtPrestige, onBuy }) {
 
   return (
     <div style={{ padding: '8px 0' }}>
-      {/* Header */}
+      {/* Header with prominent balance */}
       <div style={{
         display: 'flex', justifyContent: 'space-between', alignItems: 'center',
         marginBottom: 10, padding: '0 2px',
@@ -37,11 +56,14 @@ export default function PrestigeShop({ prestigePower, boughtPrestige, onBuy }) {
         </span>
         <span style={{
           fontFamily: "'JetBrains Mono', monospace",
-          fontSize: 12, fontWeight: 600, color: '#4f46e5',
-          background: 'rgba(99,102,241,.08)',
-          padding: '2px 8px', borderRadius: 8,
+          fontSize: 14, fontWeight: 700, color: '#4f46e5',
+          background: 'linear-gradient(135deg, rgba(99,102,241,.1), rgba(139,92,246,.12))',
+          padding: '3px 10px', borderRadius: 10,
+          border: '1px solid rgba(99,102,241,.2)',
+          letterSpacing: 0.5,
+          textShadow: '0 0 8px rgba(99,102,241,.15)',
         }}>
-          ✦{prestigePower}
+          ✦ {prestigePower}
         </span>
       </div>
 
@@ -56,6 +78,7 @@ export default function PrestigeShop({ prestigePower, boughtPrestige, onBuy }) {
           const canBuy = !bought && prestigePower >= up.cost;
           const deficit = !bought ? up.cost - prestigePower : 0;
           const isHovered = hovered === up.id && canBuy;
+          const wasJustBought = justBought.has(up.id);
 
           return (
             <div
@@ -82,9 +105,11 @@ export default function PrestigeShop({ prestigePower, boughtPrestige, onBuy }) {
                 boxShadow: isHovered
                   ? '0 2px 8px rgba(99,102,241,.15)'
                   : '0 1px 3px rgba(0,0,0,.04)',
-                transition: 'all .15s',
+                transition: 'all .3s ease',
                 transform: isHovered ? 'translateY(-1px)' : 'none',
                 userSelect: 'none',
+                ...(canBuy ? { animation: 'prestigeGlowPulse 2.5s ease-in-out infinite' } : {}),
+                ...(wasJustBought ? { animation: 'fadeToGray .7s ease-out forwards' } : {}),
               }}
             >
               {/* Bought badge */}

@@ -22,3 +22,46 @@ body {
   background: var(--bg);
   color: var(--text);
 }
+
+/* Achievement badge entrance */
+@keyframes badgeEntrance {
+  0%   { transform: scale(0); opacity: 0; filter: drop-shadow(0 0 6px #d97706); }
+  60%  { transform: scale(1.2); opacity: 1; filter: drop-shadow(0 0 10px #f59e0b); }
+  100% { transform: scale(1); opacity: 1; filter: drop-shadow(0 0 0 transparent); }
+}
+
+/* Stat value flash on change */
+@keyframes statFlash {
+  0%   { color: #22c55e; }
+  100% { color: inherit; }
+}
+
+/* Gold milestone pulse */
+@keyframes goldPulse {
+  0%, 100% { color: #d97706; }
+  50%      { color: #f59e0b; text-shadow: 0 0 6px rgba(245,158,11,.4); }
+}
+
+/* Gentle glow pulse for buyable items */
+@keyframes glowPulse {
+  0%, 100% { box-shadow: 0 0 4px rgba(99,102,241,.1), 0 1px 3px rgba(99,102,241,.06); }
+  50%      { box-shadow: 0 0 12px rgba(99,102,241,.25), 0 1px 3px rgba(99,102,241,.06); }
+}
+
+/* Prestige glow pulse */
+@keyframes prestigeGlowPulse {
+  0%, 100% { box-shadow: 0 0 4px rgba(99,102,241,.1), 0 1px 3px rgba(0,0,0,.04); }
+  50%      { box-shadow: 0 0 14px rgba(99,102,241,.3), 0 1px 3px rgba(0,0,0,.04); }
+}
+
+/* Slide-in for newly unlocked upgrades */
+@keyframes slideIn {
+  0%   { opacity: 0; transform: translateX(-16px); }
+  100% { opacity: 1; transform: translateX(0); }
+}
+
+/* Smooth fade for bought state */
+@keyframes fadeToGray {
+  0%   { opacity: 1; background: #eef2ff; }
+  100% { opacity: 0.55; background: #f8fafc; }
+}

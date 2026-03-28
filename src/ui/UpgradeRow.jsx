@@ -1,10 +1,38 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { BUILDINGS } from '../game/buildings.js';
 import { fmt } from '../utils/format.js';
 import CheckIcon from './CheckIcon.jsx';
 
 export default function UpgradeRow({ upgrades, reads, onBuy }) {
   const doneCount = upgrades.filter(u => u.state === 'done').length;
+  const seenRef = useRef(new Set());
+  const [newIds, setNewIds] = useState(new Set());
+
+  // Track newly visible (buy/wait) upgrades for slide-in animation
+  useEffect(() => {
+    const freshIds = new Set();
+    upgrades.forEach(u => {
+      if ((u.state === 'buy' || u.state === 'wait') && !seenRef.current.has(u.id)) {
+        freshIds.add(u.id);
+        seenRef.current.add(u.id);
+      }
+    });
+    if (freshIds.size > 0) {
+      setNewIds(prev => {
+        const merged = new Set(prev);
+        freshIds.forEach(id => merged.add(id));
+        return merged;
+      });
+      const timer = setTimeout(() => {
+        setNewIds(prev => {
+          const next = new Set(prev);
+          freshIds.forEach(id => next.delete(id));
+          return next;
+        });
+      }, 500);
+      return () => clearTimeout(timer);
+    }
+  }, [upgrades]);
 
   // Sort: buy first, wait second, done last
   const sorted = [...upgrades].sort((a, b) => {
@@ -32,6 +60,7 @@ export default function UpgradeRow({ upgrades, reads, onBuy }) {
           const isDone = u.state === 'done';
           const canBuy = u.state === 'buy';
           const isWait = u.state === 'wait';
+          const isNew = newIds.has(u.id);
           const buildingName = u.req?.building ? BUILDINGS.find(b => b.id === u.req.building)?.name : null;
 
           if (isDone) {
@@ -60,25 +89,28 @@ export default function UpgradeRow({ upgrades, reads, onBuy }) {
                 width: '100%', padding: '10px 12px', borderRadius: 10,
                 background: canBuy ? '#fff' : '#f8fafc',
                 border: canBuy ? '1px solid rgba(99,102,241,.25)' : '1px solid #e2e8f0',
-                boxShadow: canBuy ? '0 1px 3px rgba(99,102,241,.06)' : 'none',
                 opacity: isWait ? 0.55 : 1,
                 cursor: canBuy ? 'pointer' : 'default',
                 textAlign: 'left',
                 transition: 'all .15s',
                 fontFamily: 'inherit',
+                ...(canBuy ? { animation: 'glowPulse 2.5s ease-in-out infinite' } : {}),
+                ...(isNew ? { animation: 'slideIn .4s cubic-bezier(.25,.46,.45,.94) forwards' } : {}),
               }}
             >
-              {/* Emoji */}
-              <span style={{ fontSize: 18, lineHeight: 1, flexShrink: 0, marginTop: 1 }}>{u.emoji}</span>
+              {/* Emoji - larger for visual weight */}
+              <span style={{ fontSize: 22, lineHeight: 1, flexShrink: 0, marginTop: 0 }}>{u.emoji}</span>
 
               {/* Content */}
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <span style={{ fontSize: 13, fontWeight: 700, color: '#1e293b' }}>{u.name}</span>
                   <span style={{
-                    fontSize: 11, fontWeight: 700,
+                    fontSize: canBuy ? 13 : 11,
+                    fontWeight: canBuy ? 800 : 700,
                     fontFamily: "'JetBrains Mono',monospace",
                     color: canBuy ? '#b45309' : '#cbd5e1',
+                    transition: 'font-size .2s ease, font-weight .2s ease',
                   }}>{fmt(u.cost)}</span>
                 </div>
                 <div style={{ fontSize: 11, color: '#64748b', marginTop: 2 }}>{u.desc}</div>
