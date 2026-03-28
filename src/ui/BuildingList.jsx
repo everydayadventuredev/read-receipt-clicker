@@ -133,16 +133,16 @@ export default function BuildingList({ buildings, owned, reads, allTime, unlocke
     <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', minHeight: 0 }}>
       {/* Header with bulk buy */}
       <div style={{
-        padding: '4px 8px 2px', display: 'flex', alignItems: 'center',
+        padding: '8px 10px 4px', display: 'flex', alignItems: 'center',
         justifyContent: 'space-between', flexShrink: 0,
       }}>
         <div style={{
-          fontSize: 10, color: '#64748b', fontWeight: 600,
+          fontSize: 13, color: '#64748b', fontWeight: 600,
           letterSpacing: 1, textTransform: 'uppercase',
         }}>已讀大師</div>
         <div style={{
           display: 'flex', gap: 2,
-          background: '#f1f5f9', borderRadius: 6, padding: 1,
+          background: '#f1f5f9', borderRadius: 8, padding: 2,
           border: '1px solid #e2e8f0',
         }}>
           {[1, 10, 100].map(n => (
@@ -150,7 +150,7 @@ export default function BuildingList({ buildings, owned, reads, allTime, unlocke
               key={n}
               onClick={() => setBuyN(n)}
               style={{
-                fontSize: 9, padding: '2px 6px', borderRadius: 4, border: 'none',
+                fontSize: 12, padding: '4px 10px', borderRadius: 6, border: 'none',
                 background: buyN === n ? 'linear-gradient(135deg, #6366f1, #4338ca)' : 'transparent',
                 color: buyN === n ? '#fff' : '#94a3b8',
                 fontWeight: 700, fontFamily: "'JetBrains Mono',monospace",

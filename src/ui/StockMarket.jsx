@@ -185,9 +185,9 @@ export default function StockMarket({ marketState, algoCount, reads, onBuy, onSe
 
       {/* Footer */}
       <div style={{
-        padding: '4px 12px', flexShrink: 0,
+        padding: '8px 12px', flexShrink: 0,
         borderTop: '1px solid #f1f5f9',
-        fontSize: 10, color: '#94a3b8', textAlign: 'center',
+        fontSize: 12, color: '#94a3b8', textAlign: 'center',
       }}>
         低買高賣 · 賣出 = 按當前價格換回已讀
       </div>

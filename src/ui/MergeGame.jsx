@@ -337,7 +337,7 @@ export default function MergeGame({ mergeState, parCount, reads, onPlace, onMerg
         borderTop: '1px solid #f1f5f9',
         display: 'flex', justifyContent: 'space-between', alignItems: 'center',
       }}>
-        <span style={{ fontSize: 10, color: '#94a3b8', fontStyle: 'italic' }}>
+        <span style={{ fontSize: 12, color: '#94a3b8', fontStyle: 'italic' }}>
           點選兩個相同禮物來合成
         </span>
         {expandCost !== null && (

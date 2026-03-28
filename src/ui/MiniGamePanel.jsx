@@ -99,8 +99,8 @@ export default function MiniGamePanel({
               onClick={() => isUnlocked && setActiveMiniGame(mg.buildingId)}
               disabled={!isUnlocked}
               style={{
-                padding: '8px 16px',
-                fontSize: 14,
+                padding: '10px 20px',
+                fontSize: 15,
                 fontWeight: isActive ? 700 : 500,
                 color: isUnlocked ? (isActive ? '#4338ca' : '#64748b') : '#cbd5e1',
                 background: isActive ? 'rgba(99,102,241,.06)' : 'transparent',

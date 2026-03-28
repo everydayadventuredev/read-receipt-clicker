@@ -43,23 +43,23 @@ export default function UpgradeRow({ upgrades, reads, onBuy, compact = false }) 
   // Compact mode: 2-column grid of pills
   if (compact) {
     return (
-      <div style={{ padding: '6px 8px 4px', flexShrink: 0 }}>
+      <div style={{ padding: '8px 10px 6px', flexShrink: 0 }}>
         <div style={{
-          fontSize: 10, fontWeight: 600, color: '#94a3b8',
-          marginBottom: 4, letterSpacing: 0.5, textTransform: 'uppercase',
+          fontSize: 13, fontWeight: 600, color: '#64748b',
+          marginBottom: 6, letterSpacing: 0.5, textTransform: 'uppercase',
           display: 'flex', alignItems: 'center', gap: 6,
           padding: '0 4px',
         }}>
           升級
           <span style={{
-            fontFamily: "'JetBrains Mono',monospace", fontSize: 10,
+            fontFamily: "'JetBrains Mono',monospace", fontSize: 12,
             color: '#94a3b8',
           }}>{doneCount}/{upgrades.length}</span>
         </div>
 
         <div style={{
           display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)',
-          gap: 3,
+          gap: 4,
         }}>
           {activeItems.map(u => {
             const canBuy = u.state === 'buy';
@@ -69,8 +69,8 @@ export default function UpgradeRow({ upgrades, reads, onBuy, compact = false }) 
                 key={u.id}
                 onClick={() => canBuy && onBuy(u)}
                 style={{
-                  display: 'flex', alignItems: 'center', gap: 4,
-                  padding: '4px 8px', borderRadius: 6,
+                  display: 'flex', alignItems: 'center', gap: 6,
+                  padding: '6px 10px', borderRadius: 8,
                   background: canBuy ? '#fff' : '#f8fafc',
                   border: canBuy ? '1px solid rgba(99,102,241,.2)' : '1px solid #e8eaed',
                   opacity: isWait ? 0.5 : 1,
@@ -80,18 +80,18 @@ export default function UpgradeRow({ upgrades, reads, onBuy, compact = false }) 
                   ...(canBuy ? { animation: 'glowPulse 2.5s ease-in-out infinite' } : {}),
                 }}
               >
-                <span style={{ fontSize: 13, lineHeight: 1, flexShrink: 0 }}>{u.emoji}</span>
+                <span style={{ fontSize: 16, lineHeight: 1, flexShrink: 0 }}>{u.emoji}</span>
                 <div style={{ flex: 1, minWidth: 0, overflow: 'hidden' }}>
                   <div style={{
-                    fontSize: 11, fontWeight: 700, color: '#1e293b',
+                    fontSize: 13, fontWeight: 700, color: '#1e293b',
                     whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
                   }}>{u.name}</div>
                   <div style={{
-                    fontSize: 9, color: canBuy ? '#6366f1' : '#94a3b8', fontWeight: 600,
+                    fontSize: 11, color: canBuy ? '#6366f1' : '#94a3b8', fontWeight: 600,
                   }}>{u.desc}</div>
                 </div>
                 <span style={{
-                  fontSize: 10, fontWeight: 700,
+                  fontSize: 12, fontWeight: 700,
                   color: canBuy ? '#b45309' : '#cbd5e1',
                   fontFamily: "'JetBrains Mono',monospace",
                   flexShrink: 0,
@@ -103,8 +103,8 @@ export default function UpgradeRow({ upgrades, reads, onBuy, compact = false }) 
 
         {doneCount > 0 && (
           <div style={{
-            marginTop: 3, padding: '2px 8px',
-            fontSize: 10, color: '#94a3b8', opacity: 0.6,
+            marginTop: 4, padding: '4px 10px',
+            fontSize: 12, color: '#94a3b8', opacity: 0.6,
           }}>
             ✓ {doneCount}/{upgrades.length}
           </div>

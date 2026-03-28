@@ -65,7 +65,7 @@ export const SERIES = [
 // CONSTANTS
 // ═══════════════════════════════════════════════
 
-export const GROWTH_TIME    = 10 * 1000;              // 10s for testing (prod: 2 * 60 * 60 * 1000)
+export const GROWTH_TIME    = 2 * 60 * 60 * 1000;     // 2 hours
 export const WILT_TIME      = 6 * 60 * 60 * 1000;   // 6 hours after maturity
 export const SEED_INTERVAL  = 10 * 60 * 1000;        // 10 minutes per ex building
 export const MAX_SEEDS      = 32;
@@ -291,15 +291,21 @@ export function clearWilted(state, slotIndex) {
  * For production calc: call with scope='global' for global line,
  * and additionally apply scope='ex' buffs to the ex building.
  */
+/**
+ * Get combined multiplier from active buffs.
+ * ADDITIVE stacking with cap to prevent number explosion.
+ * e.g., 3 buffs of ×1.1 = 1 + 0.1 + 0.1 + 0.1 = 1.3x (not 1.1^3 = 1.33x)
+ * Capped at 3.0x total.
+ */
 export function getGardenBuffMult(state, now = Date.now()) {
   if (!state || !state.activeBuffs) return 1;
-  let mult = 1;
+  let bonus = 0;
   for (const b of state.activeBuffs) {
     if (b.expiresAt > now) {
-      mult *= b.mult;
+      bonus += (b.mult - 1); // additive: ×1.5 contributes +0.5
     }
   }
-  return mult;
+  return Math.min(3.0, 1 + bonus); // cap at 3x
 }
 
 /**

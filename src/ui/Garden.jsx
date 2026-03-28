@@ -255,12 +255,12 @@ function BuffBar({ activeBuffs }) {
             display: 'flex', alignItems: 'center', gap: 3,
             padding: '2px 6px', borderRadius: 4,
             background: 'rgba(99,102,241,.06)',
-            fontSize: 10, color: '#6366f1', fontWeight: 600,
+            fontSize: 12, color: '#6366f1', fontWeight: 600,
           }}>
-            <span style={{ fontSize: 12 }}>{flower?.emoji ?? '🌸'}</span>
+            <span style={{ fontSize: 14 }}>{flower?.emoji ?? '🌸'}</span>
             <span>×{b.mult}</span>
             <span style={{
-              fontFamily: "'JetBrains Mono',monospace", fontSize: 9, color: '#94a3b8',
+              fontFamily: "'JetBrains Mono',monospace", fontSize: 11, color: '#94a3b8',
             }}>{fmtTime(remaining)}</span>
           </div>
         );
@@ -352,9 +352,9 @@ export default function Garden({ gardenState, exCount, onPlant, onHarvest, onCle
 
           {/* Footer quote */}
           <div style={{
-            padding: '4px 12px', flexShrink: 0,
+            padding: '8px 12px', flexShrink: 0,
             borderTop: '1px solid #f1f5f9',
-            fontSize: 10, color: '#94a3b8', textAlign: 'center',
+            fontSize: 12, color: '#94a3b8', textAlign: 'center',
             fontStyle: 'italic',
           }}>
             「每次想點開對話的時候，就種一棵樹吧。」

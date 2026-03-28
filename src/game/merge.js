@@ -281,13 +281,16 @@ export function expandGrid(state, currentReads) {
 /**
  * Get combined buff multiplier from active merge buffs.
  */
+/**
+ * Get combined buff multiplier. ADDITIVE stacking, capped at 2.5x.
+ */
 export function getMergeBuffMult(state, now = Date.now()) {
   if (!state || !state.activeBuffs) return 1;
-  let mult = 1;
+  let bonus = 0;
   for (const b of state.activeBuffs) {
-    if (b.expiresAt > now) mult *= b.mult;
+    if (b.expiresAt > now) bonus += (b.mult - 1);
   }
-  return mult;
+  return Math.min(2.5, 1 + bonus);
 }
 
 /**
