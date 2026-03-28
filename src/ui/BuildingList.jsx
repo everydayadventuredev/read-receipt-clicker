@@ -100,17 +100,30 @@ export default function BuildingList({ buildings, owned, reads, unlockedBuilding
                   minHeight: 54,
                 }}
               >
-                {/* Themed background fill — density grows with count */}
-                <div style={{
-                  position: 'absolute', inset: 0,
-                  background: `repeating-linear-gradient(
-                    ${45 + i * 15}deg,
-                    ${b.color}${Math.round(densityOpacity * 255).toString(16).padStart(2, '0')},
-                    transparent 2px,
-                    transparent ${Math.max(8, 20 - count * 0.3)}px
-                  )`,
-                  pointerEvents: 'none',
-                }} />
+                {/* Scattered icon crowd background — density grows with count */}
+                {hasAny && Icon && (
+                  <div style={{
+                    position: 'absolute', inset: 0,
+                    display: 'flex', flexWrap: 'wrap', alignItems: 'center', alignContent: 'center',
+                    gap: 0, padding: '2px 60px 2px 58px',
+                    pointerEvents: 'none', overflow: 'hidden',
+                  }}>
+                    {Array.from({ length: Math.min(count, 40) }, (_, j) => {
+                      const rot = ((j * 13 + 7) % 25) - 12;
+                      const opa = 0.04 + Math.min(0.08, count * 0.001);
+                      return (
+                        <span key={j} style={{
+                          display: 'inline-flex',
+                          transform: `rotate(${rot}deg)`,
+                          opacity: opa,
+                          flexShrink: 0,
+                        }}>
+                          <Icon size={14} color={b.color} />
+                        </span>
+                      );
+                    })}
+                  </div>
+                )}
 
                 {/* Left icon area — large, themed */}
                 <div style={{

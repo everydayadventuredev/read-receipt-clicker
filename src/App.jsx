@@ -729,20 +729,20 @@ export default function App() {
         }}>
           {/* Hero counter — the star of the show */}
           <div style={{
-            fontSize: 56, fontWeight: 900,
+            fontSize: 68, fontWeight: 900,
             fontFamily: "'Space Grotesk','JetBrains Mono',monospace", color: '#1e293b',
             animation: popAnim ? 'pn .18s ease-out' : 'none',
             letterSpacing: -3, lineHeight: 1,
-            marginBottom: 2,
+            marginBottom: 4,
           }}>
             {fmt(reads)}
           </div>
 
           {/* CPS subtitle */}
           <div style={{
-            fontSize: 13, color: '#94a3b8',
+            fontSize: 16, color: '#94a3b8',
             fontFamily: "'JetBrains Mono',monospace",
-            marginBottom: 10, display: 'flex', alignItems: 'center', gap: 6,
+            marginBottom: 12, display: 'flex', alignItems: 'center', gap: 6,
           }}>
             <CheckIcon size={13} color="#94a3b8" />
             {prodPerSec > 0 ? `${fmt(prodPerSec)}/秒` : '點擊開始已讀'}
