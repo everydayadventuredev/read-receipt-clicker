@@ -1076,6 +1076,42 @@ export default function App() {
             ))}
           </div>
 
+          {/* Always-visible upgrade quick bar — buyable upgrades, max 5 chips */}
+          {(() => {
+            const buyableUpgrades = upgradeStates.filter(u => u.state === 'buy').slice(0, 5);
+            if (buyableUpgrades.length === 0) return null;
+            return (
+              <div style={{
+                padding: '6px 12px', display: 'flex', gap: 6, flexWrap: 'wrap',
+                borderBottom: '1px solid #e2e8f0',
+                background: 'rgba(99,102,241,.03)',
+                flexShrink: 0,
+              }}>
+                <span style={{ fontSize: 9, color: '#94a3b8', fontWeight: 700, letterSpacing: 0.5, textTransform: 'uppercase', alignSelf: 'center', flexShrink: 0 }}>可升級</span>
+                {buyableUpgrades.map(u => (
+                  <button
+                    key={u.id}
+                    onClick={() => handleBuyUpgrade(u)}
+                    title={`${u.name}：${u.desc} (${fmt(u.cost)})`}
+                    style={{
+                      display: 'flex', alignItems: 'center', gap: 5,
+                      padding: '4px 10px', borderRadius: 8,
+                      background: 'rgba(99,102,241,.08)',
+                      border: '1px solid rgba(99,102,241,.2)',
+                      cursor: 'pointer', fontSize: 11, fontWeight: 600,
+                      color: '#4f46e5', transition: 'all .15s',
+                      animation: 'glow 2s ease-in-out infinite',
+                    }}
+                  >
+                    <span style={{ fontSize: 14 }}>{u.emoji}</span>
+                    <span style={{ maxWidth: 80, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{u.name}</span>
+                    <span style={{ fontSize: 10, color: '#b45309', fontFamily: "'JetBrains Mono',monospace", fontWeight: 700 }}>{fmt(u.cost)}</span>
+                  </button>
+                ))}
+              </div>
+            );
+          })()}
+
           {/* Tab content */}
           <div style={{ flex: 1, overflow: 'hidden', display: 'flex', flexDirection: 'column', minHeight: 0 }}>
             {storeTab === 'build' ? (
