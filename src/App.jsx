@@ -684,27 +684,39 @@ export default function App() {
 
       {/* Ambient background — floating checkmarks + gradient */}
       <div style={{ position: 'fixed', inset: 0, pointerEvents: 'none', zIndex: 0,
-        background: 'radial-gradient(ellipse at 25% 15%, rgba(99,102,241,.06) 0%, transparent 50%), radial-gradient(ellipse at 75% 85%, rgba(217,119,6,.04) 0%, transparent 50%)',
+        background: 'radial-gradient(ellipse at 25% 15%, rgba(99,102,241,.08) 0%, transparent 50%), radial-gradient(ellipse at 75% 85%, rgba(217,119,6,.06) 0%, transparent 50%), radial-gradient(ellipse at 50% 50%, rgba(99,102,241,.03) 0%, transparent 70%)',
       }}>
-        {/* Floating ✓✓ particles */}
-        {Array.from({ length: 12 }, (_, i) => (
-          <div key={i} style={{
-            position: 'absolute',
-            left: `${(i * 8.3 + 3) % 100}%`,
-            fontSize: 10 + (i % 3) * 4,
-            color: i % 2 === 0 ? 'rgba(99,102,241,.06)' : 'rgba(217,119,6,.05)',
-            animation: `bgfloat ${18 + (i % 5) * 4}s linear infinite`,
-            animationDelay: `${-i * 2.5}s`,
-            fontFamily: "'JetBrains Mono',monospace",
-            fontWeight: 800,
-          }}>✓✓</div>
-        ))}
-        {/* Subtle grid pattern */}
+        {/* Floating tick particles — 3 layers: ✓✓, ✓, 已讀 */}
+        {Array.from({ length: 24 }, (_, i) => {
+          const symbols = ['✓✓', '✓', '✓', '已讀', '✓✓', '✓'];
+          const sym = symbols[i % symbols.length];
+          const isBlue = i % 3 !== 2;
+          const baseOpacity = sym === '已讀' ? 0.04 : 0.09;
+          return (
+            <div key={i} style={{
+              position: 'absolute',
+              left: `${(i * 4.2 + 1.5) % 100}%`,
+              fontSize: sym === '已讀' ? 9 : (8 + (i % 5) * 3),
+              color: isBlue ? `rgba(99,102,241,${baseOpacity})` : `rgba(217,119,6,${baseOpacity - 0.02})`,
+              animation: `bgfloat ${14 + (i % 7) * 3}s linear infinite`,
+              animationDelay: `${-(i * 1.8) % 20}s`,
+              fontFamily: "'JetBrains Mono',monospace",
+              fontWeight: 800,
+              letterSpacing: sym === '✓✓' ? -1 : 0,
+            }}>{sym}</div>
+          );
+        })}
+        {/* Subtle dot grid */}
         <div style={{
           position: 'absolute', inset: 0,
-          backgroundImage: 'radial-gradient(circle, rgba(99,102,241,.03) 1px, transparent 1px)',
-          backgroundSize: '32px 32px',
+          backgroundImage: 'radial-gradient(circle, rgba(99,102,241,.04) 1px, transparent 1px)',
+          backgroundSize: '28px 28px',
           animation: 'bgpulse 8s ease-in-out infinite',
+        }} />
+        {/* Diagonal line texture */}
+        <div style={{
+          position: 'absolute', inset: 0,
+          backgroundImage: 'repeating-linear-gradient(45deg, transparent, transparent 40px, rgba(99,102,241,.012) 40px, rgba(99,102,241,.012) 41px)',
         }} />
       </div>
 
