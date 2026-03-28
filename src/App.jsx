@@ -9,6 +9,7 @@ import { MSG_GENERIC } from './game/messages.js';
 import { PRESTIGE_UPGRADES } from './game/prestige.js';
 import { SYNERGIES, getActiveSynergies, getSynergyMult } from './game/synergies.js';
 import { EVENT_CHAINS } from './game/eventChains.js';
+import { REPLY_TRAPS, GUILT_EVENTS, GUILT_RELIEF, GUILT_THRESHOLDS } from './game/guilt.js';
 
 import { fmt, pk, buildingCostN } from './utils/format.js';
 import { saveGame, loadGame, buildInitialOwned, calcOfflineEarnings } from './utils/save.js';
@@ -22,6 +23,7 @@ import GoldenCookie from './ui/GoldenCookie.jsx';
 import PrestigeBar from './ui/PrestigeBar.jsx';
 import PrestigeShop from './ui/PrestigeShop.jsx';
 import ReadStorm from './ui/ReadStorm.jsx';
+import ReplyTrap from './ui/ReplyTrap.jsx';
 import Ticker from './ui/Ticker.jsx';
 import { StatsPanel, LogPanel, AchievementBadges } from './ui/Panels.jsx';
 
@@ -69,6 +71,10 @@ export default function App() {
   const [activeChain,      setActiveChain]      = useState(null);
   const [chainChoice,      setChainChoice]      = useState(null);
   const [stormActive,      setStormActive]      = useState(false);
+  const [guilt,            setGuilt]            = useState(init.guilt ?? 0);
+  const [replyTrap,        setReplyTrap]        = useState(null);
+  const [guiltCooldowns,   setGuiltCooldowns]   = useState({});
+  const [coldMaster,       setColdMaster]       = useState(init.coldMaster ?? false);
 
   const [message,    setMessage]    = useState(pk(MSG_GENERIC));
   const [isRead,     setIsRead]     = useState(false);
@@ -140,7 +146,8 @@ export default function App() {
       if (eventChainBuffs[b.id]) m *= eventChainBuffs[b.id];
       p += b.baseProd * (owned[b.id] ?? 0) * m;
     });
-    const total = p * prestigeMult * prestigeGlobalMult * chainGlobalBuff * tempMult;
+    const coldMasterMult = coldMaster ? 1.5 : 1;
+    const total = p * prestigeMult * prestigeGlobalMult * chainGlobalBuff * tempMult * coldMasterMult;
     setProdPerSec(total);
     psRef.current = total;
   }, [owned, boughtUpgrades, prestigeMult, prestigeGlobalMult, chainGlobalBuff, tempMult, boughtPrestige, eventChainBuffs]);
@@ -166,6 +173,7 @@ export default function App() {
       const d = psRef.current / 20;
       setReads(r => r + d);
       setAllTime(a => a + d);
+      setGuilt(g => g + d * 0.01); // guilt accumulates slowly from production
     }, 50);
     return () => clearInterval(iv);
   }, [prodPerSec]);
@@ -176,9 +184,9 @@ export default function App() {
       boughtUpgrades: boughtRef.current, prestigeCount, prestigePower,
       seenMilestones, unlockedAchievements, unlockedBuildings,
       boughtPrestige, activeSynergies, completedChains, eventChainBuffs,
-      stormCount, stormPerfect,
+      stormCount, stormPerfect, guilt, coldMaster,
     });
-  }, [prestigeCount, prestigePower, seenMilestones, unlockedAchievements, unlockedBuildings, boughtPrestige, activeSynergies, completedChains, eventChainBuffs, stormCount, stormPerfect]);
+  }, [prestigeCount, prestigePower, seenMilestones, unlockedAchievements, unlockedBuildings, boughtPrestige, activeSynergies, completedChains, eventChainBuffs, stormCount, stormPerfect, guilt, coldMaster]);
 
   // Autosave every 30 s
   useEffect(() => {
@@ -407,6 +415,96 @@ export default function App() {
     setStormPerfect(p => p + 1);
   }, []);
 
+  // ═══ GUILT SYSTEM ═══
+
+  // Guilt level for buff/debuff
+  const guiltLevel = guilt >= GUILT_THRESHOLDS.transcend ? 'transcend'
+    : guilt >= GUILT_THRESHOLDS.high ? 'high'
+    : guilt >= GUILT_THRESHOLDS.medium ? 'medium'
+    : guilt >= GUILT_THRESHOLDS.low ? 'low'
+    : 'none';
+
+  // Cold Master: transcended guilt = permanent buff
+  useEffect(() => {
+    if (guiltLevel === 'transcend' && !coldMaster) {
+      setColdMaster(true);
+      addToast('🧊 冷漠大師覺醒！罪惡感已超越人類極限。全域產能+50%');
+      playMilestone();
+    }
+  }, [guiltLevel, coldMaster]);
+
+  // Guilt negative event spawner
+  useEffect(() => {
+    if (guiltLevel === 'none' || guiltLevel === 'transcend') return;
+    const freq = guiltLevel === 'high' ? 15000 : guiltLevel === 'medium' ? 30000 : 60000;
+    let t;
+    const spawn = () => {
+      t = setTimeout(() => {
+        if (Math.random() < 0.4) {
+          const evt = pk(GUILT_EVENTS);
+          addToast(`${evt.emoji} ${evt.name}：${evt.desc}`);
+          if (evt.effect === 'prodDebuff') {
+            setTempMult(prev => prev * evt.mult);
+            setTimeout(() => setTempMult(1), (evt.duration ?? 10) * 1000);
+          } else if (evt.effect === 'loseReads') {
+            const loss = Math.floor(readsRef.current * evt.mult);
+            setReads(r => Math.max(0, r - loss));
+            addToast(`💸 失去 ${fmt(loss)} 已讀...`);
+          }
+        }
+        spawn();
+      }, freq + Math.random() * freq);
+    };
+    spawn();
+    return () => clearTimeout(t);
+  }, [guiltLevel]);
+
+  // Reply Trap spawner — more frequent at higher guilt
+  useEffect(() => {
+    if (guilt < 100) return; // don't spawn traps before guilt builds a bit
+    const baseInterval = guiltLevel === 'high' ? 25000 : guiltLevel === 'medium' ? 45000 : 80000;
+    let t;
+    const spawn = () => {
+      t = setTimeout(() => {
+        if (!replyTrap && psRef.current > 0) {
+          setReplyTrap(pk(REPLY_TRAPS));
+        }
+        spawn();
+      }, baseInterval + Math.random() * baseInterval);
+    };
+    spawn();
+    return () => clearTimeout(t);
+  }, [guiltLevel, replyTrap]);
+
+  // Reply trap handlers
+  const handleReply = useCallback(() => {
+    // Player fell for the trap — penalty!
+    const loss = Math.floor(readsRef.current * 0.1);
+    setReads(r => Math.max(0, r - loss));
+    setGuilt(g => Math.max(0, g - 200)); // replying does reduce guilt
+    addToast(`💬 你回覆了...失去 ${fmt(loss)} 已讀。但罪惡感降低了一些。`);
+    setReplyTrap(null);
+  }, []);
+
+  const handleIgnore = useCallback(() => {
+    // Player resisted — reward!
+    const bonus = Math.max(50, Math.floor(psRef.current * 5));
+    setReads(r => r + bonus);
+    setAllTime(a => a + bonus);
+    setGuilt(g => g + 50); // ignoring increases guilt
+    addToast(`😐 已讀不回。冷漠獎勵 +${fmt(bonus)}。但罪惡感上升了...`);
+    setReplyTrap(null);
+  }, []);
+
+  // Guilt relief handler
+  const handleGuiltRelief = useCallback((relief) => {
+    const now = Date.now();
+    if (guiltCooldowns[relief.id] && now < guiltCooldowns[relief.id]) return;
+    setGuilt(g => Math.max(0, g - relief.guiltReduce));
+    setGuiltCooldowns(prev => ({ ...prev, [relief.id]: now + relief.cooldown * 1000 }));
+    addToast(`${relief.emoji} ${relief.name}！罪惡感 -${relief.guiltReduce}`);
+  }, [guiltCooldowns]);
+
   // Prestige shop buy handler
   const handleBuyPrestige = useCallback((u) => {
     if (prestigePower < u.cost || boughtPrestige.has(u.id)) return;
@@ -453,6 +551,7 @@ export default function App() {
     setIsRead(true);
     setReads(r => r + power);
     setAllTime(a => a + power);
+    setGuilt(g => g + 1);
     setPopAnim(true);
     setTimeout(() => setPopAnim(false), 180);
 
@@ -779,6 +878,71 @@ export default function App() {
             }}>成就 {unlockedAchievements.size}/{ACHIEVEMENTS.length}</div>
             <AchievementBadges unlockedAchievements={unlockedAchievements} />
           </div>
+
+          {/* Guilt indicator + relief */}
+          {guilt >= 50 && (
+            <div style={{ width: '100%', marginTop: 8 }}>
+              <div style={{
+                display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4,
+              }}>
+                <span style={{ fontSize: 10, color: '#94a3b8', fontWeight: 600, letterSpacing: 0.5, textTransform: 'uppercase' }}>
+                  罪惡感
+                </span>
+                <span style={{
+                  fontSize: 10, fontWeight: 700,
+                  fontFamily: "'JetBrains Mono',monospace",
+                  color: coldMaster ? '#14b8a6'
+                    : guiltLevel === 'high' ? '#ef4444'
+                    : guiltLevel === 'medium' ? '#f59e0b'
+                    : '#94a3b8',
+                }}>
+                  {coldMaster ? '🧊 已超越' : Math.floor(guilt)}
+                </span>
+              </div>
+              {/* Guilt bar */}
+              <div style={{
+                height: 3, background: '#f1f5f9', borderRadius: 2,
+                overflow: 'hidden', marginBottom: 6,
+              }}>
+                <div style={{
+                  height: '100%', borderRadius: 2,
+                  transition: 'width .3s, background .3s',
+                  width: `${Math.min(100, (guilt / GUILT_THRESHOLDS.transcend) * 100)}%`,
+                  background: coldMaster ? '#14b8a6'
+                    : guiltLevel === 'high' ? '#ef4444'
+                    : guiltLevel === 'medium' ? '#f59e0b'
+                    : '#6366f1',
+                }} />
+              </div>
+              {/* Relief buttons */}
+              {!coldMaster && (
+                <div style={{ display: 'flex', gap: 3, flexWrap: 'wrap' }}>
+                  {GUILT_RELIEF.map(r => {
+                    const now = Date.now();
+                    const onCooldown = guiltCooldowns[r.id] && now < guiltCooldowns[r.id];
+                    const cdLeft = onCooldown ? Math.ceil((guiltCooldowns[r.id] - now) / 1000) : 0;
+                    return (
+                      <button
+                        key={r.id}
+                        onClick={() => handleGuiltRelief(r)}
+                        disabled={onCooldown || guilt < 10}
+                        title={`${r.name}：${r.desc}（-${r.guiltReduce}罪惡感）`}
+                        style={{
+                          fontSize: 12, padding: '3px 8px', borderRadius: 6,
+                          border: '1px solid #e2e8f0', background: onCooldown ? '#f1f5f9' : '#fff',
+                          cursor: onCooldown ? 'default' : 'pointer',
+                          opacity: onCooldown ? 0.4 : 1,
+                          fontFamily: 'inherit', transition: 'all .15s',
+                        }}
+                      >
+                        {r.emoji}{onCooldown ? ` ${cdLeft}s` : ''}
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          )}
         </div>
 
         {/* RIGHT — Tabbed Store (Buildings / Upgrades) + Log */}
@@ -884,6 +1048,9 @@ export default function App() {
         }}
         onPerfect={handleStormPerfect}
       />
+
+      {/* Reply Trap */}
+      <ReplyTrap trap={replyTrap} onReply={handleReply} onIgnore={handleIgnore} />
 
       {/* Event Chain choice overlay */}
       {chainChoice && (

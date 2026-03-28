@@ -24,6 +24,8 @@ export function saveGame(state) {
       eventChainBuffs: state.eventChainBuffs ?? {},
       stormCount: state.stormCount ?? 0,
       stormPerfect: state.stormPerfect ?? 0,
+      guilt: state.guilt ?? 0,
+      coldMaster: state.coldMaster ?? false,
       savedAt: Date.now(),
     };
     localStorage.setItem(SAVE_KEY, JSON.stringify(data));
@@ -53,6 +55,8 @@ export function loadGame() {
       eventChainBuffs: data.eventChainBuffs ?? {},
       stormCount: data.stormCount ?? 0,
       stormPerfect: data.stormPerfect ?? 0,
+      guilt: data.guilt ?? 0,
+      coldMaster: data.coldMaster ?? false,
       savedAt: data.savedAt ?? null,
     };
   } catch (e) {
