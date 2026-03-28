@@ -499,6 +499,151 @@ export function MultIcon({ size = 16, color = "#f59e0b" }) {
   );
 }
 
+/* ---------- AlgoIcon  (Phone/Feed / 📱 / 社群演算法) ---------- */
+export function AlgoIcon({ size = 16, color = "#3b82f6" }) {
+  const d = darken(color);
+  const l = lighten(color);
+  return (
+    <svg width={size} height={size} viewBox="0 0 16 16" style={svgStyle}>
+      {/* phone body */}
+      {Row(4, 1, d, 8)}
+      {Row(4, 2, color, 8)}
+      {Row(4, 3, color, 8)}
+      {Row(4, 4, color, 8)}
+      {/* screen */}
+      {Row(5, 5, l, 6)}
+      {Row(5, 6, l, 6)}
+      {Row(5, 7, l, 6)}
+      {Row(5, 8, l, 6)}
+      {Row(5, 9, l, 6)}
+      {Row(5, 10, l, 6)}
+      {/* feed lines on screen */}
+      {Row(6, 6, color, 4)}
+      {Row(6, 8, color, 3)}
+      {Row(6, 10, color, 4)}
+      {/* body bottom */}
+      {Row(4, 11, color, 8)}
+      {Row(4, 12, color, 8)}
+      {/* home button */}
+      {Row(7, 12, l, 2)}
+      {Row(4, 13, d, 8)}
+      {/* notification dots */}
+      {P(2, 3, color)}{P(13, 3, color)}
+      {P(1, 5, color)}{P(14, 5, color)}
+      {P(2, 7, color)}{P(13, 7, color)}
+    </svg>
+  );
+}
+
+/* ---------- AiIcon  (Robot / 🤖 / AI客服) ---------- */
+export function AiIcon({ size = 16, color = "#14b8a6" }) {
+  const d = darken(color);
+  const l = lighten(color);
+  return (
+    <svg width={size} height={size} viewBox="0 0 16 16" style={svgStyle}>
+      {/* antenna */}
+      {Row(7, 0, color, 2)}
+      {Row(6, 1, color, 4)}
+      {/* head */}
+      {Row(3, 2, d, 10)}
+      {Row(3, 3, color, 10)}
+      {Row(3, 4, color, 10)}
+      {/* eyes */}
+      {P(5, 4, l)}{P(6, 4, l)}
+      {P(9, 4, l)}{P(10, 4, l)}
+      {Row(3, 5, color, 10)}
+      {/* mouth */}
+      {Row(5, 5, l, 6)}
+      {Row(3, 6, d, 10)}
+      {/* neck */}
+      {Row(6, 7, color, 4)}
+      {/* body */}
+      {Row(4, 8, d, 8)}
+      {Row(4, 9, color, 8)}
+      {Row(4, 10, color, 8)}
+      {/* chest light */}
+      {P(7, 9, l)}{P(8, 9, l)}
+      {Row(4, 11, color, 8)}
+      {Row(4, 12, d, 8)}
+      {/* arms */}
+      {P(2, 9, color)}{P(3, 9, color)}
+      {P(12, 9, color)}{P(13, 9, color)}
+      {P(2, 10, d)}{P(3, 10, color)}
+      {P(12, 10, color)}{P(13, 10, d)}
+      {/* legs */}
+      {Row(5, 13, color, 2)}{Row(9, 13, color, 2)}
+      {Row(5, 14, d, 2)}{Row(9, 14, d, 2)}
+    </svg>
+  );
+}
+
+/* ---------- AlienIcon  (UFO / 👽 / 外星通訊) ---------- */
+export function AlienIcon({ size = 16, color = "#a855f7" }) {
+  const d = darken(color);
+  const l = lighten(color);
+  return (
+    <svg width={size} height={size} viewBox="0 0 16 16" style={svgStyle}>
+      {/* dome */}
+      {Row(6, 2, l, 4)}
+      {Row(5, 3, l, 6)}
+      {Row(5, 4, color, 6)}
+      {Row(4, 5, color, 8)}
+      {/* saucer */}
+      {Row(2, 6, d, 12)}
+      {Row(1, 7, color, 14)}
+      {Row(2, 8, color, 12)}
+      {Row(3, 9, d, 10)}
+      {/* beam */}
+      {P(6, 10, l)}{P(9, 10, l)}
+      {P(5, 11, l)}{P(10, 11, l)}
+      {P(4, 12, l)}{P(11, 12, l)}
+      {P(3, 13, l)}{P(12, 13, l)}
+      {/* lights on saucer */}
+      {P(4, 7, l)}{P(7, 7, l)}{P(10, 7, l)}
+      {/* window highlights */}
+      {P(6, 3, lighten(color, 0.6))}
+      {P(7, 4, lighten(color, 0.6))}
+    </svg>
+  );
+}
+
+/* ---------- TimeIcon  (Hourglass / ⏳ / 時間迴圈) ---------- */
+export function TimeIcon({ size = 16, color = "#ef4444" }) {
+  const d = darken(color);
+  const l = lighten(color);
+  return (
+    <svg width={size} height={size} viewBox="0 0 16 16" style={svgStyle}>
+      {/* top frame */}
+      {Row(3, 1, d, 10)}
+      {Row(3, 2, color, 10)}
+      {/* top sand */}
+      {Row(4, 3, l, 8)}
+      {Row(5, 4, l, 6)}
+      {Row(5, 5, color, 6)}
+      {Row(6, 6, color, 4)}
+      {/* neck */}
+      {Row(7, 7, color, 2)}
+      {Row(7, 8, color, 2)}
+      {/* bottom sand */}
+      {Row(6, 9, color, 4)}
+      {Row(5, 10, color, 6)}
+      {Row(5, 11, l, 6)}
+      {Row(4, 12, l, 8)}
+      {/* bottom frame */}
+      {Row(3, 13, color, 10)}
+      {Row(3, 14, d, 10)}
+      {/* sand grain falling */}
+      {P(7, 8, l)}{P(8, 8, l)}
+      {/* highlights */}
+      {P(4, 3, lighten(color, 0.6))}
+      {P(5, 4, lighten(color, 0.6))}
+      {/* circular arrow (time loop) */}
+      {P(1, 6, color)}{P(2, 5, color)}{P(2, 7, color)}
+      {P(13, 9, color)}{P(14, 8, color)}{P(14, 10, color)}
+    </svg>
+  );
+}
+
 /* ================================================================== */
 /*  EXPORT MAPS                                                        */
 /* ================================================================== */
@@ -511,6 +656,10 @@ export const BUILDING_ICONS = {
   del: DelIcon,
   gov: GovIcon,
   int: IntIcon,
+  algo: AlgoIcon,
+  ai: AiIcon,
+  alien: AlienIcon,
+  time: TimeIcon,
 };
 
 export const UPGRADE_ICONS = {

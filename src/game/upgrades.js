@@ -33,4 +33,20 @@ export const UPGRADES = [
   // int
   { id: 'i1', name: '機密解碼器', desc: '情報x2', type: 'm', target: 'int', bonus: 2, cost: 4000000,  req: { building: 'int', count: 1 }, emoji: '🔓' },
   { id: 'i2', name: '全球監控網', desc: '情報x3', type: 'm', target: 'int', bonus: 3, cost: 40000000, req: { building: 'int', count: 5 }, emoji: '🌐' },
+  // algo
+  { id: 'al1', name: '精準推送', desc: '演算法x2', type: 'm', target: 'algo', bonus: 2, cost: 20000000,  req: { building: 'algo', count: 1 }, emoji: '🎯' },
+  { id: 'al2', name: '病毒式傳播', desc: '演算法x3', type: 'm', target: 'algo', bonus: 3, cost: 200000000, req: { building: 'algo', count: 5 }, emoji: '🦠' },
+  // ai
+  { id: 'ai1', name: '深度學習', desc: 'AIx2', type: 'm', target: 'ai', bonus: 2, cost: 100000000,  req: { building: 'ai', count: 1 }, emoji: '🧠' },
+  { id: 'ai2', name: 'AGI覺醒', desc: 'AIx3', type: 'm', target: 'ai', bonus: 3, cost: 1000000000, req: { building: 'ai', count: 5 }, emoji: '💡' },
+  // alien
+  { id: 'x1', name: '星際翻譯機', desc: '外星x2', type: 'm', target: 'alien', bonus: 2, cost: 500000000,  req: { building: 'alien', count: 1 }, emoji: '🛸' },
+  { id: 'x2', name: '蟲洞加速器', desc: '外星x3', type: 'm', target: 'alien', bonus: 3, cost: 5000000000, req: { building: 'alien', count: 5 }, emoji: '🌀' },
+  // time
+  { id: 't1', name: '時空折疊', desc: '迴圈x2', type: 'm', target: 'time', bonus: 2, cost: 2500000000,  req: { building: 'time', count: 1 }, emoji: '🕰️' },
+  { id: 't2', name: '永恆已讀', desc: '迴圈x3', type: 'm', target: 'time', bonus: 3, cost: 25000000000, req: { building: 'time', count: 5 }, emoji: '♾️' },
+  // Late-game click upgrades
+  { id: 'c5', name: '已讀核爆', desc: '點擊+500', type: 'ck', bonus: 500, cost: 5000000,  req: { allTime: 2000000 }, emoji: '☢️' },
+  { id: 'c6', name: '已讀奇點', desc: '點擊+5000', type: 'ck', bonus: 5000, cost: 50000000, req: { allTime: 20000000 }, emoji: '🔮' },
+  { id: 'p4', name: '終極已讀術', desc: '點擊+10%產能', type: 'cp', bonus: 0.10, cost: 10000000, req: { allTime: 5000000 }, emoji: '📈' },
 ];

@@ -17,7 +17,7 @@ export const ACHIEVEMENTS = [
   { id: 'a7',  name: '前任收藏家',   desc: '僱用10個前任',            icon: '💔', req: (at, ow) => ow.ex >= 10 },
   { id: 'a8',  name: '孝順模擬器',   desc: '僱用10對爸媽',            icon: '🥺', req: (at, ow) => ow.par >= 10 },
   { id: 'a9',  name: '社交蒸發',     desc: '僱用25個忙朋友',          icon: '💨', req: (at, ow) => ow.bsy >= 25 },
-  { id: 'a13', name: '已讀帝國',     desc: '同時擁有所有7種建築',     icon: '🏰', req: (at, ow) => BUILDINGS.every(b => ow[b.id] > 0) },
+  { id: 'a13', name: '已讀帝國',     desc: '同時擁有所有建築',         icon: '🏰', req: (at, ow) => BUILDINGS.every(b => ow[b.id] > 0) },
   { id: 'a15', name: '前任百人斬',   desc: '僱用100個前任',           icon: '🗡️', req: (at, ow) => ow.ex >= 100 },
   { id: 'a16', name: '企業戰士',     desc: '僱用25個公司HR',          icon: '💼', req: (at, ow) => ow.hr >= 25 },
   { id: 'a17', name: '情報總監',     desc: '僱用10個情報機構',        icon: '🕵️', req: (at, ow) => ow.int >= 10 },
@@ -37,7 +37,7 @@ export const ACHIEVEMENTS = [
   // ── Synergy achievements ──
   { id: 'a23', name: '化學反應',     desc: '啟動第一個Synergy',       icon: '⚗️', req: (at, ow, pc, ps, ex) => ex.synergies >= 1 },
   { id: 'a24', name: '連鎖反應',     desc: '啟動3個Synergy',          icon: '🔗', req: (at, ow, pc, ps, ex) => ex.synergies >= 3 },
-  { id: 'a25', name: '已讀大統一',   desc: '啟動全部Synergy',         icon: '🌌', req: (at, ow, pc, ps, ex) => ex.synergies >= 5 },
+  { id: 'a25', name: '已讀大統一',   desc: '啟動全部Synergy',         icon: '🌌', req: (at, ow, pc, ps, ex) => ex.synergies >= 8 },
 
   // ── Event chain achievements ──
   { id: 'a26', name: '危機處理者',   desc: '完成第一個事件鏈',        icon: '🎬', req: (at, ow, pc, ps, ex) => ex.completedChains >= 1 },

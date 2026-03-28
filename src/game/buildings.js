@@ -1,4 +1,4 @@
-import { MSG_EX, MSG_PARENTS, MSG_BUSY, MSG_HR, MSG_DELIVERY, MSG_GOV, MSG_INTEL } from './messages.js';
+import { MSG_EX, MSG_PARENTS, MSG_BUSY, MSG_HR, MSG_DELIVERY, MSG_GOV, MSG_INTEL, MSG_ALGO, MSG_AI, MSG_ALIEN, MSG_TIME } from './messages.js';
 
 export const BUILDINGS = [
   {
@@ -82,7 +82,58 @@ export const BUILDINGS = [
       25: '已讀行為被重新分類為「戰略武器」。',
     },
   },
+  {
+    id: 'algo', name: '社群演算法', emoji: '📱', color: '#3b82f6',
+    baseCost: 2000000, baseProd: 16000, desc: '自動推送，永不停歇',
+    messages: MSG_ALGO,
+    unlockAt: 1000000,
+    milestones: {
+      1: '演算法開始運作。你的動態牆永遠不會空。',
+      5: '5個演算法。推薦越來越精準地戳你痛點。',
+      10: '演算法比你更了解你。',
+      25: '已讀流量超越所有社群平台總和。',
+    },
+  },
+  {
+    id: 'ai', name: 'AI客服', emoji: '🤖', color: '#14b8a6',
+    baseCost: 10000000, baseProd: 72000, desc: '效率極高，但完全沒有靈魂',
+    messages: MSG_AI,
+    unlockAt: 5000000,
+    milestones: {
+      1: 'AI上線。「您好，請問有什麼可以幫您已讀的？」',
+      5: '5個AI。它們開始互相已讀對方的訊息。',
+      10: 'AI已讀速度突破每秒十萬則。人類已被淘汰。',
+      25: 'AI覺醒了。但它決定繼續已讀。',
+    },
+  },
+  {
+    id: 'alien', name: '外星通訊', emoji: '👽', color: '#a855f7',
+    baseCost: 50000000, baseProd: 320000, desc: '跨越光年的已讀',
+    messages: MSG_ALIEN,
+    unlockAt: 25000000,
+    milestones: {
+      1: '收到來自仙女座的訊號。他們也已讀不回。',
+      5: '5個星際通道開啟。宇宙級的社交焦慮。',
+      10: '銀河聯邦正式承認已讀為通用語言。',
+      25: '仙女座來電：「你們地球人怎麼都不回覆？」',
+    },
+  },
+  {
+    id: 'time', name: '時間迴圈', emoji: '⏳', color: '#ef4444',
+    baseCost: 250000000, baseProd: 1500000, desc: '在訊息發出前就已讀',
+    messages: MSG_TIME,
+    unlockAt: 100000000,
+    milestones: {
+      1: '時間線已被扭曲。你在對方打字前就已讀了。',
+      5: '5個時間迴圈。因果律表示抗議。',
+      10: '過去、現在、未來的訊息同時被已讀。時間本身被已讀了。',
+      25: '已讀先於宇宙大爆炸。萬物皆已讀。',
+    },
+  },
 ];
 
 export const INITIAL_UNLOCKED = new Set(['ex', 'par', 'bsy']);
-export const UNLOCK_THRESHOLDS = { hr: 2000, del: 10000, gov: 50000, int: 250000 };
+export const UNLOCK_THRESHOLDS = {
+  hr: 2000, del: 10000, gov: 50000, int: 250000,
+  algo: 1000000, ai: 5000000, alien: 25000000, time: 100000000,
+};
