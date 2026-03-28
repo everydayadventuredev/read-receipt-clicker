@@ -571,8 +571,8 @@ export default function App() {
         button:active { transform:scale(.96)!important }
         @media(min-width:768px) {
           .game-layout { flex-direction:row!important }
-          .section-hero  { width:40%!important; border-right:1px solid #e2e8f0 }
-          .section-store { width:60%!important }
+          .section-hero  { width:30%!important; border-right:1px solid #e2e8f0 }
+          .section-store { width:70%!important }
         }
       `}</style>
 
@@ -722,27 +722,27 @@ export default function App() {
         {/* LEFT — Hero counter + Click + Stats */}
         <div className="section-hero" style={{
           display: 'flex', flexDirection: 'column', alignItems: 'center',
-          justifyContent: 'center',
-          padding: '24px 20px 16px',
+          justifyContent: 'flex-start',
+          padding: '16px 14px 12px',
           position: 'relative', flexShrink: 0,
           overflowY: 'auto',
         }}>
           {/* Hero counter — the star of the show */}
           <div style={{
-            fontSize: 72, fontWeight: 900,
+            fontSize: 56, fontWeight: 900,
             fontFamily: "'Space Grotesk','JetBrains Mono',monospace", color: '#1e293b',
             animation: popAnim ? 'pn .18s ease-out' : 'none',
-            letterSpacing: -4, lineHeight: 1,
-            marginBottom: 4,
+            letterSpacing: -3, lineHeight: 1,
+            marginBottom: 2,
           }}>
             {fmt(reads)}
           </div>
 
           {/* CPS subtitle */}
           <div style={{
-            fontSize: 15, color: '#94a3b8',
+            fontSize: 13, color: '#94a3b8',
             fontFamily: "'JetBrains Mono',monospace",
-            marginBottom: 16, display: 'flex', alignItems: 'center', gap: 6,
+            marginBottom: 10, display: 'flex', alignItems: 'center', gap: 6,
           }}>
             <CheckIcon size={13} color="#94a3b8" />
             {prodPerSec > 0 ? `${fmt(prodPerSec)}/秒` : '點擊開始已讀'}
@@ -750,7 +750,7 @@ export default function App() {
 
           <PrestigeBar allTime={allTime} prestigeEarned={prestigeEarned} onPrestige={handlePrestige} />
 
-          <div style={{ marginTop: 16, width: '100%', display: 'flex', justifyContent: 'center' }}>
+          <div style={{ marginTop: 10, width: '100%', display: 'flex', justifyContent: 'center' }}>
             <ClickArea
               message={message}
               isRead={isRead}
@@ -762,12 +762,12 @@ export default function App() {
           </div>
 
           {/* Compact stats row */}
-          <div style={{ width: '100%', marginTop: 16 }}>
+          <div style={{ width: '100%', marginTop: 10 }}>
             <StatsPanel reads={reads} allTime={allTime} prodPerSec={prodPerSec} clickPower={calcClickPower()} owned={owned} seenMilestones={seenMilestones} prestigeCount={prestigeCount} prestigePower={prestigePower} boughtUpgrades={boughtUpgrades} />
           </div>
 
           {/* Achievement badges */}
-          <div style={{ width: '100%', marginTop: 12 }}>
+          <div style={{ width: '100%', marginTop: 8 }}>
             <div style={{
               fontSize: 10, color: '#94a3b8', fontWeight: 600, letterSpacing: 0.5,
               textTransform: 'uppercase', marginBottom: 6,
