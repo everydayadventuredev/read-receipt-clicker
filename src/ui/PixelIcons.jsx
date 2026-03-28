@@ -644,6 +644,102 @@ export function TimeIcon({ size = 16, color = "#ef4444" }) {
   );
 }
 
+/* ---------- QuantumIcon  (⚛️ / 量子已讀) ---------- */
+export function QuantumIcon({ size = 16, color = "#22d3ee" }) {
+  const d = darken(color);
+  const l = lighten(color);
+  return (
+    <svg width={size} height={size} viewBox="0 0 16 16" style={svgStyle}>
+      {/* Atom nucleus */}
+      {Row(7, 7, color, 2)}
+      {Row(7, 8, color, 2)}
+      {P(7, 7, l)}{P(8, 8, d)}
+      {/* Orbit 1 — horizontal */}
+      {Row(3, 7, color, 3)}{Row(10, 7, color, 3)}
+      {Row(3, 8, color, 3)}{Row(10, 8, color, 3)}
+      {/* Orbit 2 — diagonal */}
+      {P(5, 3, color)}{P(6, 4, color)}{P(6, 5, color)}
+      {P(10, 12, color)}{P(9, 11, color)}{P(9, 10, color)}
+      {/* Orbit 3 — other diagonal */}
+      {P(10, 3, color)}{P(9, 4, color)}{P(9, 5, color)}
+      {P(5, 12, color)}{P(6, 11, color)}{P(6, 10, color)}
+      {/* Electrons */}
+      {P(3, 6, l)}{P(12, 9, l)}
+      {P(5, 2, l)}{P(10, 13, l)}
+      {P(10, 2, l)}{P(5, 13, l)}
+    </svg>
+  );
+}
+
+/* ---------- VoidIcon  (🕳️ / 虛空已讀) ---------- */
+export function VoidIcon({ size = 16, color = "#1e1b4b" }) {
+  const d = darken(color);
+  const l = lighten(color);
+  return (
+    <svg width={size} height={size} viewBox="0 0 16 16" style={svgStyle}>
+      {/* Outer ring */}
+      {Row(5, 1, color, 6)}
+      {Row(3, 2, color, 2)}{Row(11, 2, color, 2)}
+      {Row(2, 3, color, 1)}{Row(13, 3, color, 1)}
+      {Row(1, 5, color, 1)}{Row(14, 5, color, 1)}
+      {Row(1, 6, color, 1)}{Row(14, 6, color, 1)}
+      {Row(1, 9, color, 1)}{Row(14, 9, color, 1)}
+      {Row(1, 10, color, 1)}{Row(14, 10, color, 1)}
+      {Row(2, 12, color, 1)}{Row(13, 12, color, 1)}
+      {Row(3, 13, color, 2)}{Row(11, 13, color, 2)}
+      {Row(5, 14, color, 6)}
+      {/* Inner void — dark center */}
+      {Row(5, 4, d, 6)}
+      {Row(4, 5, d, 8)}
+      {Row(3, 6, d, 10)}
+      {Row(3, 7, d, 10)}
+      {Row(3, 8, d, 10)}
+      {Row(3, 9, d, 10)}
+      {Row(4, 10, d, 8)}
+      {Row(5, 11, d, 6)}
+      {/* Event horizon shimmer */}
+      {P(5, 3, l)}{P(8, 3, l)}
+      {P(3, 7, l)}{P(12, 8, l)}
+    </svg>
+  );
+}
+
+/* ---------- GodIcon  (👁️ / 神之已讀) ---------- */
+export function GodIcon({ size = 16, color = "#fbbf24" }) {
+  const d = darken(color);
+  const l = lighten(color);
+  return (
+    <svg width={size} height={size} viewBox="0 0 16 16" style={svgStyle}>
+      {/* Eye shape */}
+      {Row(5, 4, color, 6)}
+      {Row(3, 5, color, 10)}
+      {Row(2, 6, color, 12)}
+      {Row(1, 7, color, 14)}
+      {Row(2, 8, color, 12)}
+      {Row(3, 9, color, 10)}
+      {Row(5, 10, color, 6)}
+      {/* Iris */}
+      {Row(6, 5, d, 4)}
+      {Row(5, 6, d, 6)}
+      {Row(5, 7, d, 6)}
+      {Row(5, 8, d, 6)}
+      {Row(6, 9, d, 4)}
+      {/* Pupil */}
+      {Row(7, 6, '#000', 2)}
+      {Row(7, 7, '#000', 2)}
+      {Row(7, 8, '#000', 2)}
+      {/* Highlight */}
+      {P(7, 6, l)}
+      {/* Rays */}
+      {P(7, 1, color)}{P(8, 1, color)}
+      {P(7, 2, l)}{P(8, 2, l)}
+      {P(7, 13, color)}{P(8, 13, color)}
+      {P(7, 12, l)}{P(8, 12, l)}
+      {P(1, 7, color)}{P(14, 7, color)}
+    </svg>
+  );
+}
+
 /* ================================================================== */
 /*  EXPORT MAPS                                                        */
 /* ================================================================== */
@@ -660,6 +756,9 @@ export const BUILDING_ICONS = {
   ai: AiIcon,
   alien: AlienIcon,
   time: TimeIcon,
+  quantum: QuantumIcon,
+  void: VoidIcon,
+  god: GodIcon,
 };
 
 export const UPGRADE_ICONS = {

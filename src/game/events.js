@@ -7,4 +7,14 @@ export const GOLDEN_COOKIES = [
   { label: '已讀加速',      emoji: '🚀', mult: 0,  toast: '全域產能x2持續30秒！', type: 'mult',  dur: 30, minAt: 5000 },
   { label: '瘋狂已讀',      emoji: '🔥', mult: 0,  toast: '全域產能x5持續10秒！', type: 'mult5', dur: 10, minAt: 5000 },
   { label: '你確定不回嗎？', emoji: '👀', mult: 30, toast: '已讀之力大幅提升！', type: 'add',  minAt: 10000 },
+  // --- New events ---
+  { label: '前任群組炸彈',  emoji: '💣', mult: 35, toast: '200人群組全部已讀你的道歉文！', type: 'add', minAt: 50000 },
+  { label: 'AI叛變',        emoji: '🤖', mult: 0,  toast: 'AI決定幫你已讀所有訊息！x5持續15秒！', type: 'mult5', dur: 15, minAt: 100000 },
+  { label: '時間倒流',      emoji: '⏪', mult: 50, toast: '未來的你已經已讀了這些！', type: 'add', minAt: 500000 },
+  { label: '虛空呼喚',      emoji: '🕳️', mult: 0,  toast: '虛空本身開始已讀！x2持續45秒！', type: 'mult', dur: 45, minAt: 1000000 },
+  { label: '神之觸碰',      emoji: '👁️', mult: 100, toast: '所有維度同時已讀！', type: 'add', minAt: 5000000 },
+  { label: '量子已讀風暴',  emoji: '⚛️', mult: 0,  toast: '量子疊加態爆發！x5持續20秒！', type: 'mult5', dur: 20, minAt: 10000000 },
+  { label: '全宇宙已讀',    emoji: '🌌', mult: 200, toast: '從大爆炸到熱寂，每則訊息都已讀！', type: 'add', minAt: 50000000 },
+  { label: '媽媽連環奪命call', emoji: '📞', mult: 40, toast: '32通未接來電轉化為已讀！', type: 'add', minAt: 25000 },
+  { label: '社死現場',      emoji: '😵', mult: 0,  toast: '社交性死亡轉化為動力！x10持續5秒！', type: 'mult10', dur: 5, minAt: 500000 },
 ];

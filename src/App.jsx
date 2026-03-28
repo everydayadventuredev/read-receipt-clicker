@@ -122,9 +122,11 @@ export default function App() {
     let p = 0;
     BUILDINGS.forEach(b => {
       let m = 1;
-      // Upgrade multipliers
+      // Upgrade multipliers (building-specific + global)
       UPGRADES.forEach(u => {
-        if (u.type === 'm' && u.target === b.id && boughtUpgrades.has(u.id)) m *= u.bonus;
+        if (!boughtUpgrades.has(u.id)) return;
+        if (u.type === 'm' && u.target === b.id) m *= u.bonus;
+        if (u.type === 'g') m *= u.bonus;
       });
       // Synergy multipliers
       m *= getSynergyMult(owned, b.id);
@@ -200,7 +202,9 @@ export default function App() {
     BUILDINGS.forEach(b => {
       let m = 1;
       UPGRADES.forEach(u => {
-        if (u.type === 'm' && u.target === b.id && saved.boughtUpgrades.has(u.id)) m *= u.bonus;
+        if (!saved.boughtUpgrades.has(u.id)) return;
+        if (u.type === 'm' && u.target === b.id) m *= u.bonus;
+        if (u.type === 'g') m *= u.bonus;
       });
       p += b.baseProd * (saved.owned[b.id] ?? 0) * m;
     });
@@ -533,7 +537,8 @@ export default function App() {
     if (boughtUpgrades.has(u.id)) return { ...u, state: 'done' };
     const ok =
       (!u.req.allTime  || allTime >= u.req.allTime) &&
-      (!u.req.building || (owned[u.req.building] ?? 0) >= u.req.count);
+      (!u.req.building || (owned[u.req.building] ?? 0) >= u.req.count) &&
+      (!u.req.buildings || u.req.buildings.every(r => (owned[r.id] ?? 0) >= r.count));
     if (!ok) return { ...u, state: 'lock' };
     return { ...u, state: reads >= u.cost ? 'buy' : 'wait' };
   }).filter(u => u.state !== 'lock');

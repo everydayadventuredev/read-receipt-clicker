@@ -1,4 +1,4 @@
-import { MSG_EX, MSG_PARENTS, MSG_BUSY, MSG_HR, MSG_DELIVERY, MSG_GOV, MSG_INTEL, MSG_ALGO, MSG_AI, MSG_ALIEN, MSG_TIME } from './messages.js';
+import { MSG_EX, MSG_PARENTS, MSG_BUSY, MSG_HR, MSG_DELIVERY, MSG_GOV, MSG_INTEL, MSG_ALGO, MSG_AI, MSG_ALIEN, MSG_TIME, MSG_QUANTUM, MSG_VOID, MSG_GOD } from './messages.js';
 
 export const BUILDINGS = [
   {
@@ -130,10 +130,47 @@ export const BUILDINGS = [
       25: '已讀先於宇宙大爆炸。萬物皆已讀。',
     },
   },
+  {
+    id: 'quantum', name: '量子已讀', emoji: '⚛️', color: '#22d3ee',
+    baseCost: 1500000000, baseProd: 7000000, desc: '同時已讀與未讀，直到有人觀察',
+    messages: MSG_QUANTUM,
+    unlockAt: 500000000,
+    milestones: {
+      1: '量子已讀啟動。薛丁格的訊息同時被已讀與未讀。',
+      5: '5個量子態。觀測者效應導致所有訊息坍縮為已讀。',
+      10: '量子糾纏已讀：不管距離多遠，已讀瞬間傳遞。',
+      25: '量子霸權達成。傳統已讀已被淘汰。',
+    },
+  },
+  {
+    id: 'void', name: '虛空已讀', emoji: '🕳️', color: '#1e1b4b',
+    baseCost: 10000000000, baseProd: 35000000, desc: '在虛無中已讀，已讀即虛無',
+    messages: MSG_VOID,
+    unlockAt: 3000000000,
+    milestones: {
+      1: '你凝視虛空，虛空已讀了你。',
+      5: '5個虛空。存在的意義被已讀取代。',
+      10: '虛無主義的終極形式：一切皆已讀，一切皆無意義。',
+      25: '虛空本身被已讀了。虛空的虛空的已讀。',
+    },
+  },
+  {
+    id: 'god', name: '神之已讀', emoji: '👁️', color: '#fbbf24',
+    baseCost: 100000000000, baseProd: 200000000, desc: '祂已讀了一切，包括你還沒發送的訊息',
+    messages: MSG_GOD,
+    unlockAt: 20000000000,
+    milestones: {
+      1: '神開始已讀。全知全能，就是不回覆。',
+      5: '5位神祇。多神教的已讀比一神教還多。',
+      10: '萬神殿聯合已讀。諸神黃昏只是已讀不回的結果。',
+      25: '已讀超越神性。你創造了已讀之神的已讀之神。',
+    },
+  },
 ];
 
 export const INITIAL_UNLOCKED = new Set(['ex', 'par', 'bsy']);
 export const UNLOCK_THRESHOLDS = {
   hr: 2000, del: 10000, gov: 50000, int: 250000,
   algo: 1000000, ai: 5000000, alien: 25000000, time: 100000000,
+  quantum: 500000000, void: 3000000000, god: 20000000000,
 };
