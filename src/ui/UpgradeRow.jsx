@@ -3,7 +3,7 @@ import { BUILDINGS } from '../game/buildings.js';
 import { fmt } from '../utils/format.js';
 import CheckIcon from './CheckIcon.jsx';
 
-export default function UpgradeRow({ upgrades, reads, onBuy, compact = false }) {
+export default function UpgradeRow({ upgrades, reads, onBuy, onBuyAll, compact = false }) {
   const doneCount = upgrades.filter(u => u.state === 'done').length;
   const seenRef = useRef(new Set());
   const [newIds, setNewIds] = useState(new Set());
@@ -55,6 +55,20 @@ export default function UpgradeRow({ upgrades, reads, onBuy, compact = false }) 
             fontFamily: "'JetBrains Mono',monospace", fontSize: 12,
             color: '#94a3b8',
           }}>{doneCount}/{upgrades.length}</span>
+          <div style={{ flex: 1 }} />
+          {activeItems.some(u => u.state === 'buy') && onBuyAll && (
+            <button
+              onClick={onBuyAll}
+              style={{
+                padding: '2px 8px', fontSize: 11, fontWeight: 700,
+                color: '#10b981', background: 'rgba(16,185,129,.08)',
+                border: '1px solid rgba(16,185,129,.2)',
+                borderRadius: 6, cursor: 'pointer',
+              }}
+            >
+              全買
+            </button>
+          )}
         </div>
 
         <div style={{

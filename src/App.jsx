@@ -1054,11 +1054,11 @@ export default function App() {
 
           {/* CPS subtitle */}
           <div style={{
-            fontSize: prodPerSec >= 1e6 ? 18 : 16,
+            fontSize: prodPerSec >= 1e6 ? 22 : 18,
             color: prodPerSec >= 1e6 ? '#b45309' : '#94a3b8',
             fontFamily: "'JetBrains Mono',monospace",
             fontWeight: prodPerSec >= 1e6 ? 700 : 400,
-            marginBottom: 4, display: 'flex', alignItems: 'center', gap: 6,
+            marginBottom: 6, display: 'flex', alignItems: 'center', gap: 6,
             transition: 'all .3s',
           }}>
             <CheckIcon size={13} color={prodPerSec >= 1e6 ? '#b45309' : '#94a3b8'} />
@@ -1069,7 +1069,7 @@ export default function App() {
           {allTime > 0 && (
             <div style={{
               display: 'flex', gap: 8, marginBottom: 8,
-              fontSize: 10, color: '#94a3b8',
+              fontSize: 13, color: '#94a3b8',
               fontFamily: "'JetBrains Mono',monospace",
             }}>
               <span>生涯 {fmt(allTime)}</span>
@@ -1224,7 +1224,9 @@ export default function App() {
             background: 'rgba(99,102,241,.02)',
           }}>
             {upgradeStates.length > 0 ? (
-              <UpgradeRow upgrades={upgradeStates} reads={reads} onBuy={handleBuyUpgrade} compact />
+              <UpgradeRow upgrades={upgradeStates} reads={reads} onBuy={handleBuyUpgrade} onBuyAll={() => {
+                upgradeStates.filter(u => u.state === 'buy').forEach(u => handleBuyUpgrade(u));
+              }} compact />
             ) : (
               <div style={{ padding: '8px 12px', fontSize: 11, color: '#94a3b8', fontStyle: 'italic' }}>
                 繼續已讀就會解鎖升級
