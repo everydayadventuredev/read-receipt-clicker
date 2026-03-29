@@ -56,7 +56,7 @@ export default function ClickArea({ message, isRead, isFirstClick, popAnim, rece
         {/* Chat body — header now in phone frame (App.jsx) */}
         <div style={{
           padding: '8px 10px',
-          minHeight: 160,
+          flex: 1, minHeight: 80,
           display: 'flex', flexDirection: 'column', justifyContent: 'flex-end',
           gap: 4,
           background: bg,

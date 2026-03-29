@@ -1105,7 +1105,7 @@ export default function App() {
             <button
               onClick={handleClick}
               style={{
-                padding: '16px 0', display: 'flex', flexDirection: 'column',
+                padding: '8px 0 4px', display: 'flex', flexDirection: 'column',
                 alignItems: 'center', justifyContent: 'center',
                 background: 'none', border: 'none', cursor: 'pointer',
                 flexShrink: 0,
@@ -1121,7 +1121,7 @@ export default function App() {
                   : 'none';
                 return (
                   <span style={{
-                    fontSize: 64, fontWeight: 900,
+                    fontSize: 80, fontWeight: 900,
                     fontFamily: "'Space Grotesk','JetBrains Mono',monospace",
                     color: counterColor,
                     animation: popAnim ? 'pn .18s ease-out' : 'none',
