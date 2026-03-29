@@ -95,6 +95,7 @@ export default function App() {
   const [showHint,   setShowHint]   = useState(true);
   const [buyN,       setBuyN]       = useState(1);
   const [tempMult,   setTempMult]   = useState(1);
+  const [tempMultExpiry, setTempMultExpiry] = useState(0); // timestamp when tempMult expires
   const [mutedUI,    setMutedUI]    = useState(false);
   const [offlineBanner, setOfflineBanner] = useState(null);
   const [prodPerSec, setProdPerSec] = useState(0);
@@ -117,6 +118,15 @@ export default function App() {
   useEffect(() => { ownedRef.current   = owned;   }, [owned]);
   useEffect(() => { boughtRef.current  = boughtUpgrades; }, [boughtUpgrades]);
   useEffect(() => { tempMultRef.current = tempMult; }, [tempMult]);
+
+  // Auto-expire tempMult
+  useEffect(() => {
+    if (tempMultExpiry <= 0 || tempMult <= 1) return;
+    const remaining = tempMultExpiry - Date.now();
+    if (remaining <= 0) { setTempMult(1); return; }
+    const t = setTimeout(() => setTempMult(1), remaining);
+    return () => clearTimeout(t);
+  }, [tempMultExpiry, tempMult]);
 
 
 
@@ -636,12 +646,12 @@ export default function App() {
 
     if (gc.type === 'mult') {
       setTempMult(2);
+      setTempMultExpiry(Date.now() + gc.dur * 1000);
       addToast(`🚀 ${gc.toast}`);
-      setTimeout(() => setTempMult(1), gc.dur * 1000);
     } else if (gc.type === 'mult5') {
       setTempMult(5);
+      setTempMultExpiry(Date.now() + gc.dur * 1000);
       addToast(`🔥 ${gc.toast}`);
-      setTimeout(() => setTempMult(1), gc.dur * 1000);
     } else {
       const bonus = Math.max(20, Math.floor(psRef.current * gc.mult));
       setReads(r => r + bonus);
@@ -966,7 +976,7 @@ export default function App() {
           fontFamily: "'JetBrains Mono',monospace",
           boxShadow: '0 4px 20px rgba(99,102,241,.08)',
         }}>
-          🔥 x{tempMult} 產能加成中
+          🔥 x{tempMult} 產能加成中 {tempMultExpiry > 0 && `(${Math.max(0, Math.ceil((tempMultExpiry - Date.now()) / 1000))}s)`}
         </div>
       )}
 
@@ -1292,7 +1302,7 @@ export default function App() {
 
           {/* Upgrades — compact, capped height */}
           <div style={{
-            maxHeight: '35%', overflowY: 'auto', flexShrink: 0,
+            maxHeight: '25%', overflowY: 'auto', flexShrink: 0,
             borderBottom: '2px solid #e2e8f0',
             background: 'rgba(99,102,241,.02)',
           }}>
