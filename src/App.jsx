@@ -886,8 +886,8 @@ export default function App() {
         button:active { transform:scale(.96)!important }
         @media(min-width:768px) {
           .game-layout { flex-direction:row!important }
-          .section-hero   { width:25%!important; border-right:1px solid #e2e8f0 }
-          .section-middle { width:45%!important; border-right:1px solid #e2e8f0 }
+          .section-hero   { width:25%!important; border-right:2px solid #e2e8f0 }
+          .section-middle { width:45%!important; border-right:2px solid #e2e8f0 }
           .section-store  { width:30%!important }
         }
       `}</style>
@@ -1297,7 +1297,10 @@ export default function App() {
         </div>
 
         {/* MIDDLE — Ticker + Mini-Game */}
-        <div className="section-middle" style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', minHeight: 0 }}>
+        <div className="section-middle" style={{
+          flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', minHeight: 0,
+          background: 'linear-gradient(180deg, rgba(99,102,241,.02) 0%, rgba(99,102,241,.01) 100%)',
+        }}>
 
           {/* Ticker — news/events at top of middle column */}
           <Ticker allTime={allTime} logEntries={log} />
@@ -1330,7 +1333,10 @@ export default function App() {
         </div>
 
         {/* RIGHT — Header + Store: Upgrades + Buildings */}
-        <div className="section-store" style={{ display: 'flex', flexDirection: 'column', overflow: 'hidden', minHeight: 0 }}>
+        <div className="section-store" style={{
+          display: 'flex', flexDirection: 'column', overflow: 'hidden', minHeight: 0,
+          background: 'linear-gradient(180deg, rgba(245,158,11,.02) 0%, rgba(245,158,11,.01) 100%)',
+        }}>
 
           {/* Header bar — now inside right column */}
           <div style={{

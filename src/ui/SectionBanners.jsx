@@ -56,7 +56,7 @@ export function TickerBanner() {
 export function CounterBanner() {
   return (
     <svg viewBox="0 0 400 300" preserveAspectRatio="xMidYMid slice"
-      style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', opacity: 0.04, pointerEvents: 'none' }}>
+      style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', opacity: 0.07, pointerEvents: 'none' }}>
       {/* Giant phone outline */}
       <rect x={80} y={20} width={240} height={260} rx={16} fill="none" stroke="#6366f1" strokeWidth={3} />
       <rect x={160} y={268} width={80} height={4} rx={2} fill="#6366f1" />
@@ -90,7 +90,7 @@ export function CounterBanner() {
 export function ChatBanner() {
   return (
     <svg viewBox="0 0 400 400" preserveAspectRatio="xMidYMid slice"
-      style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', opacity: 0.03, pointerEvents: 'none' }}>
+      style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', opacity: 0.06, pointerEvents: 'none' }}>
       {/* Scattered chat bubbles */}
       {[
         [40, 30, 120, true], [200, 60, 100, false], [60, 120, 140, true],
@@ -118,7 +118,7 @@ export function ChatBanner() {
 export function GardenBanner() {
   return (
     <svg viewBox={`0 0 ${W} 600`} preserveAspectRatio="xMidYMid slice"
-      style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', opacity: 0.04, pointerEvents: 'none' }}>
+      style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', opacity: 0.07, pointerEvents: 'none' }}>
       {/* Greenhouse frame */}
       <rect x={20} y={20} width={W - 40} height={560} rx={8} fill="none" stroke="#22c55e" strokeWidth={2} />
       {/* Arch roof */}
@@ -158,7 +158,7 @@ export function GardenBanner() {
 export function StockBanner() {
   return (
     <svg viewBox={`0 0 ${W} 600`} preserveAspectRatio="xMidYMid slice"
-      style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', opacity: 0.04, pointerEvents: 'none' }}>
+      style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', opacity: 0.07, pointerEvents: 'none' }}>
       {/* Monitor grid */}
       {Array.from({ length: 6 }, (_, row) =>
         Array.from({ length: 4 }, (_, col) => {
@@ -193,7 +193,7 @@ export function StockBanner() {
 export function MergeBanner() {
   return (
     <svg viewBox={`0 0 ${W} 600`} preserveAspectRatio="xMidYMid slice"
-      style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', opacity: 0.04, pointerEvents: 'none' }}>
+      style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', opacity: 0.07, pointerEvents: 'none' }}>
       {/* Conveyor belts */}
       {Array.from({ length: 4 }, (_, i) => (
         <g key={i}>
@@ -234,7 +234,7 @@ export function MergeBanner() {
 export function UpgradeBanner() {
   return (
     <svg viewBox="0 0 800 300" preserveAspectRatio="xMidYMid slice"
-      style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', opacity: 0.04, pointerEvents: 'none' }}>
+      style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', opacity: 0.07, pointerEvents: 'none' }}>
       {/* Workbench */}
       <rect x={10} y={240} width={780} height={8} fill="#8B4513" opacity={0.3} />
       {/* Shelves */}
