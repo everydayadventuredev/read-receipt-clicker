@@ -1370,7 +1370,26 @@ export default function App() {
             <UpgradeBanner />
             {upgradeStates.length > 0 ? (
               <UpgradeRow upgrades={upgradeStates} reads={reads} onBuy={handleBuyUpgrade} onBuyAll={() => {
-                upgradeStates.filter(u => u.state === 'buy').forEach(u => handleBuyUpgrade(u));
+                // Buy all affordable upgrades, tracking remaining reads
+                let remaining = readsRef.current;
+                const toBuy = upgradeStates.filter(u => u.state === 'buy').sort((a, b) => a.cost - b.cost);
+                const bought = [];
+                for (const u of toBuy) {
+                  if (remaining >= u.cost && !boughtRef.current.has(u.id)) {
+                    remaining -= u.cost;
+                    bought.push(u);
+                  }
+                }
+                if (bought.length > 0) {
+                  const totalCost = bought.reduce((s, u) => s + u.cost, 0);
+                  setReads(r => r - totalCost);
+                  setBoughtUpgrades(s => {
+                    const next = new Set(s);
+                    bought.forEach(u => next.add(u.id));
+                    return next;
+                  });
+                  addToast(`⬆️ 一口氣升級 ${bought.length} 個！`);
+                }
               }} compact />
             ) : (
               <div style={{ padding: '8px 12px', fontSize: 11, color: '#94a3b8', fontStyle: 'italic' }}>
