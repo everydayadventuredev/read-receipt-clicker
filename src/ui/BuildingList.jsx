@@ -130,9 +130,9 @@ export default function BuildingList({ buildings, owned, reads, allTime, unlocke
         justifyContent: 'space-between', flexShrink: 0,
       }}>
         <div style={{
-          fontSize: 13, color: '#64748b', fontWeight: 600,
-          letterSpacing: 1, textTransform: 'uppercase',
-        }}>已讀大師</div>
+          fontSize: 13, color: '#b45309', fontWeight: 700,
+          letterSpacing: 1,
+        }}>🏰 已讀大師</div>
         <div style={{
           display: 'flex', gap: 2,
           background: '#f1f5f9', borderRadius: 8, padding: 2,

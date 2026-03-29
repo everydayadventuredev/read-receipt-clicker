@@ -45,15 +45,15 @@ export default function UpgradeRow({ upgrades, reads, onBuy, onBuyAll, compact =
     return (
       <div style={{ padding: '8px 10px 6px', flexShrink: 0 }}>
         <div style={{
-          fontSize: 13, fontWeight: 600, color: '#64748b',
-          marginBottom: 6, letterSpacing: 0.5, textTransform: 'uppercase',
+          fontSize: 13, fontWeight: 700, color: '#4f46e5',
+          marginBottom: 6, letterSpacing: 0.5,
           display: 'flex', alignItems: 'center', gap: 6,
           padding: '0 4px',
         }}>
-          升級
+          ⚡ 升級
           <span style={{
             fontFamily: "'JetBrains Mono',monospace", fontSize: 12,
-            color: '#94a3b8',
+            color: '#94a3b8', fontWeight: 500,
           }}>{doneCount}/{upgrades.length}</span>
           <div style={{ flex: 1 }} />
           {activeItems.some(u => u.state === 'buy') && onBuyAll && (
@@ -85,7 +85,7 @@ export default function UpgradeRow({ upgrades, reads, onBuy, onBuyAll, compact =
                 style={{
                   display: 'flex', alignItems: 'center', gap: 6,
                   padding: '6px 10px', borderRadius: 8,
-                  background: canBuy ? '#fff' : '#f8fafc',
+                  background: canBuy ? 'linear-gradient(135deg, rgba(99,102,241,.04), rgba(168,85,247,.04))' : '#f8fafc',
                   border: canBuy ? '1px solid rgba(99,102,241,.2)' : '1px solid #e8eaed',
                   opacity: isWait ? 0.5 : 1,
                   cursor: canBuy ? 'pointer' : 'default',

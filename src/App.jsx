@@ -1053,14 +1053,34 @@ export default function App() {
           )}
         </div>
 
-        {/* Achievements — compact in header */}
-        <div style={{ flex: 1, overflow: 'hidden', margin: '0 8px' }}>
-          <AchievementBadges unlockedAchievements={unlockedAchievements} maxVisible={8} />
+        {/* Prestige progress bar — fills middle space */}
+        <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: 8, margin: '0 8px' }}>
+          {prestigeEarned >= 1 && (
+            <div style={{ flex: 1, maxWidth: 200 }}>
+              <div style={{
+                height: 4, background: 'rgba(99,102,241,.1)', borderRadius: 2,
+                overflow: 'hidden',
+              }}>
+                <div style={{
+                  height: '100%', borderRadius: 2,
+                  width: `${Math.min(100, (prestigeEarned / Math.max(1, prestigeEarned + 3)) * 100)}%`,
+                  background: 'linear-gradient(90deg, #6366f1, #a855f7)',
+                  transition: 'width .5s',
+                }} />
+              </div>
+            </div>
+          )}
+          {/* Compact achievement count */}
+          <span style={{
+            fontSize: 11, color: '#94a3b8', fontFamily: "'JetBrains Mono',monospace",
+          }}>
+            {unlockedAchievements.length}/{103} ⭐
+          </span>
         </div>
 
-        {/* Right buttons */}
+        {/* Right buttons — clean */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0 }}>
-          {/* Prestige shop button */}
+          {/* Prestige shop */}
           {prestigeCount > 0 && (
             <button
               onClick={() => setShowPrestigeShop(true)}
