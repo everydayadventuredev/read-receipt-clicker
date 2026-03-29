@@ -24,6 +24,19 @@ const inputBarTexts = {
   transcend: '🧊 冷漠即力量',
 };
 
+// Mini avatar component
+function Avatar({ size = 24 }) {
+  return (
+    <div style={{
+      width: size, height: size, borderRadius: '50%',
+      background: 'linear-gradient(135deg, #e2e8f0, #cbd5e1)',
+      display: 'flex', alignItems: 'center', justifyContent: 'center',
+      fontSize: size * 0.5, flexShrink: 0,
+      border: '1px solid rgba(0,0,0,.06)',
+    }}>👤</div>
+  );
+}
+
 export default function ClickArea({ message, isRead, isFirstClick, popAnim, recentMessages, onClick, guilt = 0, guiltLevel = 'none' }) {
   const now = new Date();
   const timeStr = `${now.getHours()}:${now.getMinutes().toString().padStart(2, '0')}`;
@@ -40,10 +53,6 @@ export default function ClickArea({ message, isRead, isFirstClick, popAnim, rece
           0%, 60%, 100% { opacity: 0.3; transform: translateY(0); }
           30% { opacity: 1; transform: translateY(-2px); }
         }
-        @keyframes guiltPulseBorder {
-          0%, 100% { border-color: rgba(239,68,68,0.3); }
-          50% { border-color: rgba(239,68,68,0.6); }
-        }
       `}</style>
       <div style={{
         width: '100%',
@@ -53,42 +62,43 @@ export default function ClickArea({ message, isRead, isFirstClick, popAnim, rece
         transition: 'background .5s',
         flex: 1,
       }}>
-        {/* Chat body — header now in phone frame (App.jsx) */}
+        {/* Chat body — messages flow from TOP down */}
         <div style={{
           padding: '8px 10px',
-          flex: 1, minHeight: 80,
-          display: 'flex', flexDirection: 'column', justifyContent: 'flex-end',
-          gap: 4,
+          flex: 1, overflowY: 'auto',
+          display: 'flex', flexDirection: 'column',
+          gap: 6,
           background: bg,
           backgroundImage: 'radial-gradient(circle, rgba(99,102,241,.02) 1px, transparent 1px)',
           backgroundSize: '20px 20px',
           transition: 'background .5s ease',
         }}>
-          {/* Old messages (read, fading out) */}
-          {recentMessages.slice(0, 4).reverse().map((m, i, arr) => {
+          {/* Old messages — read, stacking from top */}
+          {recentMessages.slice(0, 6).reverse().map((m, i, arr) => {
             const age = arr.length - i;
             return (
               <div key={i} style={{
-                display: 'flex', alignItems: 'flex-end', gap: 4,
-                opacity: Math.max(0.2, 0.7 - age * 0.15),
+                display: 'flex', alignItems: 'flex-start', gap: 6,
+                opacity: Math.max(0.3, 0.8 - age * 0.1),
               }}>
-                {/* Incoming message bubble */}
-                <div style={{
-                  maxWidth: '80%',
-                  background: '#fff',
-                  border: '1px solid #e2e8f0',
-                  borderRadius: '12px 12px 12px 4px',
-                  padding: '5px 10px',
-                  fontSize: 12, color: '#64748b', lineHeight: 1.4,
-                }}>
-                  {m}
-                </div>
-                {/* Read receipt */}
-                <div style={{ display: 'flex', alignItems: 'center', gap: 1, flexShrink: 0 }}>
-                  <CheckIcon size={8} color="#6366f1" />
-                  <span style={{ fontSize: 8, color: '#94a3b8' }}>
-                    {now.getHours()}:{(now.getMinutes() - age).toString().padStart(2, '0')}
-                  </span>
+                <Avatar size={22} />
+                <div style={{ flex: 1 }}>
+                  <div style={{
+                    maxWidth: '85%',
+                    background: '#fff',
+                    border: '1px solid #e2e8f0',
+                    borderRadius: '4px 12px 12px 12px',
+                    padding: '6px 10px',
+                    fontSize: 13, color: '#64748b', lineHeight: 1.4,
+                  }}>
+                    {m}
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 2, marginTop: 2 }}>
+                    <CheckIcon size={8} color="#6366f1" />
+                    <span style={{ fontSize: 9, color: '#94a3b8' }}>
+                      {now.getHours()}:{String(Math.max(0, now.getMinutes() - age)).padStart(2, '0')}
+                    </span>
+                  </div>
                 </div>
               </div>
             );
@@ -97,52 +107,54 @@ export default function ClickArea({ message, isRead, isFirstClick, popAnim, rece
           {/* First click hint */}
           {isFirstClick && !isRead && (
             <div style={{
-              textAlign: 'center', padding: '4px 0',
+              textAlign: 'center', padding: '8px 0',
               animation: 'hf 4s ease-out forwards',
             }}>
-              <div style={{ fontSize: 12, color: '#94a3b8', fontWeight: 500 }}>
+              <div style={{ fontSize: 13, color: '#94a3b8', fontWeight: 500 }}>
                 👇 點一下訊息已讀
               </div>
             </div>
           )}
 
-          {/* Current message — the clickable one */}
+          {/* Current message — THE CTA, bigger and more prominent */}
           <div
             onClick={onClick}
             style={{ cursor: 'pointer', WebkitTapHighlightColor: 'transparent', userSelect: 'none' }}
           >
             <div style={{
-              display: 'flex', alignItems: 'flex-end', gap: 4,
+              display: 'flex', alignItems: 'flex-start', gap: 6,
             }}>
-              <div style={{
-                maxWidth: '85%',
-                background: isRead
-                  ? '#f1f5f9'
-                  : 'linear-gradient(145deg, rgba(99,102,241,.1), rgba(99,102,241,.05))',
-                border: isRead
-                  ? '1px solid #e2e8f0'
-                  : '1px solid rgba(99,102,241,.2)',
-                borderRadius: '14px 14px 14px 4px',
-                padding: '10px 14px',
-                transition: 'all .15s cubic-bezier(.4,0,.2,1)',
-                transform: isRead ? 'scale(.97)' : 'scale(1)',
-                boxShadow: isRead
-                  ? 'none'
-                  : '0 2px 8px rgba(99,102,241,.08)',
-                animation: !isRead && !isFirstClick ? 'ib 2.5s ease-in-out infinite' : 'none',
-                position: 'relative',
-              }}>
+              <Avatar size={28} />
+              <div style={{ flex: 1 }}>
                 <div style={{
-                  color: isRead ? '#94a3b8' : '#1e293b',
-                  fontSize: 15, lineHeight: 1.5, fontWeight: 500,
+                  maxWidth: '90%',
+                  background: isRead
+                    ? '#f1f5f9'
+                    : 'linear-gradient(145deg, rgba(99,102,241,.12), rgba(99,102,241,.05))',
+                  border: isRead
+                    ? '1px solid #e2e8f0'
+                    : '2px solid rgba(99,102,241,.3)',
+                  borderRadius: '4px 16px 16px 16px',
+                  padding: '12px 16px',
+                  transition: 'all .15s cubic-bezier(.4,0,.2,1)',
+                  transform: isRead ? 'scale(.97)' : 'scale(1)',
+                  boxShadow: isRead
+                    ? 'none'
+                    : '0 4px 16px rgba(99,102,241,.12)',
+                  animation: !isRead && !isFirstClick ? 'ib 2.5s ease-in-out infinite' : 'none',
                 }}>
-                  {message}
+                  <div style={{
+                    color: isRead ? '#94a3b8' : '#1e293b',
+                    fontSize: 17, lineHeight: 1.5, fontWeight: 600,
+                  }}>
+                    {message}
+                  </div>
                 </div>
                 <div style={{
-                  display: 'flex', alignItems: 'center', justifyContent: 'flex-end',
-                  gap: 3, marginTop: 2,
+                  display: 'flex', alignItems: 'center',
+                  gap: 3, marginTop: 3,
                 }}>
-                  <span style={{ fontSize: 9, color: '#94a3b8' }}>{timeStr}</span>
+                  <span style={{ fontSize: 10, color: '#94a3b8' }}>{timeStr}</span>
                   {isRead && (
                     <span style={{ animation: 'ci .3s ease-out' }}>
                       <CheckIcon size={10} color="#6366f1" />
@@ -152,6 +164,9 @@ export default function ClickArea({ message, isRead, isFirstClick, popAnim, rece
               </div>
             </div>
           </div>
+
+          {/* Spacer to push content up when few messages */}
+          <div style={{ flex: 1 }} />
         </div>
 
         {/* Input bar (decorative) */}
@@ -159,21 +174,21 @@ export default function ClickArea({ message, isRead, isFirstClick, popAnim, rece
           padding: '6px 10px',
           borderTop: '1px solid #e2e8f0',
           display: 'flex', alignItems: 'center', gap: 8,
-          background: '#fff',
+          background: '#fff', flexShrink: 0,
         }}>
           <div style={{
             flex: 1, padding: '6px 12px',
             background: '#f1f5f9', borderRadius: 16,
-            fontSize: 11, color: '#94a3b8',
+            fontSize: 12, color: '#94a3b8',
             border: '1px solid #e2e8f0',
           }}>
             {inputText}
           </div>
           <div style={{
-            width: 28, height: 28, borderRadius: 14,
+            width: 30, height: 30, borderRadius: 15,
             background: headerGrad,
             display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontSize: 12, color: '#fff',
+            fontSize: 13, color: '#fff',
             opacity: 0.4,
             transition: 'background .5s ease',
           }}>➤</div>
