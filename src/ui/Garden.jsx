@@ -1,9 +1,6 @@
 import { useState, useEffect } from 'react';
 import { FLOWERS, SERIES, RARITY, GROWTH_TIME, WILT_TIME, getFieldCount, getFlowerById } from '../game/garden.js';
 
-/**
- * Format remaining time as "Xh Xm" or "Xm Xs".
- */
 function fmtTime(ms) {
   if (ms <= 0) return '就緒';
   const s = Math.floor(ms / 1000);
@@ -15,12 +12,11 @@ function fmtTime(ms) {
 }
 
 /**
- * Single garden plot cell.
+ * Widget-style plot cell — iOS widget aesthetic.
  */
 function PlotCell({ slot, index, fieldCount, seeds, onPlant, onHarvest, onClear }) {
   const [now, setNow] = useState(Date.now());
 
-  // Update timer every second for growing/mature cells
   useEffect(() => {
     if (!slot || slot.wilted) return;
     const iv = setInterval(() => setNow(Date.now()), 1000);
@@ -28,40 +24,47 @@ function PlotCell({ slot, index, fieldCount, seeds, onPlant, onHarvest, onClear 
   }, [slot]);
 
   const isLocked = index >= fieldCount;
+  const cellBase = {
+    borderRadius: 16,
+    display: 'flex', flexDirection: 'column',
+    alignItems: 'center', justifyContent: 'center',
+    transition: 'all .2s',
+    position: 'relative', overflow: 'hidden',
+  };
 
-  // Locked cell
+  // Locked
   if (isLocked) {
     return (
       <div style={{
-        background: 'rgba(148,163,184,.06)',
-        border: '1px dashed rgba(148,163,184,.2)',
-        borderRadius: 10,
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-        opacity: 0.4, fontSize: 20,
+        ...cellBase,
+        background: 'rgba(148,163,184,.04)',
+        border: '1px solid rgba(148,163,184,.08)',
+        opacity: 0.3,
       }}>
-        🔒
+        <span style={{ fontSize: 16, opacity: 0.5 }}>🔒</span>
       </div>
     );
   }
 
-  // Empty cell
+  // Empty — plantable
   if (!slot) {
+    const canPlant = seeds > 0;
     return (
       <button
-        onClick={() => seeds > 0 && onPlant(index)}
+        onClick={() => canPlant && onPlant(index)}
         style={{
-          background: seeds > 0 ? 'rgba(139,69,19,.06)' : 'rgba(148,163,184,.04)',
-          border: seeds > 0 ? '1px dashed rgba(139,69,19,.3)' : '1px dashed rgba(148,163,184,.15)',
-          borderRadius: 10,
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          cursor: seeds > 0 ? 'pointer' : 'default',
-          fontSize: 14, color: '#a3856a',
-          transition: 'all .2s',
-          flexDirection: 'column', gap: 2,
+          ...cellBase,
+          background: canPlant
+            ? 'linear-gradient(135deg, rgba(34,197,94,.06), rgba(34,197,94,.02))'
+            : 'rgba(148,163,184,.03)',
+          border: canPlant ? '1.5px dashed rgba(34,197,94,.3)' : '1px dashed rgba(148,163,184,.12)',
+          cursor: canPlant ? 'pointer' : 'default',
         }}
       >
-        {seeds > 0 && <span style={{ fontSize: 28 }}>🌱</span>}
-        {seeds > 0 && <span style={{ fontSize: 11, fontWeight: 600 }}>點擊播種</span>}
+        {canPlant && <>
+          <span style={{ fontSize: 24, opacity: 0.6 }}>🌱</span>
+          <span style={{ fontSize: 10, color: '#22c55e', fontWeight: 600, marginTop: 2 }}>播種</span>
+        </>}
       </button>
     );
   }
@@ -73,51 +76,41 @@ function PlotCell({ slot, index, fieldCount, seeds, onPlant, onHarvest, onClear 
       <button
         onClick={() => onClear(index)}
         style={{
-          background: 'rgba(148,163,184,.06)',
-          border: '1px solid rgba(148,163,184,.15)',
-          borderRadius: 10,
-          display: 'flex', flexDirection: 'column',
-          alignItems: 'center', justifyContent: 'center',
-          cursor: 'pointer', opacity: 0.5,
-          filter: 'grayscale(1)',
+          ...cellBase,
+          background: 'rgba(148,163,184,.05)',
+          border: '1px solid rgba(148,163,184,.1)',
+          cursor: 'pointer', filter: 'grayscale(0.8)', opacity: 0.5,
         }}
       >
-        <span style={{ fontSize: 36 }}>{flower?.emoji ?? '🍂'}</span>
-        <span style={{ fontSize: 11, color: '#94a3b8' }}>枯萎</span>
+        <span style={{ fontSize: 32 }}>{flower?.emoji ?? '🍂'}</span>
+        <span style={{ fontSize: 10, color: '#94a3b8', marginTop: 2 }}>枯萎了</span>
       </button>
     );
   }
 
-  // Growing (no flower assigned yet)
+  // Growing
   if (!slot.flowerId) {
     const remaining = GROWTH_TIME - (now - slot.plantedAt);
     const progress = Math.min(100, ((now - slot.plantedAt) / GROWTH_TIME) * 100);
     return (
       <div style={{
-        background: 'rgba(34,197,94,.06)',
-        border: '1px solid rgba(34,197,94,.2)',
-        borderRadius: 10,
-        display: 'flex', flexDirection: 'column',
-        alignItems: 'center', justifyContent: 'center',
-        position: 'relative', overflow: 'hidden',
+        ...cellBase,
+        background: 'linear-gradient(180deg, rgba(34,197,94,.08), rgba(34,197,94,.02))',
+        border: '1px solid rgba(34,197,94,.15)',
       }}>
-        <span style={{ fontSize: 36, animation: 'breathe 2s ease-in-out infinite' }}>🌱</span>
+        <span style={{ fontSize: 28, animation: 'breathe 3s ease-in-out infinite' }}>🌱</span>
         <span style={{
-          fontSize: 13, color: '#22c55e', fontWeight: 600,
-          fontFamily: "'JetBrains Mono',monospace",
+          fontSize: 11, color: '#22c55e', fontWeight: 700,
+          fontFamily: "'JetBrains Mono',monospace", marginTop: 3,
         }}>
           {fmtTime(remaining)}
         </span>
-        {/* Progress bar at bottom */}
-        <div style={{
-          position: 'absolute', bottom: 0, left: 0, right: 0, height: 3,
-          background: 'rgba(34,197,94,.15)',
-        }}>
-          <div style={{
-            height: '100%', width: `${progress}%`,
-            background: '#22c55e', transition: 'width 1s linear',
-          }} />
-        </div>
+        {/* Circular progress ring */}
+        <svg style={{ position: 'absolute', inset: 4, opacity: 0.2 }} viewBox="0 0 100 100">
+          <circle cx="50" cy="50" r="46" fill="none" stroke="#22c55e" strokeWidth="2"
+            strokeDasharray={`${progress * 2.89} 289`}
+            strokeLinecap="round" transform="rotate(-90 50 50)" />
+        </svg>
       </div>
     );
   }
@@ -126,53 +119,59 @@ function PlotCell({ slot, index, fieldCount, seeds, onPlant, onHarvest, onClear 
   const flower = getFlowerById(slot.flowerId);
   const rarity = RARITY[flower?.rarity ?? 'common'];
   const wiltRemaining = WILT_TIME - (now - slot.maturedAt);
-  const urgency = wiltRemaining < 60 * 60 * 1000; // < 1 hour
+  const urgency = wiltRemaining < 60 * 60 * 1000;
 
   return (
     <button
       onClick={() => onHarvest(index)}
       style={{
-        background: `linear-gradient(135deg, ${rarity.color}10, ${rarity.color}05)`,
+        ...cellBase,
+        background: `linear-gradient(135deg, ${rarity.color}12, ${rarity.color}06)`,
         border: `2px solid ${rarity.color}40`,
-        borderRadius: 10,
-        display: 'flex', flexDirection: 'column',
-        alignItems: 'center', justifyContent: 'center',
         cursor: 'pointer',
         animation: 'glowPulse 2s ease-in-out infinite',
-        position: 'relative',
+        boxShadow: `0 4px 20px ${rarity.color}15`,
       }}
     >
-      <span style={{ fontSize: 44 }}>{flower?.emoji ?? '🌸'}</span>
+      <span style={{ fontSize: 40 }}>{flower?.emoji ?? '🌸'}</span>
       <span style={{
-        fontSize: 12, fontWeight: 700, color: rarity.color,
-        textTransform: 'uppercase',
+        fontSize: 11, fontWeight: 800, color: rarity.color,
+        letterSpacing: 0.5, marginTop: 2,
       }}>
         {rarity.label}
       </span>
-      {/* Wilt timer */}
       <span style={{
-        fontSize: 11, color: urgency ? '#ef4444' : '#94a3b8',
+        fontSize: 10, color: urgency ? '#ef4444' : '#94a3b8',
         fontFamily: "'JetBrains Mono',monospace",
         fontWeight: urgency ? 700 : 400,
       }}>
         {fmtTime(wiltRemaining)}
       </span>
+      {/* Rarity glow dot */}
+      <div style={{
+        position: 'absolute', top: 6, right: 6,
+        width: 8, height: 8, borderRadius: '50%',
+        background: rarity.color, opacity: 0.6,
+        boxShadow: `0 0 6px ${rarity.color}`,
+      }} />
     </button>
   );
 }
 
 /**
- * Collection / 圖鑑 view.
+ * Collection / 圖鑑 view — card grid style.
  */
 function CollectionView({ collection, completedSeries }) {
   const totalDiscovered = Object.keys(collection).length;
 
   return (
-    <div style={{ padding: '8px 12px', overflowY: 'auto', flex: 1 }}>
+    <div style={{ padding: '10px 12px', overflowY: 'auto', flex: 1 }}>
       <div style={{
-        fontSize: 12, color: '#64748b', marginBottom: 8,
+        fontSize: 13, color: '#64748b', marginBottom: 10,
         fontFamily: "'JetBrains Mono',monospace",
+        display: 'flex', alignItems: 'center', gap: 6,
       }}>
+        <span style={{ fontSize: 16 }}>📖</span>
         已發現 {totalDiscovered}/{FLOWERS.length} 種花
       </div>
 
@@ -180,21 +179,26 @@ function CollectionView({ collection, completedSeries }) {
         const isComplete = completedSeries.includes(series.id);
         return (
           <div key={series.id} style={{
-            marginBottom: 12,
-            padding: '8px 10px',
-            background: isComplete ? 'rgba(245,158,11,.05)' : 'rgba(148,163,184,.03)',
-            border: isComplete ? '1px solid rgba(245,158,11,.2)' : '1px solid #f1f5f9',
-            borderRadius: 10,
+            marginBottom: 10,
+            padding: '10px 12px',
+            background: isComplete
+              ? 'linear-gradient(135deg, rgba(245,158,11,.06), rgba(245,158,11,.02))'
+              : 'rgba(148,163,184,.02)',
+            border: isComplete ? '1.5px solid rgba(245,158,11,.25)' : '1px solid #f1f5f9',
+            borderRadius: 14,
           }}>
             <div style={{
-              fontSize: 13, fontWeight: 700, color: '#1e293b',
-              marginBottom: 4, display: 'flex', alignItems: 'center', gap: 6,
+              fontSize: 14, fontWeight: 700, color: '#1e293b',
+              marginBottom: 6, display: 'flex', alignItems: 'center', gap: 6,
             }}>
               <span>{series.emoji}</span>
               <span>{series.name}</span>
-              {isComplete && <span style={{ fontSize: 10, color: '#f59e0b', fontWeight: 800 }}>✨ ×1.05 永久</span>}
+              {isComplete && <span style={{
+                fontSize: 10, color: '#f59e0b', fontWeight: 800,
+                background: 'rgba(245,158,11,.1)', padding: '2px 6px', borderRadius: 4,
+              }}>✨ ×1.05 永久</span>}
             </div>
-            <div style={{ fontSize: 10, color: '#94a3b8', marginBottom: 6 }}>{series.desc}</div>
+            <div style={{ fontSize: 11, color: '#94a3b8', marginBottom: 8 }}>{series.desc}</div>
             <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
               {series.flowerIds.map(fid => {
                 const flower = getFlowerById(fid);
@@ -202,15 +206,16 @@ function CollectionView({ collection, completedSeries }) {
                 const rarity = RARITY[flower?.rarity ?? 'common'];
                 return (
                   <div key={fid} style={{
-                    width: 56, padding: '4px 2px',
-                    borderRadius: 6,
-                    background: found ? `${rarity.color}10` : 'rgba(148,163,184,.05)',
-                    border: found ? `1px solid ${rarity.color}30` : '1px dashed rgba(148,163,184,.2)',
+                    width: 60, padding: '6px 2px',
+                    borderRadius: 12,
+                    background: found ? `${rarity.color}08` : 'rgba(148,163,184,.04)',
+                    border: found ? `1.5px solid ${rarity.color}25` : '1px dashed rgba(148,163,184,.15)',
                     textAlign: 'center',
+                    transition: 'all .2s',
                   }}>
-                    <div style={{ fontSize: 20 }}>{found ? flower.emoji : '❓'}</div>
+                    <div style={{ fontSize: 24 }}>{found ? flower.emoji : '❓'}</div>
                     <div style={{
-                      fontSize: 8, fontWeight: 600,
+                      fontSize: 9, fontWeight: 600,
                       color: found ? rarity.color : '#cbd5e1',
                       marginTop: 2,
                     }}>
@@ -228,7 +233,7 @@ function CollectionView({ collection, completedSeries }) {
 }
 
 /**
- * Active buff bar.
+ * Active buff pills.
  */
 function BuffBar({ activeBuffs }) {
   const [now, setNow] = useState(Date.now());
@@ -244,23 +249,24 @@ function BuffBar({ activeBuffs }) {
 
   return (
     <div style={{
-      padding: '4px 8px', display: 'flex', gap: 4, flexWrap: 'wrap',
-      borderTop: '1px solid #f1f5f9',
+      padding: '6px 10px', display: 'flex', gap: 4, flexWrap: 'wrap',
+      borderTop: '1px solid rgba(148,163,184,.1)',
     }}>
       {live.map((b, i) => {
         const flower = getFlowerById(b.flowerId);
         const remaining = b.expiresAt - now;
         return (
           <div key={i} style={{
-            display: 'flex', alignItems: 'center', gap: 3,
-            padding: '2px 6px', borderRadius: 4,
+            display: 'flex', alignItems: 'center', gap: 4,
+            padding: '3px 8px', borderRadius: 10,
             background: 'rgba(99,102,241,.06)',
+            border: '1px solid rgba(99,102,241,.12)',
             fontSize: 12, color: '#6366f1', fontWeight: 600,
           }}>
             <span style={{ fontSize: 14 }}>{flower?.emoji ?? '🌸'}</span>
             <span>×{b.mult}</span>
             <span style={{
-              fontFamily: "'JetBrains Mono',monospace", fontSize: 11, color: '#94a3b8',
+              fontFamily: "'JetBrains Mono',monospace", fontSize: 10, color: '#94a3b8',
             }}>{fmtTime(remaining)}</span>
           </div>
         );
@@ -270,7 +276,7 @@ function BuffBar({ activeBuffs }) {
 }
 
 /**
- * Garden — main component for 放下花園.
+ * Garden — iOS Widget style main component.
  */
 export default function Garden({ gardenState, exCount, onPlant, onHarvest, onClearWilted }) {
   const [showCollection, setShowCollection] = useState(false);
@@ -284,32 +290,51 @@ export default function Garden({ gardenState, exCount, onPlant, onHarvest, onCle
     <div style={{
       flex: 1, display: 'flex', flexDirection: 'column',
       overflow: 'hidden', minHeight: 0,
+      background: 'linear-gradient(180deg, rgba(34,197,94,.02), rgba(99,102,241,.02))',
     }}>
-      {/* Header */}
+      {/* Widget header — frosted glass feel */}
       <div style={{
-        padding: '8px 12px',
+        padding: '10px 14px',
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-        borderBottom: '1px solid #e2e8f0',
+        borderBottom: '1px solid rgba(148,163,184,.1)',
         flexShrink: 0,
+        background: 'rgba(255,255,255,.6)',
+        backdropFilter: 'blur(10px)',
       }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-          <span style={{ fontSize: 18 }}>🌱</span>
-          <span style={{ fontSize: 16, fontWeight: 800, color: '#1e293b' }}>放下花園</span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <div style={{
+            width: 28, height: 28, borderRadius: 8,
+            background: 'linear-gradient(135deg, #22c55e, #16a34a)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            boxShadow: '0 2px 8px rgba(34,197,94,.3)',
+          }}>
+            <span style={{ fontSize: 14 }}>🌱</span>
+          </div>
+          <div>
+            <div style={{ fontSize: 14, fontWeight: 800, color: '#1e293b', lineHeight: 1 }}>放下花園</div>
+            <div style={{ fontSize: 10, color: '#94a3b8', marginTop: 1 }}>{fieldCount} 塊田地</div>
+          </div>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <span style={{
-            fontSize: 12, fontWeight: 700, color: '#22c55e',
-            fontFamily: "'JetBrains Mono',monospace",
+          <div style={{
+            padding: '4px 10px', borderRadius: 10,
+            background: 'rgba(34,197,94,.08)',
+            border: '1px solid rgba(34,197,94,.15)',
           }}>
-            🌰 {seeds}
-          </span>
+            <span style={{
+              fontSize: 13, fontWeight: 700, color: '#22c55e',
+              fontFamily: "'JetBrains Mono',monospace",
+            }}>
+              🌰 {seeds}
+            </span>
+          </div>
           <button
             onClick={() => setShowCollection(!showCollection)}
             style={{
-              padding: '3px 8px', fontSize: 11, fontWeight: 700,
-              background: showCollection ? 'rgba(99,102,241,.1)' : 'rgba(148,163,184,.08)',
-              border: showCollection ? '1px solid rgba(99,102,241,.3)' : '1px solid #e2e8f0',
-              borderRadius: 6, cursor: 'pointer',
+              padding: '4px 10px', fontSize: 12, fontWeight: 700,
+              background: showCollection ? 'rgba(99,102,241,.1)' : 'rgba(148,163,184,.06)',
+              border: showCollection ? '1.5px solid rgba(99,102,241,.25)' : '1px solid rgba(148,163,184,.12)',
+              borderRadius: 10, cursor: 'pointer',
               color: showCollection ? '#6366f1' : '#64748b',
             }}
           >
@@ -323,14 +348,14 @@ export default function Garden({ gardenState, exCount, onPlant, onHarvest, onCle
         <CollectionView collection={collection} completedSeries={completedSeries} />
       ) : (
         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0 }}>
-          {/* 4×4 Grid */}
+          {/* 4×4 Widget Grid */}
           <div style={{
-            flex: 1, padding: 8,
+            flex: 1, padding: 10,
             display: 'grid',
             gridTemplateColumns: 'repeat(4, 1fr)',
             gridTemplateRows: 'repeat(4, 1fr)',
-            gap: 6,
-            maxHeight: 'min(50vh, 400px)',
+            gap: 8,
+            maxHeight: 'min(50vh, 420px)',
             minHeight: 0,
           }}>
             {slots.map((slot, i) => (
@@ -350,12 +375,12 @@ export default function Garden({ gardenState, exCount, onPlant, onHarvest, onCle
           {/* Active buffs */}
           <BuffBar activeBuffs={activeBuffs ?? []} />
 
-          {/* Footer quote */}
+          {/* Footer — widget style */}
           <div style={{
-            padding: '8px 12px', flexShrink: 0,
-            borderTop: '1px solid #f1f5f9',
-            fontSize: 12, color: '#94a3b8', textAlign: 'center',
-            fontStyle: 'italic',
+            padding: '6px 14px', flexShrink: 0,
+            borderTop: '1px solid rgba(148,163,184,.08)',
+            fontSize: 11, color: '#94a3b8', textAlign: 'center',
+            fontStyle: 'italic', letterSpacing: 0.3,
           }}>
             「每次想點開對話的時候，就種一棵樹吧。」
           </div>
