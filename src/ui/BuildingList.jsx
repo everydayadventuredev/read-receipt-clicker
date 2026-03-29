@@ -184,8 +184,8 @@ export default function BuildingList({ buildings, owned, reads, allTime, unlocke
             );
           })}
 
-          {/* Locked buildings — minimal single-line */}
-          {lockedBuildings.map(b => {
+          {/* Locked buildings — only show next 2 */}
+          {lockedBuildings.slice(0, 2).map(b => {
             const unlockAt = b.unlockAt ?? 0;
             const unlockPct = unlockAt > 0 ? Math.min(100, ((allTime ?? 0) / unlockAt) * 100) : 100;
 

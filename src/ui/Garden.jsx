@@ -31,6 +31,7 @@ function PlotCell({ slot, index, fieldCount, seeds, onPlant, onHarvest, onClear 
     alignItems: 'center', justifyContent: 'center',
     transition: 'all .2s',
     position: 'relative', overflow: 'hidden',
+    aspectRatio: '1',
   };
 
   // Locked
@@ -368,9 +369,9 @@ export default function Garden({ gardenState, exCount, onPlant, onHarvest, onCle
             flex: 1, padding: 10,
             display: 'grid',
             gridTemplateColumns: 'repeat(4, 1fr)',
-            gridTemplateRows: 'repeat(4, 1fr)',
-            gap: 8,
-            maxHeight: 'min(50vh, 420px)',
+            gridAutoRows: 'auto',
+            gap: 6,
+            maxHeight: 'min(55vh, 500px)',
             minHeight: 0,
           }}>
             {slots.map((slot, i) => (

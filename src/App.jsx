@@ -1101,6 +1101,16 @@ export default function App() {
               )}
             </div>
 
+            {/* Subtle chat wallpaper inside phone */}
+            <svg style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', opacity: 0.03, pointerEvents: 'none' }} viewBox="0 0 400 800" preserveAspectRatio="xMidYMid slice">
+              {Array.from({ length: 20 }, (_, i) => (
+                <g key={i}>
+                  <rect x={30 + (i % 5) * 80} y={60 + Math.floor(i / 5) * 180} width={50 + (i % 3) * 20} height={14} rx={7} fill="#6366f1" />
+                  <rect x={200 + (i % 4) * 40} y={120 + Math.floor(i / 4) * 160} width={40 + (i % 2) * 30} height={14} rx={7} fill="#94a3b8" />
+                </g>
+              ))}
+            </svg>
+
             {/* Counter — center of phone screen, clickable */}
             <button
               onClick={handleClick}

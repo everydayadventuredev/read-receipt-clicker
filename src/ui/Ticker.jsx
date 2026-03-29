@@ -94,10 +94,10 @@ export default function Ticker({ allTime, logEntries = [] }) {
 
   return (
     <div style={{
-      padding: '10px 16px',
+      padding: '12px 16px',
       background: 'rgba(255,255,255,.85)',
       borderBottom: '1px solid #e2e8f0',
-      minHeight: 44,
+      minHeight: 48,
       display: 'flex', alignItems: 'center',
       flexShrink: 0, gap: 10,
       position: 'relative',
