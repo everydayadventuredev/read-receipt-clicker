@@ -1018,138 +1018,7 @@ export default function App() {
         );
       })()}
 
-      {/* ── HEADER ── */}
-      <div style={{
-        padding: '10px 16px', display: 'flex', alignItems: 'center',
-        flexShrink: 0, gap: 10, minHeight: 48,
-        background: 'rgba(255,255,255,.8)',
-        backdropFilter: 'blur(20px)',
-        position: 'relative', overflow: 'hidden',
-      }}>
-        <HeaderBanner />
-        {/* Logo */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
-          <div style={{
-            width: 28, height: 28, borderRadius: 10,
-            background: 'linear-gradient(135deg, #6366f1, #4338ca)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            boxShadow: '0 2px 12px rgba(99,102,241,.25)',
-          }}>
-            <CheckIcon size={14} color="#fff" />
-          </div>
-          <span style={{
-            fontSize: 14, fontWeight: 800, color: '#1e293b',
-            letterSpacing: 2,
-            fontFamily: "'JetBrains Mono',monospace",
-          }}>已讀</span>
-          {prestigePower > 0 && (
-            <span style={{
-              fontSize: 10, color: '#4f46e5',
-              background: 'rgba(99,102,241,.08)',
-              padding: '2px 8px', borderRadius: 8,
-              fontFamily: "'JetBrains Mono',monospace",
-              border: '1px solid rgba(99,102,241,.15)',
-            }}>✦{prestigePower}</span>
-          )}
-        </div>
-
-        {/* Prestige progress bar — fills middle space */}
-        <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: 8, margin: '0 8px' }}>
-          {prestigeEarned >= 1 && (
-            <div style={{ flex: 1, maxWidth: 200 }}>
-              <div style={{
-                height: 4, background: 'rgba(99,102,241,.1)', borderRadius: 2,
-                overflow: 'hidden',
-              }}>
-                <div style={{
-                  height: '100%', borderRadius: 2,
-                  width: `${Math.min(100, (prestigeEarned / Math.max(1, prestigeEarned + 3)) * 100)}%`,
-                  background: 'linear-gradient(90deg, #6366f1, #a855f7)',
-                  transition: 'width .5s',
-                }} />
-              </div>
-            </div>
-          )}
-          {/* Compact achievement count */}
-          <span style={{
-            fontSize: 11, color: '#94a3b8', fontFamily: "'JetBrains Mono',monospace",
-          }}>
-            {unlockedAchievements.length}/{103} ⭐
-          </span>
-        </div>
-
-        {/* Right buttons — clean */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0 }}>
-          {/* Prestige shop */}
-          {prestigeCount > 0 && (
-            <button
-              onClick={() => setShowPrestigeShop(true)}
-              style={{
-                background: 'rgba(99,102,241,.08)',
-                border: '1px solid rgba(99,102,241,.2)',
-                borderRadius: 8, padding: '5px 10px',
-                color: '#4f46e5', fontSize: 11, fontWeight: 700,
-                cursor: 'pointer', fontFamily: "'JetBrains Mono',monospace",
-              }}
-            >✦商店</button>
-          )}
-          {/* Prestige button */}
-          {prestigeEarned >= 1 && (
-            <button
-              onClick={handlePrestige}
-              style={{
-                background: 'linear-gradient(135deg, #6366f1, #4338ca)',
-                color: '#fff', border: 'none', borderRadius: 8,
-                padding: '5px 12px', fontSize: 11, fontWeight: 700,
-                cursor: 'pointer', position: 'relative', overflow: 'hidden',
-                boxShadow: '0 2px 12px rgba(99,102,241,.3)',
-              }}
-            >
-              <span style={{
-                position: 'absolute', top: 0, left: '-100%', width: '60%', height: '100%',
-                background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent)',
-                animation: 'shimmer 2s ease-in-out infinite', pointerEvents: 'none',
-              }} />
-              重生 +✦{prestigeEarned}
-            </button>
-          )}
-          {/* Mute button */}
-          <button
-            onClick={() => { const m = toggleMute(); setMutedUI(m); }}
-            style={{
-              background: '#f1f5f9', border: '1px solid #e2e8f0',
-              borderRadius: 8, padding: '5px 10px',
-              color: '#64748b', fontSize: 13,
-            }}
-          >{mutedUI ? '🔇' : '🔊'}</button>
-        </div>
-
-        {/* Prestige progress thin bar at header bottom */}
-        <div style={{
-          position: 'absolute', bottom: 0, left: 0, right: 0, height: 3,
-          background: '#e2e8f0',
-        }}>
-          {(() => {
-            const progress = Math.min(100, (allTime / 500000) * 100);
-            const isComplete = progress >= 100;
-            let barGrad = 'linear-gradient(90deg, #6366f1, #4338ca)';
-            if (isComplete) barGrad = 'linear-gradient(90deg, #ef4444, #f59e0b, #22c55e, #3b82f6, #8b5cf6, #ef4444)';
-            return (
-              <div style={{
-                height: '100%', width: `${progress}%`,
-                background: barGrad,
-                backgroundSize: isComplete ? '300% 100%' : '100% 100%',
-                transition: 'width .3s',
-                animation: isComplete ? 'rainbowBreath 2s ease-in-out infinite' : 'none',
-                boxShadow: progress >= 50 ? '0 0 8px rgba(99,102,241,.4)' : 'none',
-              }} />
-            );
-          })()}
-        </div>
-      </div>
-
-      {/* ── NEWS TICKER ── */}
-      <Ticker allTime={allTime} logEntries={log} />
+      {/* Header and Ticker moved into columns per Figma layout */}
 
       {/* ── TWO-COLUMN LAYOUT ── */}
       <div className="game-layout" style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', minHeight: 0 }}>
@@ -1328,8 +1197,11 @@ export default function App() {
           </div>
         </div>
 
-        {/* MIDDLE — Stats + Mini-Game + Feedback */}
+        {/* MIDDLE — Ticker + Mini-Game */}
         <div className="section-middle" style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', minHeight: 0 }}>
+
+          {/* Ticker — news/events at top of middle column */}
+          <Ticker allTime={allTime} logEntries={log} />
 
           {/* Mini-Game panel — building sub-systems */}
           <MiniGamePanel
@@ -1357,8 +1229,65 @@ export default function App() {
 
         </div>
 
-        {/* RIGHT — Store: Upgrades + Buildings */}
+        {/* RIGHT — Header + Store: Upgrades + Buildings */}
         <div className="section-store" style={{ display: 'flex', flexDirection: 'column', overflow: 'hidden', minHeight: 0 }}>
+
+          {/* Header bar — now inside right column */}
+          <div style={{
+            padding: '8px 12px', display: 'flex', alignItems: 'center',
+            flexShrink: 0, gap: 8,
+            borderBottom: '1px solid #e2e8f0',
+            background: 'rgba(255,255,255,.6)',
+            position: 'relative',
+          }}>
+            <HeaderBanner />
+            {/* Logo */}
+            <div style={{
+              width: 24, height: 24, borderRadius: 8,
+              background: 'linear-gradient(135deg, #6366f1, #4338ca)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              flexShrink: 0,
+            }}>
+              <CheckIcon size={12} color="#fff" />
+            </div>
+            <span style={{
+              fontSize: 13, fontWeight: 800, color: '#1e293b',
+              letterSpacing: 1, fontFamily: "'JetBrains Mono',monospace",
+            }}>已讀</span>
+            {prestigePower > 0 && (
+              <span style={{
+                fontSize: 9, color: '#4f46e5',
+                background: 'rgba(99,102,241,.08)',
+                padding: '1px 6px', borderRadius: 6,
+                fontFamily: "'JetBrains Mono',monospace",
+                border: '1px solid rgba(99,102,241,.15)',
+              }}>✦{prestigePower}</span>
+            )}
+            <span style={{ fontSize: 10, color: '#94a3b8', fontFamily: "'JetBrains Mono',monospace" }}>
+              {unlockedAchievements.length}/{103}⭐
+            </span>
+            <div style={{ flex: 1 }} />
+            {prestigeCount > 0 && (
+              <button onClick={() => setShowPrestigeShop(true)} style={{
+                background: 'rgba(99,102,241,.08)', border: '1px solid rgba(99,102,241,.2)',
+                borderRadius: 6, padding: '3px 8px', color: '#4f46e5',
+                fontSize: 10, fontWeight: 700, cursor: 'pointer',
+                fontFamily: "'JetBrains Mono',monospace",
+              }}>✦商店</button>
+            )}
+            {prestigeEarned >= 1 && (
+              <button onClick={handlePrestige} style={{
+                background: 'linear-gradient(135deg, #6366f1, #4338ca)',
+                color: '#fff', border: 'none', borderRadius: 6,
+                padding: '3px 10px', fontSize: 10, fontWeight: 700,
+                cursor: 'pointer', boxShadow: '0 2px 8px rgba(99,102,241,.3)',
+              }}>重生 +✦{prestigeEarned}</button>
+            )}
+            <button onClick={() => { const m = toggleMute(); setMutedUI(m); }} style={{
+              background: '#f1f5f9', border: '1px solid #e2e8f0',
+              borderRadius: 6, padding: '3px 8px', color: '#64748b', fontSize: 12,
+            }}>{mutedUI ? '🔇' : '🔊'}</button>
+          </div>
 
           {/* Upgrades — compact, capped height */}
           <div style={{
