@@ -366,13 +366,12 @@ export default function Garden({ gardenState, exCount, onPlant, onHarvest, onCle
         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0 }}>
           {/* 4×4 Widget Grid */}
           <div style={{
-            flex: 1, padding: 10,
+            padding: 10,
             display: 'grid',
             gridTemplateColumns: 'repeat(4, 1fr)',
-            gridAutoRows: 'auto',
+            gridAutoRows: 'minmax(80px, 110px)',
             gap: 6,
-            maxHeight: 'min(55vh, 500px)',
-            minHeight: 0,
+            alignContent: 'start',
           }}>
             {slots.map((slot, i) => (
               <PlotCell

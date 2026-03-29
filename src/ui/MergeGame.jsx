@@ -335,13 +335,12 @@ export default function MergeGame({ mergeState, parCount, reads, onPlace, placeC
 
       {/* 4×4 App Icon Grid */}
       <div style={{
-        flex: 1, padding: 10,
+        padding: 10,
         display: 'grid',
         gridTemplateColumns: 'repeat(4, 1fr)',
-        gridTemplateRows: 'repeat(4, 1fr)',
+        gridAutoRows: 'minmax(80px, 110px)',
         gap: 8,
-        maxHeight: 'min(50vh, 420px)',
-        minHeight: 0,
+        alignContent: 'start',
       }}>
         {grid.map((item, i) => (
           <MergeCell
