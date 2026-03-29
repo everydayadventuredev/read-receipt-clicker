@@ -29,7 +29,7 @@ import MiniGamePanel from './ui/MiniGamePanel.jsx';
 import { StatsPanel, LogPanel, AchievementBadges } from './ui/Panels.jsx';
 
 import { createMarketState, tickMarket, buyShare, sellShare, resetHoldings } from './game/stockMarket.js';
-import { createGardenState, tickGarden, plantSeed, harvestFlower, clearWilted, getGardenBuffMult, getSeriesBonusMult, resetGarden } from './game/garden.js';
+import { createGardenState, tickGarden, plantSeed, harvestFlower, clearWilted, getGardenBuffMult, getGardenExBuffMult, getSeriesBonusMult, resetGarden } from './game/garden.js';
 import { createMergeState, tickMerge, placeGift, mergeGifts, moveGift, expandGrid, getMergeBuffMult, getMergePermMult, resetMerge, getTier as getMergeTier } from './game/merge.js';
 
 function initState() {
@@ -122,9 +122,8 @@ export default function App() {
 
   const prestigeMult   = 1 + prestigePower * 0.1;
   // Prestige bonus for earned ✦
-  const prestigeBonusMult = boughtPrestige.has('ps9')
-    ? 1.5 : 1;
-  const prestigeEarned = Math.floor(Math.sqrt(allTime / 500000) * prestigeBonusMult);
+  const prestigeBonusMult = (boughtPrestige.has('ps27') ? 2.0 : boughtPrestige.has('ps9') ? 1.5 : 1);
+  const prestigeEarned = Math.floor(Math.sqrt(allTime / 50000) * prestigeBonusMult);
 
   // Global mult from prestige upgrades
   const prestigeGlobalMult = PRESTIGE_UPGRADES
@@ -155,6 +154,8 @@ export default function App() {
       });
       // Event chain permanent building buffs
       if (eventChainBuffs[b.id]) m *= eventChainBuffs[b.id];
+      // Garden ex-scope buff (only for 前任)
+      if (b.id === 'ex') m *= getGardenExBuffMult(gardenState);
       p += b.baseProd * (owned[b.id] ?? 0) * m;
     });
     const coldMasterMult = coldMaster ? 1.5 : 1;
@@ -236,6 +237,19 @@ export default function App() {
     return () => clearInterval(iv);
   }, [saveState]);
 
+  // Tab title — show production rate
+  useEffect(() => {
+    const iv = setInterval(() => {
+      const ps = psRef.current;
+      if (ps > 0) {
+        document.title = `已讀 | ${fmt(ps)}/s`;
+      } else {
+        document.title = '已讀';
+      }
+    }, 2000);
+    return () => clearInterval(iv);
+  }, []);
+
   // Save on tab hide
   useEffect(() => {
     const onHide = () => { if (document.visibilityState === 'hidden') saveState(); };
@@ -307,9 +321,9 @@ export default function App() {
     flowersCollected: gardenState ? Object.keys(gardenState.collection ?? {}).length : 0,
     highestMergeTier: mergeState?.highestTier ?? 0,
     gridExpansions: mergeState ? Math.max(0, (mergeState.gridSize ?? 9) - 9) : 0,
-    wiltedFlowers: 0, // TODO: track in gardenState
-    stockLoss: 0, // TODO: track in marketState
-    idleMinutes: 0, // TODO: track idle time
+    wiltedFlowers: gardenState?.totalWilted ?? 0,
+    stockLoss: 0, // tracked manually if needed later
+    idleMinutes: 0, // tracked manually if needed later
   };
   useEffect(() => {
     ACHIEVEMENTS.forEach(a => {
@@ -661,14 +675,14 @@ export default function App() {
 
   // Stock market handlers
   const handleBuyShare = useCallback((channelId) => {
-    const result = buyShare(marketState, channelId, readsRef.current);
+    const result = buyShare(marketState, channelId, readsRef.current, psRef.current);
     if (!result) return;
     setMarketState(result.newState);
     setReads(r => r - result.cost);
   }, [marketState]);
 
   const handleSellShare = useCallback((channelId) => {
-    const result = sellShare(marketState, channelId);
+    const result = sellShare(marketState, channelId, psRef.current);
     if (!result) return;
     setMarketState(result.newState);
     setReads(r => r + result.revenue);
@@ -683,7 +697,7 @@ export default function App() {
     while (changed) {
       changed = false;
       for (const ch of ['meme','cat','news','gossip','food','know']) {
-        const result = buyShare(state, ch, readsRef.current - totalCost);
+        const result = buyShare(state, ch, readsRef.current - totalCost, psRef.current);
         if (result) {
           state = result.newState;
           totalCost += result.cost;
@@ -704,12 +718,12 @@ export default function App() {
     let totalRevenue = 0;
     let sold = 0;
     for (const ch of ['meme','cat','news','gossip','food','know']) {
-      let result = sellShare(state, ch);
+      let result = sellShare(state, ch, psRef.current);
       while (result) {
         state = result.newState;
         totalRevenue += result.revenue;
         sold++;
-        result = sellShare(state, ch);
+        result = sellShare(state, ch, psRef.current);
       }
     }
     if (sold > 0) {
@@ -1258,6 +1272,7 @@ export default function App() {
             onSellShare={handleSellShare}
             onBuyAllShares={handleBuyAllShares}
             onSellAllShares={handleSellAllShares}
+            prodPerSec={prodPerSec}
             gardenState={gardenState}
             onPlant={handlePlantSeed}
             onHarvest={handleHarvestFlower}

@@ -20,6 +20,7 @@ export default function MiniGamePanel({
   onSellShare,
   onBuyAllShares,
   onSellAllShares,
+  prodPerSec,
   // Garden props
   gardenState,
   onPlant,
@@ -150,6 +151,7 @@ export default function MiniGamePanel({
             marketState={marketState}
             algoCount={owned.algo ?? 0}
             reads={reads}
+            prodPerSec={prodPerSec ?? 0}
             onBuy={onBuyShare}
             onSell={onSellShare}
             onBuyAll={onBuyAllShares}

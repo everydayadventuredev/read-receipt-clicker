@@ -107,12 +107,31 @@ export function tickMarket(state) {
 }
 
 /**
+ * Get the price scale multiplier based on production.
+ * Makes stock prices relevant throughout the game.
+ */
+export function getPriceScale(prodPerSec) {
+  if (prodPerSec <= 100) return 1;
+  return Math.max(1, Math.floor(Math.log10(prodPerSec + 1)));
+}
+
+/**
+ * Get the actual price of a channel (base price × scale).
+ */
+export function getScaledPrice(state, channelId, prodPerSec = 0) {
+  const base = state.prices[channelId];
+  if (base == null) return 0;
+  return Math.round(base * getPriceScale(prodPerSec));
+}
+
+/**
  * Buy 1 share of a channel. No holding limit.
+ * Price scales with production to stay relevant.
  * Returns { newState, cost } or null if can't afford.
  */
-export function buyShare(state, channelId, currentReads) {
-  const price = state.prices[channelId];
-  if (price == null) return null;
+export function buyShare(state, channelId, currentReads, prodPerSec = 0) {
+  const price = getScaledPrice(state, channelId, prodPerSec);
+  if (price == null || price <= 0) return null;
   if (currentReads < price) return null;
 
   return {
@@ -135,9 +154,9 @@ export function buyShare(state, channelId, currentReads) {
  * Sell 1 share of a channel.
  * Returns { newState, revenue } or null if no holdings.
  */
-export function sellShare(state, channelId) {
+export function sellShare(state, channelId, prodPerSec = 0) {
   if ((state.holdings[channelId] ?? 0) <= 0) return null;
-  const price = state.prices[channelId];
+  const price = getScaledPrice(state, channelId, prodPerSec);
   const holdCount = state.holdings[channelId];
   // Reduce cost basis proportionally
   const avgCost = (state.costBasis[channelId] ?? 0) / holdCount;
@@ -161,10 +180,11 @@ export function sellShare(state, channelId) {
 /**
  * Calculate total portfolio value (holdings × current prices).
  */
-export function getPortfolioValue(state) {
+export function getPortfolioValue(state, prodPerSec = 0) {
   let total = 0;
+  const scale = getPriceScale(prodPerSec);
   for (const ch of CHANNELS) {
-    total += (state.holdings[ch.id] ?? 0) * (state.prices[ch.id] ?? ch.basePrice);
+    total += (state.holdings[ch.id] ?? 0) * Math.round((state.prices[ch.id] ?? ch.basePrice) * scale);
   }
   return total;
 }

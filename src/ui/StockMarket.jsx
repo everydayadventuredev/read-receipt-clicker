@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { CHANNELS, getPortfolioValue, getTotalCostBasis } from '../game/stockMarket.js';
+import { CHANNELS, getPortfolioValue, getTotalCostBasis, getPriceScale } from '../game/stockMarket.js';
 import { fmt } from '../utils/format.js';
 
 /**
@@ -27,7 +27,7 @@ function Sparkline({ data, color, width = 80, height = 28 }) {
 /**
  * Compact channel card — fits in 2×3 grid.
  */
-function ChannelCard({ channel, price, prevPrice, history, holdings, costBasis, canBuy, onBuy, onSell }) {
+function ChannelCard({ channel, price, prevPrice, history, holdings, costBasis, canBuy, onBuy, onSell, priceScale }) {
   const [flash, setFlash] = useState(null);
   const prevPriceRef = useRef(price);
 
@@ -43,7 +43,8 @@ function ChannelCard({ channel, price, prevPrice, history, holdings, costBasis, 
   const changeColor = change > 0.5 ? '#10b981' : change < -0.5 ? '#ef4444' : '#94a3b8';
   const sparkColor = change >= 0 ? '#10b981' : '#ef4444';
 
-  const profit = holdings > 0 ? (holdings * price) - costBasis : 0;
+  const scaledPrice = price * (priceScale ?? 1);
+  const profit = holdings > 0 ? (holdings * scaledPrice) - costBasis : 0;
 
   return (
     <div style={{
@@ -65,7 +66,7 @@ function ChannelCard({ channel, price, prevPrice, history, holdings, costBasis, 
           fontSize: 20, fontWeight: 800, color: '#1e293b',
           fontFamily: "'JetBrains Mono',monospace",
         }}>
-          {fmt(Math.round(price))}
+          {fmt(Math.round(price * (priceScale ?? 1)))}
         </span>
       </div>
 
@@ -122,9 +123,10 @@ function ChannelCard({ channel, price, prevPrice, history, holdings, costBasis, 
 /**
  * StockMarket — Feed 操盤手 compact 2×3 grid layout.
  */
-export default function StockMarket({ marketState, algoCount, reads, onBuy, onSell, onBuyAll, onSellAll }) {
-  const portfolioValue = getPortfolioValue(marketState);
+export default function StockMarket({ marketState, algoCount, reads, prodPerSec, onBuy, onSell, onBuyAll, onSellAll }) {
+  const portfolioValue = getPortfolioValue(marketState, prodPerSec);
   const totalCost = getTotalCostBasis(marketState);
+  const priceScale = getPriceScale(prodPerSec);
   const totalProfit = portfolioValue - totalCost;
 
   return (
@@ -191,8 +193,8 @@ export default function StockMarket({ marketState, algoCount, reads, onBuy, onSe
           const basis = marketState.costBasis?.[ch.id] ?? 0;
           return (
             <ChannelCard key={ch.id} channel={ch} price={price} prevPrice={prevPrice}
-              history={history} holdings={holdings} costBasis={basis}
-              canBuy={reads >= price} onBuy={() => onBuy(ch.id)} onSell={() => onSell(ch.id)} />
+              history={history} holdings={holdings} costBasis={basis} priceScale={priceScale}
+              canBuy={reads >= Math.round(price * priceScale)} onBuy={() => onBuy(ch.id)} onSell={() => onSell(ch.id)} />
           );
         })}
       </div>

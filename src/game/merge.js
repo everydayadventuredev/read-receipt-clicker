@@ -19,8 +19,8 @@ export const GIFT_TIERS = [
   { tier: 3, name: '禮盒',     emoji: '🎁', color: '#3b82f6', buffMult: 1.20, desc: '包裝精美' },
   { tier: 4, name: '紅包',     emoji: '🧧', color: '#dc2626', buffMult: 1.40, desc: '最實在的' },
   { tier: 5, name: '名牌包',   emoji: '👜', color: '#7c3aed', buffMult: 1.80, desc: '媽媽的最愛' },
-  { tier: 6, name: '帝王蟹',   emoji: '🦀', color: '#f97316', buffMult: 2.50, desc: '全家族炫耀' },
-  { tier: 7, name: '黃金擺件', emoji: '🏆', color: '#eab308', buffMult: 4.00, desc: '傳家之寶' },
+  { tier: 6, name: '帝王蟹',   emoji: '🦀', color: '#f97316', buffMult: 1.80, desc: '全家族炫耀' },
+  { tier: 7, name: '黃金擺件', emoji: '🏆', color: '#eab308', buffMult: 2.50, desc: '傳家之寶' },
 ];
 
 export function getTier(tierNum) {

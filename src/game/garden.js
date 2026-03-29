@@ -142,6 +142,7 @@ export function tickGarden(state, exCount, now = Date.now()) {
   let newLastSeedTick = state.lastSeedTick;
   const newSlots = [...state.slots];
   let changed = false;
+  let newWiltedCount = 0;
 
   // 1. Generate seeds based on elapsed time
   const elapsed = now - (state.lastSeedTick ?? now);
@@ -168,6 +169,7 @@ export function tickGarden(state, exCount, now = Date.now()) {
     if (slot.flowerId && slot.maturedAt && !slot.wilted) {
       if ((now - slot.maturedAt) >= WILT_TIME) {
         newSlots[i] = { ...slot, wilted: true };
+        newWiltedCount++;
         changed = true;
       }
     }
@@ -185,6 +187,7 @@ export function tickGarden(state, exCount, now = Date.now()) {
     seeds: newSeeds,
     lastSeedTick: newLastSeedTick,
     activeBuffs: newBuffs,
+    totalWilted: (state.totalWilted ?? 0) + newWiltedCount,
   };
 }
 
@@ -292,20 +295,33 @@ export function clearWilted(state, slotIndex) {
  * and additionally apply scope='ex' buffs to the ex building.
  */
 /**
- * Get combined multiplier from active buffs.
- * ADDITIVE stacking with cap to prevent number explosion.
- * e.g., 3 buffs of ×1.1 = 1 + 0.1 + 0.1 + 0.1 = 1.3x (not 1.1^3 = 1.33x)
- * Capped at 3.0x total.
+ * Get combined multiplier from active global-scope buffs.
+ * ADDITIVE stacking, capped at 3.0x.
  */
 export function getGardenBuffMult(state, now = Date.now()) {
   if (!state || !state.activeBuffs) return 1;
   let bonus = 0;
   for (const b of state.activeBuffs) {
-    if (b.expiresAt > now) {
-      bonus += (b.mult - 1); // additive: ×1.5 contributes +0.5
+    if (b.expiresAt > now && b.scope === 'global') {
+      bonus += (b.mult - 1);
     }
   }
-  return Math.min(3.0, 1 + bonus); // cap at 3x
+  return Math.min(3.0, 1 + bonus);
+}
+
+/**
+ * Get combined multiplier from active ex-scope buffs (for 前任 building only).
+ * ADDITIVE stacking, capped at 5.0x (since it only affects one building).
+ */
+export function getGardenExBuffMult(state, now = Date.now()) {
+  if (!state || !state.activeBuffs) return 1;
+  let bonus = 0;
+  for (const b of state.activeBuffs) {
+    if (b.expiresAt > now && b.scope === 'ex') {
+      bonus += (b.mult - 1);
+    }
+  }
+  return Math.min(5.0, 1 + bonus);
 }
 
 /**

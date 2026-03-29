@@ -8,19 +8,19 @@ export const MINIGAME_REGISTRY = [
     buildingId: 'ex',
     name: '放下花園',
     emoji: '🌱',
-    unlockCount: 1,
-  },
-  {
-    buildingId: 'algo',
-    name: 'Feed 操盤手',
-    emoji: '📈',
-    unlockCount: 1,
+    unlockCount: 10,
   },
   {
     buildingId: 'par',
     name: '伴手禮合成',
     emoji: '🎁',
-    unlockCount: 1,
+    unlockCount: 10,
+  },
+  {
+    buildingId: 'algo',
+    name: 'Feed 操盤手',
+    emoji: '📈',
+    unlockCount: 5,
   },
   // Future mini-games:
 ];
