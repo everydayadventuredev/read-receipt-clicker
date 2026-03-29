@@ -18,6 +18,8 @@ export default function MiniGamePanel({
   reads,
   onBuyShare,
   onSellShare,
+  onBuyAllShares,
+  onSellAllShares,
   // Garden props
   gardenState,
   onPlant,
@@ -150,6 +152,8 @@ export default function MiniGamePanel({
             reads={reads}
             onBuy={onBuyShare}
             onSell={onSellShare}
+            onBuyAll={onBuyAllShares}
+            onSellAll={onSellAllShares}
           />
         )}
       </div>

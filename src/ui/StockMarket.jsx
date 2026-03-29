@@ -122,7 +122,7 @@ function ChannelCard({ channel, price, prevPrice, history, holdings, costBasis, 
 /**
  * StockMarket — Feed 操盤手 compact 2×3 grid layout.
  */
-export default function StockMarket({ marketState, algoCount, reads, onBuy, onSell }) {
+export default function StockMarket({ marketState, algoCount, reads, onBuy, onSell, onBuyAll, onSellAll }) {
   const portfolioValue = getPortfolioValue(marketState);
   const totalCost = getTotalCostBasis(marketState);
   const totalProfit = portfolioValue - totalCost;
@@ -158,6 +158,20 @@ export default function StockMarket({ marketState, algoCount, reads, onBuy, onSe
             }}>
               {totalProfit >= 0 ? '+' : ''}{fmt(Math.round(totalProfit))}
             </span>
+          )}
+          {onBuyAll && (
+            <button onClick={onBuyAll} style={{
+              padding: '2px 8px', fontSize: 11, fontWeight: 700,
+              color: '#10b981', background: 'rgba(16,185,129,.08)',
+              border: '1px solid rgba(16,185,129,.2)', borderRadius: 6, cursor: 'pointer',
+            }}>全買</button>
+          )}
+          {onSellAll && (
+            <button onClick={onSellAll} style={{
+              padding: '2px 8px', fontSize: 11, fontWeight: 700,
+              color: '#ef4444', background: 'rgba(239,68,68,.06)',
+              border: '1px solid rgba(239,68,68,.2)', borderRadius: 6, cursor: 'pointer',
+            }}>全賣</button>
           )}
         </div>
       </div>

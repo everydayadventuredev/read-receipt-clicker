@@ -304,6 +304,12 @@ export default function App() {
     stormCount,
     stormPerfect,
     boughtUpgrades: boughtUpgrades.size,
+    flowersCollected: gardenState ? Object.keys(gardenState.collection ?? {}).length : 0,
+    highestMergeTier: mergeState?.highestTier ?? 0,
+    gridExpansions: mergeState ? Math.max(0, (mergeState.gridSize ?? 9) - 9) : 0,
+    wiltedFlowers: 0, // TODO: track in gardenState
+    stockLoss: 0, // TODO: track in marketState
+    idleMinutes: 0, // TODO: track idle time
   };
   useEffect(() => {
     ACHIEVEMENTS.forEach(a => {
@@ -313,7 +319,7 @@ export default function App() {
         playMilestone();
       }
     });
-  }, [allTime, owned, prestigeCount, prodPerSec, unlockedAchievements, activeSynergies.size, completedChains.size, boughtPrestige.size, stormCount, stormPerfect, boughtUpgrades.size]);
+  }, [allTime, owned, prestigeCount, prodPerSec, unlockedAchievements, activeSynergies.size, completedChains.size, boughtPrestige.size, stormCount, stormPerfect, boughtUpgrades.size, gardenState, mergeState]);
 
   // Golden cookie spawner (respects prestige golden freq boost)
   const goldenFreqMult = boughtPrestige.has('ps5') ? 0.7 : 1; // 30% faster = 70% of interval
@@ -666,6 +672,51 @@ export default function App() {
     if (!result) return;
     setMarketState(result.newState);
     setReads(r => r + result.revenue);
+  }, [marketState]);
+
+  const handleBuyAllShares = useCallback(() => {
+    let state = marketState;
+    let totalCost = 0;
+    let bought = 0;
+    // Buy one of each affordable channel, repeat until nothing affordable
+    let changed = true;
+    while (changed) {
+      changed = false;
+      for (const ch of ['meme','cat','news','gossip','food','know']) {
+        const result = buyShare(state, ch, readsRef.current - totalCost);
+        if (result) {
+          state = result.newState;
+          totalCost += result.cost;
+          bought++;
+          changed = true;
+        }
+      }
+    }
+    if (bought > 0) {
+      setMarketState(state);
+      setReads(r => r - totalCost);
+      addToast(`📈 一口氣買入 ${bought} 股！`);
+    }
+  }, [marketState]);
+
+  const handleSellAllShares = useCallback(() => {
+    let state = marketState;
+    let totalRevenue = 0;
+    let sold = 0;
+    for (const ch of ['meme','cat','news','gossip','food','know']) {
+      let result = sellShare(state, ch);
+      while (result) {
+        state = result.newState;
+        totalRevenue += result.revenue;
+        sold++;
+        result = sellShare(state, ch);
+      }
+    }
+    if (sold > 0) {
+      setMarketState(state);
+      setReads(r => r + totalRevenue);
+      addToast(`📉 全部賣出 ${sold} 股，回收 ${fmt(Math.round(totalRevenue))}！`);
+    }
   }, [marketState]);
 
   // ── Garden handlers ──
@@ -1027,7 +1078,7 @@ export default function App() {
           padding: '16px 14px 12px',
           position: 'relative', flexShrink: 0,
         }}>
-          {/* Hero counter — the star of the show */}
+          {/* Hero counter — clickable! Tapping the number = click */}
           {(() => {
             const counterColor = reads >= 1e12 ? '#7c3aed'
               : reads >= 1e9 ? '#b45309'
@@ -1037,18 +1088,23 @@ export default function App() {
               ? `0 0 30px ${counterColor}22, 0 0 60px ${counterColor}11`
               : 'none';
             return (
-              <div style={{
-                fontSize: 80, fontWeight: 900,
-                fontFamily: "'Space Grotesk','JetBrains Mono',monospace",
-                color: counterColor,
-                animation: popAnim ? 'pn .18s ease-out' : 'none',
-                letterSpacing: -4, lineHeight: 1,
-                marginBottom: 2,
-                textShadow: counterGlow,
-                transition: 'color .5s, text-shadow .5s',
-              }}>
+              <button
+                onClick={handleClick}
+                style={{
+                  fontSize: 80, fontWeight: 900,
+                  fontFamily: "'Space Grotesk','JetBrains Mono',monospace",
+                  color: counterColor,
+                  animation: popAnim ? 'pn .18s ease-out' : 'none',
+                  letterSpacing: -4, lineHeight: 1,
+                  marginBottom: 2,
+                  textShadow: counterGlow,
+                  transition: 'color .5s, text-shadow .5s',
+                  background: 'none', border: 'none', cursor: 'pointer',
+                  padding: '8px 16px', borderRadius: 12,
+                }}
+              >
                 {fmt(reads)}
-              </div>
+              </button>
             );
           })()}
 
@@ -1200,6 +1256,8 @@ export default function App() {
             reads={reads}
             onBuyShare={handleBuyShare}
             onSellShare={handleSellShare}
+            onBuyAllShares={handleBuyAllShares}
+            onSellAllShares={handleSellAllShares}
             gardenState={gardenState}
             onPlant={handlePlantSeed}
             onHarvest={handleHarvestFlower}

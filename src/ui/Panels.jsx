@@ -146,7 +146,8 @@ export function AchievementBadges({ unlockedAchievements, maxVisible }) {
   const allUnlocked = ACHIEVEMENTS.filter(a => unlockedAchievements.has(a.id));
   const unlocked = maxVisible ? allUnlocked.slice(-maxVisible) : allUnlocked;
   const overflowUnlocked = maxVisible && allUnlocked.length > maxVisible ? allUnlocked.length - maxVisible : 0;
-  const lockedCount = ACHIEVEMENTS.length - allUnlocked.length;
+  const lockedCount = ACHIEVEMENTS.filter(a => !unlockedAchievements.has(a.id) && !a.hidden).length;
+  const hiddenCount = ACHIEVEMENTS.filter(a => !unlockedAchievements.has(a.id) && a.hidden).length;
 
   // Track which badges are newly appearing this render
   const newBadges = new Set();
@@ -211,12 +212,15 @@ export function AchievementBadges({ unlockedAchievements, maxVisible }) {
           </div>
         );
       })}
-      {(lockedCount > 0 || overflowUnlocked > 0) && (
+      {(lockedCount > 0 || hiddenCount > 0 || overflowUnlocked > 0) && (
         <span style={{
-          fontSize: 10, color: '#94a3b8',
+          fontSize: 11, color: '#94a3b8',
           fontFamily: "'JetBrains Mono',monospace",
           padding: '2px 6px',
-        }}>{allUnlocked.length}/{ACHIEVEMENTS.length}</span>
+        }}>
+          {allUnlocked.length}/{ACHIEVEMENTS.length - hiddenCount}
+          {hiddenCount > 0 && <span style={{ color: '#cbd5e1' }}> +?</span>}
+        </span>
       )}
     </div>
   );

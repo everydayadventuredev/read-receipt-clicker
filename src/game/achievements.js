@@ -153,14 +153,27 @@ export const ACHIEVEMENTS = [
   { id: 'a29', name: '完美已讀',       desc: '在已讀風暴中全部點完',      icon: '💎', req: (at, ow, pc, ps, ex) => ex.stormPerfect >= 1 },
 
   // ══════════════════════════════════════════════
-  // ── Dark Humor / Secret Achievements ──
+  // ── Hidden / Humorous Achievements ──
+  // (hidden: true means desc shows "???" until unlocked)
   // ══════════════════════════════════════════════
-  { id: 'dk1', name: '已讀成癮',         desc: '累計已讀超過十億則',       icon: '🧟', req: (at) => at >= 1000000000 },
-  { id: 'dk2', name: '數位寂寞',         desc: '每種建築都擁有50個以上',   icon: '🥀', req: (at, ow) => BUILDINGS.every(b => ow[b.id] >= 50) },
-  { id: 'dk3', name: '社交性死亡',       desc: '擁有超過100個前任但0個忙朋友', icon: '☠️', req: (at, ow) => ow.ex >= 100 && ow.bsy === 0 },
-  { id: 'dk4', name: '讀訊息讀到忘了自己是誰', desc: '重生10次且累計超過1億', icon: '🫥', req: (at, ow, pc) => pc >= 10 && at >= 100000000 },
-  { id: 'dk5', name: '訊息深淵回望你',   desc: '每秒產能超過一千萬且重生5次以上', icon: '👁️‍🗨️', req: (at, ow, pc, ps) => ps >= 10000000 && pc >= 5 },
-  { id: 'dk6', name: '虛無主義解鎖',     desc: '擁有100個AI客服但0個爸媽',  icon: '🤖', req: (at, ow) => ow.ai >= 100 && ow.par === 0 },
-  { id: 'dk7', name: '已讀宇宙的熱寂',   desc: '累計超過千億且擁有全部建築', icon: '🌑', req: (at, ow) => at >= 100000000000 && BUILDINGS.every(b => ow[b.id] > 0) },
-  { id: 'dk8', name: '薛丁格的已讀',     desc: '同時擁有時間迴圈和外星通訊各25個以上', icon: '🐱', req: (at, ow) => ow.time >= 25 && ow.alien >= 25 },
+  { id: 'dk1', name: '已讀成癮',         desc: '累計已讀超過十億則',       icon: '🧟', req: (at) => at >= 1000000000, hidden: true },
+  { id: 'dk2', name: '數位寂寞',         desc: '每種建築都擁有50個以上',   icon: '🥀', req: (at, ow) => BUILDINGS.every(b => ow[b.id] >= 50), hidden: true },
+  { id: 'dk3', name: '社交性死亡',       desc: '擁有超過100個前任但0個忙朋友', icon: '☠️', req: (at, ow) => ow.ex >= 100 && ow.bsy === 0, hidden: true },
+  { id: 'dk4', name: '讀訊息讀到忘了自己是誰', desc: '重生10次且累計超過1億', icon: '🫥', req: (at, ow, pc) => pc >= 10 && at >= 100000000, hidden: true },
+  { id: 'dk5', name: '訊息深淵回望你',   desc: '每秒產能超過一千萬且重生5次以上', icon: '👁️‍🗨️', req: (at, ow, pc, ps) => ps >= 10000000 && pc >= 5, hidden: true },
+  { id: 'dk6', name: '虛無主義解鎖',     desc: '擁有100個AI客服但0個爸媽',  icon: '🤖', req: (at, ow) => ow.ai >= 100 && ow.par === 0, hidden: true },
+  { id: 'dk7', name: '已讀宇宙的熱寂',   desc: '累計超過千億且擁有全部建築', icon: '🌑', req: (at, ow) => at >= 100000000000 && BUILDINGS.every(b => ow[b.id] > 0), hidden: true },
+  { id: 'dk8', name: '薛丁格的已讀',     desc: '同時擁有時間迴圈和外星通訊各25個以上', icon: '🐱', req: (at, ow) => ow.time >= 25 && ow.alien >= 25, hidden: true },
+
+  // ── NEW: Weird / Easter Egg Achievements ──
+  { id: 'hm1', name: '手速王',           desc: '1秒內連點10次',            icon: '🏎️', hidden: true, req: (at, ow, pc, ps, ex) => ex.clickSpeed >= 10 },
+  { id: 'hm2', name: '全買狂人',         desc: '使用「全買」功能買超過50個升級', icon: '🛒', hidden: true, req: (at, ow, pc, ps, ex) => ex.boughtUpgrades >= 50 },
+  { id: 'hm3', name: '花園殺手',         desc: '讓3朵花枯萎',              icon: '🍂', hidden: true, req: (at, ow, pc, ps, ex) => (ex.wiltedFlowers ?? 0) >= 3 },
+  { id: 'hm4', name: '股市韭菜',         desc: '在股市虧損超過10,000',     icon: '📉', hidden: true, req: (at, ow, pc, ps, ex) => (ex.stockLoss ?? 0) >= 10000 },
+  { id: 'hm5', name: '阿姨剋星',         desc: '擴充伴手禮格子5次',        icon: '😤', hidden: true, req: (at, ow, pc, ps, ex) => (ex.gridExpansions ?? 0) >= 5 },
+  { id: 'hm6', name: '孝順滿分',         desc: '合成出帝王蟹',             icon: '🦀', hidden: true, req: (at, ow, pc, ps, ex) => (ex.highestMergeTier ?? 0) >= 6 },
+  { id: 'hm7', name: '傳家之寶',         desc: '合成出黃金擺件',           icon: '🏆', hidden: true, req: (at, ow, pc, ps, ex) => (ex.highestMergeTier ?? 0) >= 7 },
+  { id: 'hm8', name: '花之收藏家',       desc: '在花園圖鑑中收集10種花',   icon: '📖', hidden: true, req: (at, ow, pc, ps, ex) => (ex.flowersCollected ?? 0) >= 10 },
+  { id: 'hm9', name: '植物學博士',       desc: '在花園圖鑑中收集全部20種花', icon: '🎓', hidden: true, req: (at, ow, pc, ps, ex) => (ex.flowersCollected ?? 0) >= 20 },
+  { id: 'hm10', name: '什麼都不做',      desc: '開啟遊戲後等待5分鐘不做任何操作', icon: '🧘', hidden: true, req: (at, ow, pc, ps, ex) => (ex.idleMinutes ?? 0) >= 5 },
 ];
