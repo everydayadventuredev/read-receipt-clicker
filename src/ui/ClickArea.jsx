@@ -47,59 +47,13 @@ export default function ClickArea({ message, isRead, isFirstClick, popAnim, rece
       `}</style>
       <div style={{
         width: '100%',
-        background: '#fff',
-        borderRadius: 14,
-        border: isHigh ? '1px solid rgba(239,68,68,0.3)' : '1px solid #e2e8f0',
-        boxShadow: '0 2px 12px rgba(0,0,0,.06)',
+        background: bg,
         overflow: 'hidden',
         display: 'flex', flexDirection: 'column',
-        animation: isHigh ? 'guiltPulseBorder 2s ease-in-out infinite' : 'none',
+        transition: 'background .5s',
+        flex: 1,
       }}>
-        {/* Chat header */}
-        <div style={{
-          padding: '8px 12px',
-          background: headerGrad,
-          display: 'flex', alignItems: 'center', gap: 8,
-          transition: 'background .5s ease',
-        }}>
-          <div style={{
-            width: 28, height: 28, borderRadius: 14,
-            background: 'rgba(255,255,255,.2)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontSize: 14,
-          }}>💬</div>
-          <div>
-            <div style={{ fontSize: 12, fontWeight: 700, color: '#fff', lineHeight: 1.2 }}>已讀收件匣</div>
-            <div style={{ fontSize: 9, color: 'rgba(255,255,255,.6)', display: 'flex', alignItems: 'center', gap: 2 }}>
-              {recentMessages.length > 0 ? (
-                <>
-                  <span>對方正在輸入</span>
-                  {[0, 1, 2].map(i => (
-                    <span key={i} style={{
-                      display: 'inline-block',
-                      width: 3, height: 3, borderRadius: '50%',
-                      background: 'rgba(255,255,255,.8)',
-                      animation: `typingDot 1.4s ease-in-out ${i * 0.2}s infinite`,
-                    }} />
-                  ))}
-                </>
-              ) : '在線'}
-            </div>
-          </div>
-          {/* Unread count */}
-          {!isRead && (
-            <div style={{
-              marginLeft: 'auto',
-              minWidth: 20, height: 20, borderRadius: 10,
-              background: '#ef4444',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              fontSize: 10, fontWeight: 800, color: '#fff',
-              animation: 'pu 1.8s ease-in-out infinite',
-            }}>1</div>
-          )}
-        </div>
-
-        {/* Chat body */}
+        {/* Chat body — header now in phone frame (App.jsx) */}
         <div style={{
           padding: '8px 10px',
           minHeight: 160,
