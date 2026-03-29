@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { GIFT_TIERS, getTier, EXPAND_COSTS, BASE_GRID, GRID_SIZE } from '../game/merge.js';
 import { fmt } from '../utils/format.js';
+import GameIcon, { getGiftIcon } from './GameIcon.jsx';
 
 /**
  * App-icon style merge cell — rounded square with shadow like iOS icons.
@@ -88,7 +89,10 @@ function MergeCell({ item, index, gridSize, selected, selectedTier, onSelect, pe
         animation: isMatch ? 'glowPulse 1.5s ease-in-out infinite' : isSelected ? 'none' : 'none',
       }}
     >
-      <span style={{ fontSize: 40, lineHeight: 1 }}>{tier.emoji}</span>
+      {getGiftIcon(tier.tier)
+        ? <GameIcon src={getGiftIcon(tier.tier)} size={40} color={tier.color} />
+        : <span style={{ fontSize: 40, lineHeight: 1 }}>{tier.emoji}</span>
+      }
       <span style={{
         fontSize: 10, fontWeight: 700, color: tier.color,
         marginTop: 3, letterSpacing: 0.3,
@@ -171,7 +175,10 @@ function MergeBuffBar({ activeBuffs }) {
             border: `1px solid ${tier.color}15`,
             fontSize: 12, color: tier.color, fontWeight: 600,
           }}>
-            <span style={{ fontSize: 14 }}>{tier.emoji}</span>
+            {getGiftIcon(tier.tier)
+              ? <GameIcon src={getGiftIcon(tier.tier)} size={14} color={tier.color} />
+              : <span style={{ fontSize: 14 }}>{tier.emoji}</span>
+            }
             <span>×{b.mult}</span>
             <span style={{
               fontFamily: "'JetBrains Mono',monospace", fontSize: 10, color: '#94a3b8',

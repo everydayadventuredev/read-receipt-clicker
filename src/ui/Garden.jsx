@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { FLOWERS, SERIES, RARITY, GROWTH_TIME, WILT_TIME, getFieldCount, getFlowerById } from '../game/garden.js';
+import GameIcon, { getFlowerIcon, UI_ICON_MAP } from './GameIcon.jsx';
 
 function fmtTime(ms) {
   if (ms <= 0) return '就緒';
@@ -82,7 +83,10 @@ function PlotCell({ slot, index, fieldCount, seeds, onPlant, onHarvest, onClear 
           cursor: 'pointer', filter: 'grayscale(0.8)', opacity: 0.5,
         }}
       >
-        <span style={{ fontSize: 32 }}>{flower?.emoji ?? '🍂'}</span>
+        {flower && getFlowerIcon(flower.id)
+          ? <GameIcon src={getFlowerIcon(flower.id)} size={32} color="#94a3b8" style={{ filter: 'grayscale(1)' }} />
+          : <span style={{ fontSize: 32 }}>{flower?.emoji ?? '🍂'}</span>
+        }
         <span style={{ fontSize: 10, color: '#94a3b8', marginTop: 2 }}>枯萎了</span>
       </button>
     );
@@ -98,7 +102,7 @@ function PlotCell({ slot, index, fieldCount, seeds, onPlant, onHarvest, onClear 
         background: 'linear-gradient(180deg, rgba(34,197,94,.08), rgba(34,197,94,.02))',
         border: '1px solid rgba(34,197,94,.15)',
       }}>
-        <span style={{ fontSize: 28, animation: 'breathe 3s ease-in-out infinite' }}>🌱</span>
+        <GameIcon src={UI_ICON_MAP.seed} size={28} color="#22c55e" style={{ animation: 'breathe 3s ease-in-out infinite' }} />
         <span style={{
           fontSize: 11, color: '#22c55e', fontWeight: 700,
           fontFamily: "'JetBrains Mono',monospace", marginTop: 3,
@@ -133,7 +137,10 @@ function PlotCell({ slot, index, fieldCount, seeds, onPlant, onHarvest, onClear 
         boxShadow: `0 4px 20px ${rarity.color}15`,
       }}
     >
-      <span style={{ fontSize: 40 }}>{flower?.emoji ?? '🌸'}</span>
+      {flower && getFlowerIcon(flower.id)
+        ? <GameIcon src={getFlowerIcon(flower.id)} size={40} color={rarity.color} />
+        : <span style={{ fontSize: 40 }}>{flower?.emoji ?? '🌸'}</span>
+      }
       <span style={{
         fontSize: 11, fontWeight: 800, color: rarity.color,
         letterSpacing: 0.5, marginTop: 2,
@@ -213,7 +220,12 @@ function CollectionView({ collection, completedSeries }) {
                     textAlign: 'center',
                     transition: 'all .2s',
                   }}>
-                    <div style={{ fontSize: 24 }}>{found ? flower.emoji : '❓'}</div>
+                    <div style={{ fontSize: 24, display: 'flex', justifyContent: 'center' }}>
+                      {found && getFlowerIcon(flower.id)
+                        ? <GameIcon src={getFlowerIcon(flower.id)} size={24} color={rarity.color} />
+                        : found ? flower.emoji : '❓'
+                      }
+                    </div>
                     <div style={{
                       fontSize: 9, fontWeight: 600,
                       color: found ? rarity.color : '#cbd5e1',
@@ -263,7 +275,10 @@ function BuffBar({ activeBuffs }) {
             border: '1px solid rgba(99,102,241,.12)',
             fontSize: 12, color: '#6366f1', fontWeight: 600,
           }}>
-            <span style={{ fontSize: 14 }}>{flower?.emoji ?? '🌸'}</span>
+            {flower && getFlowerIcon(flower.id)
+              ? <GameIcon src={getFlowerIcon(flower.id)} size={14} color="#6366f1" />
+              : <span style={{ fontSize: 14 }}>{flower?.emoji ?? '🌸'}</span>
+            }
             <span>×{b.mult}</span>
             <span style={{
               fontFamily: "'JetBrains Mono',monospace", fontSize: 10, color: '#94a3b8',
@@ -308,7 +323,7 @@ export default function Garden({ gardenState, exCount, onPlant, onHarvest, onCle
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             boxShadow: '0 2px 8px rgba(34,197,94,.3)',
           }}>
-            <span style={{ fontSize: 14 }}>🌱</span>
+            <GameIcon src={UI_ICON_MAP.seed} size={14} color="#fff" />
           </div>
           <div>
             <div style={{ fontSize: 14, fontWeight: 800, color: '#1e293b', lineHeight: 1 }}>放下花園</div>

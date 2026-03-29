@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { fmt, buildingCostN } from '../utils/format.js';
-import { BUILDING_ICONS } from './PixelIcons.jsx';
+import BuildingBanner from './BuildingBanner.jsx';
 
 /**
  * Cookie Clicker-style horizontal building bar.
@@ -8,7 +8,6 @@ import { BUILDING_ICONS } from './PixelIcons.jsx';
  */
 function BuildingBar({ b, count, cost, prodRate, canAfford, buyN, isNew, onBuy, lastBought, hovered, onHover, onLeave }) {
   const hasAny = count > 0;
-  const Icon = BUILDING_ICONS[b.id];
 
   return (
     <button
@@ -19,7 +18,7 @@ function BuildingBar({ b, count, cost, prodRate, canAfford, buyN, isNew, onBuy, 
       style={{
         display: 'flex', alignItems: 'stretch',
         width: '100%', padding: 0, height: hasAny ? 72 : 48,
-        background: `linear-gradient(90deg, ${b.color}${hasAny ? '08' : '03'}, ${b.color}${hasAny ? '04' : '01'})`,
+        background: hasAny ? 'transparent' : `linear-gradient(90deg, ${b.color}08, ${b.color}03)`,
         border: isNew ? `1px solid ${b.color}55`
           : canAfford ? `1px solid ${b.color}18`
           : '1px solid #eef0f2',
@@ -34,60 +33,54 @@ function BuildingBar({ b, count, cost, prodRate, canAfford, buyN, isNew, onBuy, 
         transform: lastBought ? 'scale(1.005)' : 'none',
       }}
     >
+      {/* Dynamic pixel art banner background */}
+      {hasAny && (
+        <div style={{ position: 'absolute', inset: 0, zIndex: 0 }}>
+          <BuildingBanner buildingId={b.id} count={count} />
+        </div>
+      )}
+
       {/* Left info area */}
       <div style={{
         width: 170, flexShrink: 0, padding: '6px 10px',
         display: 'flex', flexDirection: 'column', justifyContent: 'center',
         zIndex: 1, position: 'relative',
-        background: `linear-gradient(90deg, ${b.color}${hasAny ? '10' : '05'}, transparent)`,
+        background: hasAny
+          ? `linear-gradient(90deg, rgba(0,0,0,.6) 0%, rgba(0,0,0,.3) 70%, transparent 100%)`
+          : `linear-gradient(90deg, ${b.color}05, transparent)`,
       }}>
         <span style={{
-          fontSize: 16, fontWeight: 800, color: '#1e293b', lineHeight: 1.2,
+          fontSize: 16, fontWeight: 800, color: hasAny ? '#fff' : '#1e293b', lineHeight: 1.2,
+          textShadow: hasAny ? '0 1px 3px rgba(0,0,0,.5)' : 'none',
         }}>{b.name}</span>
         <span style={{
-          fontSize: 11, color: '#64748b', lineHeight: 1.2, marginTop: 2,
+          fontSize: 11, color: hasAny ? 'rgba(255,255,255,.7)' : '#64748b', lineHeight: 1.2, marginTop: 2,
           whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
         }}>{b.desc}</span>
         <div style={{
           fontSize: 13, fontWeight: 700,
-          color: canAfford ? '#b45309' : '#94a3b8',
+          color: hasAny ? '#fdcb6e' : canAfford ? '#b45309' : '#94a3b8',
           fontFamily: "'JetBrains Mono',monospace",
           marginTop: 2,
+          textShadow: hasAny ? '0 1px 2px rgba(0,0,0,.5)' : 'none',
         }}>
           {fmt(cost)}{buyN > 1 ? ` ×${buyN}` : ''}
-          <span style={{ fontSize: 11, color: '#94a3b8', marginLeft: 4 }}>
+          <span style={{ fontSize: 11, color: hasAny ? 'rgba(255,255,255,.5)' : '#94a3b8', marginLeft: 4 }}>
             {hasAny ? `${fmt(prodRate)}/s` : `+${fmt(b.baseProd)}/s`}
           </span>
         </div>
       </div>
 
-      {/* Emoji crowd — fills remaining space horizontally */}
-      {hasAny && (
-        <div style={{
-          flex: 1, display: 'flex', alignItems: 'center',
-          overflow: 'hidden', padding: '2px 0',
-          gap: 0, flexWrap: 'wrap', alignContent: 'center',
-        }}>
-          {Array.from({ length: Math.min(count, 40) }, (_, i) => (
-            <span key={i} style={{
-              fontSize: count > 20 ? 18 : count > 10 ? 22 : 26,
-              lineHeight: 1,
-              opacity: 0.6 + (i / Math.min(count, 40)) * 0.35,
-              transform: `rotate(${(i * 13 + i * i * 2) % 24 - 12}deg)`,
-              flexShrink: 0,
-            }}>
-              {b.emoji}
-            </span>
-          ))}
-        </div>
-      )}
+      {/* Banner fills remaining space — no icon crowd needed */}
+      {hasAny && <div style={{ flex: 1 }} />}
 
       {/* Count badge — right side */}
       <div style={{
         width: 44, flexShrink: 0,
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         fontSize: hasAny ? 24 : 14, fontWeight: 900,
-        color: hasAny ? b.color : '#cbd5e1',
+        color: hasAny ? '#fff' : '#cbd5e1',
+        textShadow: hasAny ? '0 2px 4px rgba(0,0,0,.6)' : 'none',
         fontFamily: "'Space Grotesk','JetBrains Mono',monospace",
         opacity: hasAny ? 0.9 : 0.4,
         zIndex: 1,

@@ -27,6 +27,7 @@ import ReplyTrap from './ui/ReplyTrap.jsx';
 import Ticker from './ui/Ticker.jsx';
 import MiniGamePanel from './ui/MiniGamePanel.jsx';
 import { StatsPanel, LogPanel, AchievementBadges } from './ui/Panels.jsx';
+import { HeaderBanner, TickerBanner, CounterBanner, ChatBanner, UpgradeBanner } from './ui/SectionBanners.jsx';
 
 import { createMarketState, tickMarket, buyShare, sellShare, resetHoldings } from './game/stockMarket.js';
 import { createGardenState, tickGarden, plantSeed, harvestFlower, clearWilted, getGardenBuffMult, getGardenExBuffMult, getSeriesBonusMult, resetGarden } from './game/garden.js';
@@ -709,18 +710,14 @@ export default function App() {
     let state = marketState;
     let totalCost = 0;
     let bought = 0;
-    // Buy one of each affordable channel, repeat until nothing affordable
-    let changed = true;
-    while (changed) {
-      changed = false;
-      for (const ch of ['meme','cat','news','gossip','food','know']) {
+    const maxPerChannel = 100; // Cap per click to prevent infinite loop
+    for (const ch of ['meme','cat','news','gossip','food','know']) {
+      for (let i = 0; i < maxPerChannel; i++) {
         const result = buyShare(state, ch, readsRef.current - totalCost, psRef.current);
-        if (result) {
-          state = result.newState;
-          totalCost += result.cost;
-          bought++;
-          changed = true;
-        }
+        if (!result) break;
+        state = result.newState;
+        totalCost += result.cost;
+        bought++;
       }
     }
     if (bought > 0) {
@@ -1027,8 +1024,9 @@ export default function App() {
         flexShrink: 0, gap: 10, minHeight: 48,
         background: 'rgba(255,255,255,.8)',
         backdropFilter: 'blur(20px)',
-        position: 'relative',
+        position: 'relative', overflow: 'hidden',
       }}>
+        <HeaderBanner />
         {/* Logo */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
           <div style={{
@@ -1141,8 +1139,9 @@ export default function App() {
           display: 'flex', flexDirection: 'column', alignItems: 'center',
           justifyContent: 'flex-start',
           padding: '16px 14px 12px',
-          position: 'relative', flexShrink: 0,
+          position: 'relative', flexShrink: 0, overflow: 'hidden',
         }}>
+          <CounterBanner />
           {/* Hero counter — clickable! Tapping the number = click */}
           {(() => {
             const counterColor = reads >= 1e12 ? '#7c3aed'
@@ -1346,7 +1345,9 @@ export default function App() {
             maxHeight: '25%', overflowY: 'auto', flexShrink: 0,
             borderBottom: '2px solid #e2e8f0',
             background: 'rgba(99,102,241,.02)',
+            position: 'relative', overflow: 'hidden',
           }}>
+            <UpgradeBanner />
             {upgradeStates.length > 0 ? (
               <UpgradeRow upgrades={upgradeStates} reads={reads} onBuy={handleBuyUpgrade} onBuyAll={() => {
                 upgradeStates.filter(u => u.state === 'buy').forEach(u => handleBuyUpgrade(u));

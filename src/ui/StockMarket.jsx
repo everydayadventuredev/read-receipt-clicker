@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { CHANNELS, getPortfolioValue, getTotalCostBasis, getPriceScale } from '../game/stockMarket.js';
 import { fmt } from '../utils/format.js';
+import GameIcon, { getStockIcon } from './GameIcon.jsx';
 
 /**
  * Compact Sparkline for grid cards.
@@ -59,7 +60,10 @@ function ChannelCard({ channel, price, prevPrice, history, holdings, costBasis, 
     }}>
       {/* Row 1: emoji + name + price */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-        <span style={{ fontSize: 22 }}>{channel.emoji}</span>
+        {getStockIcon(channel.id)
+          ? <GameIcon src={getStockIcon(channel.id)} size={22} color="#64748b" />
+          : <span style={{ fontSize: 22 }}>{channel.emoji}</span>
+        }
         <span style={{ fontSize: 16, fontWeight: 700, color: '#1e293b' }}>{channel.name}</span>
         <div style={{ flex: 1 }} />
         <span style={{

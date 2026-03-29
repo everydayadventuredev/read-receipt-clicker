@@ -3,6 +3,7 @@ import { MINIGAME_REGISTRY, getUnlockedMinigames } from '../game/minigames.js';
 import StockMarket from './StockMarket.jsx';
 import Garden from './Garden.jsx';
 import MergeGame from './MergeGame.jsx';
+import { GardenBanner, StockBanner, MergeBanner } from './SectionBanners.jsx';
 
 /**
  * Generic mini-game container for the middle column.
@@ -125,7 +126,11 @@ export default function MiniGamePanel({
       </div>
 
       {/* Mini-game body */}
-      <div style={{ flex: 1, overflow: 'hidden', display: 'flex', flexDirection: 'column', minHeight: 0 }}>
+      <div style={{ flex: 1, overflow: 'hidden', display: 'flex', flexDirection: 'column', minHeight: 0, position: 'relative' }}>
+        {/* Section background */}
+        {activeMiniGame === 'ex' && <GardenBanner />}
+        {activeMiniGame === 'algo' && <StockBanner />}
+        {activeMiniGame === 'par' && <MergeBanner />}
         {activeMiniGame === 'par' && mergeState && (
           <MergeGame
             mergeState={mergeState}
