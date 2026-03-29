@@ -345,25 +345,30 @@ export default function App() {
     });
   }, [allTime, owned, prestigeCount, prodPerSec, unlockedAchievements, activeSynergies.size, completedChains.size, boughtPrestige.size, stormCount, stormPerfect, boughtUpgrades.size, gardenState, mergeState]);
 
-  // Golden cookie spawner (respects prestige golden freq boost)
-  const goldenFreqMult = boughtPrestige.has('ps5') ? 0.7 : 1; // 30% faster = 70% of interval
+  // Golden cookie spawner — gated behind gc1 upgrade
+  const hasGoldenCookie = boughtUpgrades.has('gc1');
+  const gcFreqMult = (boughtPrestige.has('ps5') ? 0.7 : 1) * (boughtUpgrades.has('gc2') ? 0.7 : 1);
+  const gcDurMult = boughtUpgrades.has('gc4') ? 1.5 : 1;
   useEffect(() => {
+    if (!hasGoldenCookie) return;
     let t;
     const spawn = () => {
       t = setTimeout(() => {
-        if (allTimeRef.current > 50) {
-          const pool = GOLDEN_COOKIES.filter(e => !e.minAt || allTimeRef.current >= e.minAt);
+        const pool = GOLDEN_COOKIES.filter(e => !e.minAt || allTimeRef.current >= e.minAt);
+        // Add mega event if gc5 unlocked
+        if (boughtRef.current.has('gc5') && Math.random() < 0.08) {
+          setGoldenCookie({ type: 'mult5', mult: 10, dur: 5, toast: '宇宙彩券頭獎！×10 已讀！', minAt: 0 });
+        } else {
           const g = pk(pool);
           setGoldenCookie(g);
-          setGcPos({ x: 8 + Math.random() * 75, y: 10 + Math.random() * 60 });
         }
+        setGcPos({ x: 8 + Math.random() * 75, y: 10 + Math.random() * 60 });
         spawn();
-      }, (20000 + Math.random() * 35000) * goldenFreqMult);
+      }, (20000 + Math.random() * 35000) * gcFreqMult);
     };
     spawn();
     return () => clearTimeout(t);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [goldenFreqMult]);
+  }, [hasGoldenCookie, gcFreqMult]);
 
   // Synergy detection
   useEffect(() => {
@@ -644,13 +649,15 @@ export default function App() {
     const gc = goldenCookie;
     setGoldenCookie(null);
 
+    const durMult = boughtUpgrades.has('gc4') ? 1.5 : 1;
+    const powerBonus = boughtUpgrades.has('gc3') ? 1 : 0;
     if (gc.type === 'mult') {
-      setTempMult(2);
-      setTempMultExpiry(Date.now() + gc.dur * 1000);
+      setTempMult(2 + powerBonus);
+      setTempMultExpiry(Date.now() + gc.dur * 1000 * durMult);
       addToast(`🚀 ${gc.toast}`);
     } else if (gc.type === 'mult5') {
-      setTempMult(5);
-      setTempMultExpiry(Date.now() + gc.dur * 1000);
+      setTempMult(5 + powerBonus);
+      setTempMultExpiry(Date.now() + gc.dur * 1000 * durMult);
       addToast(`🔥 ${gc.toast}`);
     } else {
       const bonus = Math.max(20, Math.floor(psRef.current * gc.mult));
@@ -966,19 +973,53 @@ export default function App() {
       {/* Golden Cookie */}
       <GoldenCookie gc={goldenCookie} pos={gcPos} onClick={handleGoldenCookie} />
 
-      {/* Temp mult indicator */}
-      {tempMult > 1 && (
-        <div style={{
-          position: 'fixed', top: 60, left: '50%', transform: 'translateX(-50%)',
-          background: 'rgba(245,240,255,.9)', border: '1px solid rgba(99,102,241,.25)',
-          borderRadius: 14, padding: '6px 16px', fontSize: 12,
-          color: '#4f46e5', fontWeight: 700, zIndex: 200,
-          fontFamily: "'JetBrains Mono',monospace",
-          boxShadow: '0 4px 20px rgba(99,102,241,.08)',
-        }}>
-          🔥 x{tempMult} 產能加成中 {tempMultExpiry > 0 && `(${Math.max(0, Math.ceil((tempMultExpiry - Date.now()) / 1000))}s)`}
-        </div>
-      )}
+      {/* Combo multiplier bar — shows all active boosts */}
+      {(() => {
+        const gardenBuff = getGardenBuffMult(gardenState);
+        const gardenExBuff = getGardenExBuffMult(gardenState);
+        const mergeBuff = getMergeBuffMult(mergeState);
+        const boosts = [];
+        if (tempMult > 1) boosts.push({ icon: '🔥', label: `×${tempMult}`, color: '#6366f1', sub: tempMultExpiry > 0 ? `${Math.max(0, Math.ceil((tempMultExpiry - Date.now()) / 1000))}s` : '' });
+        if (gardenBuff > 1) boosts.push({ icon: '🌸', label: `×${gardenBuff.toFixed(1)}`, color: '#22c55e', sub: '全局' });
+        if (gardenExBuff > 1) boosts.push({ icon: '💔', label: `×${gardenExBuff.toFixed(1)}`, color: '#f43f5e', sub: '前任' });
+        if (mergeBuff > 1) boosts.push({ icon: '🎁', label: `×${mergeBuff.toFixed(1)}`, color: '#f59e0b', sub: '合成' });
+        if (coldMaster) boosts.push({ icon: '🧊', label: '×1.5', color: '#06b6d4', sub: '冷漠' });
+        const totalCombo = tempMult * gardenBuff * mergeBuff * (coldMaster ? 1.5 : 1);
+        if (boosts.length === 0) return null;
+        return (
+          <div style={{
+            position: 'fixed', top: 56, left: '50%', transform: 'translateX(-50%)',
+            display: 'flex', alignItems: 'center', gap: 6,
+            background: 'rgba(255,255,255,.92)', backdropFilter: 'blur(12px)',
+            border: '1px solid rgba(99,102,241,.15)',
+            borderRadius: 14, padding: '5px 12px', zIndex: 200,
+            boxShadow: '0 4px 20px rgba(0,0,0,.06)',
+          }}>
+            {boosts.map((b, i) => (
+              <div key={i} style={{
+                display: 'flex', alignItems: 'center', gap: 3,
+                padding: '2px 8px', borderRadius: 8,
+                background: `${b.color}10`, border: `1px solid ${b.color}20`,
+              }}>
+                <span style={{ fontSize: 12 }}>{b.icon}</span>
+                <span style={{ fontSize: 12, fontWeight: 700, color: b.color, fontFamily: "'JetBrains Mono',monospace" }}>{b.label}</span>
+                {b.sub && <span style={{ fontSize: 9, color: '#94a3b8' }}>{b.sub}</span>}
+              </div>
+            ))}
+            {boosts.length >= 2 && (
+              <div style={{
+                padding: '2px 8px', borderRadius: 8,
+                background: 'linear-gradient(135deg, rgba(99,102,241,.1), rgba(245,158,11,.1))',
+                border: '1px solid rgba(99,102,241,.2)',
+              }}>
+                <span style={{ fontSize: 12, fontWeight: 800, color: '#4338ca', fontFamily: "'JetBrains Mono',monospace" }}>
+                  = ×{totalCombo.toFixed(1)}
+                </span>
+              </div>
+            )}
+          </div>
+        );
+      })()}
 
       {/* ── HEADER ── */}
       <div style={{

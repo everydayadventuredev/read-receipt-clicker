@@ -16,23 +16,23 @@ export const UPGRADES = [
   // BUILDING TIER UPGRADES — 前任 (ex)
   // baseCost=15, tiers at 1/5/15/25/50/100
   // ═══════════════════════════════════════════════
-  { id: 'e1',  name: '冷漠的力量',     desc: '前任x2', type: 'm', target: 'ex', bonus: 2, cost: 150,        req: { building: 'ex', count: 1 },   emoji: '💔' },
-  { id: 'e2',  name: '已讀不回大師',   desc: '前任x2', type: 'm', target: 'ex', bonus: 2, cost: 1500,       req: { building: 'ex', count: 5 },   emoji: '💔' },
-  { id: 'e3',  name: '前任軍團',       desc: '前任x2', type: 'm', target: 'ex', bonus: 2, cost: 15000,      req: { building: 'ex', count: 15 },  emoji: '💔' },
-  { id: 'e4',  name: '數位斯德哥爾摩', desc: '前任x2', type: 'm', target: 'ex', bonus: 2, cost: 150000,     req: { building: 'ex', count: 25 },  emoji: '💔' },
-  { id: 'e5',  name: '前任文明',       desc: '前任x2', type: 'm', target: 'ex', bonus: 2, cost: 1500000,    req: { building: 'ex', count: 50 },  emoji: '💔' },
-  { id: 'e6',  name: '前任宇宙',       desc: '前任x2', type: 'm', target: 'ex', bonus: 2, cost: 15000000,   req: { building: 'ex', count: 100 }, emoji: '💔' },
+  { id: 'e1',  name: '冷漠的力量',     desc: '前任×2 — 你的冷淡讓前任更努力已讀你', type: 'm', target: 'ex', bonus: 2, cost: 150,        req: { building: 'ex', count: 1 },   emoji: '💔' },
+  { id: 'e2',  name: '已讀不回大師',   desc: '前任×2 — 不回覆是一種藝術', type: 'm', target: 'ex', bonus: 2, cost: 1500,       req: { building: 'ex', count: 5 },   emoji: '💔' },
+  { id: 'e3',  name: '前任軍團',       desc: '前任×2 — 他們組了工會，但還是不敢回覆', type: 'm', target: 'ex', bonus: 2, cost: 15000,      req: { building: 'ex', count: 15 },  emoji: '💔' },
+  { id: 'e4',  name: '數位斯德哥爾摩', desc: '前任×2 — 被已讀久了竟然開始享受', type: 'm', target: 'ex', bonus: 2, cost: 150000,     req: { building: 'ex', count: 25 },  emoji: '💔' },
+  { id: 'e5',  name: '前任文明',       desc: '前任×2 — 前任們建立了自己的社會制度', type: 'm', target: 'ex', bonus: 2, cost: 1500000,    req: { building: 'ex', count: 50 },  emoji: '💔' },
+  { id: 'e6',  name: '前任宇宙',       desc: '前任×2 — 你的前任比星星還多', type: 'm', target: 'ex', bonus: 2, cost: 15000000,   req: { building: 'ex', count: 100 }, emoji: '💔' },
 
   // ═══════════════════════════════════════════════
   // BUILDING TIER UPGRADES — 爸媽 (par)
   // baseCost=100
   // ═══════════════════════════════════════════════
-  { id: 'p_1', name: '外套加持',       desc: '爸媽x2', type: 'm', target: 'par', bonus: 2, cost: 1000,       req: { building: 'par', count: 1 },   emoji: '🧥' },
-  { id: 'p_2', name: '養生文轟炸',     desc: '爸媽x2', type: 'm', target: 'par', bonus: 2, cost: 10000,      req: { building: 'par', count: 5 },   emoji: '📰' },
-  { id: 'p_3', name: '親情勒索2.0',    desc: '爸媽x2', type: 'm', target: 'par', bonus: 2, cost: 100000,     req: { building: 'par', count: 15 },  emoji: '❤️' },
-  { id: 'p_4', name: '長輩圖核彈',     desc: '爸媽x2', type: 'm', target: 'par', bonus: 2, cost: 1000000,    req: { building: 'par', count: 25 },  emoji: '💣' },
-  { id: 'p_5', name: '全家都已讀',     desc: '爸媽x2', type: 'm', target: 'par', bonus: 2, cost: 10000000,   req: { building: 'par', count: 50 },  emoji: '👨‍👩‍👧‍👦' },
-  { id: 'p_6', name: '祖宗十八代已讀', desc: '爸媽x2', type: 'm', target: 'par', bonus: 2, cost: 100000000,  req: { building: 'par', count: 100 }, emoji: '🏛️' },
+  { id: 'p_1', name: '外套加持',       desc: '爸媽×2 — 「外面冷穿外套」的力量是無限的', type: 'm', target: 'par', bonus: 2, cost: 1000,       req: { building: 'par', count: 1 },   emoji: '🧥' },
+  { id: 'p_2', name: '養生文轟炸',     desc: '爸媽×2 — 每天收到的養生文可以繞地球三圈', type: 'm', target: 'par', bonus: 2, cost: 10000,      req: { building: 'par', count: 5 },   emoji: '📰' },
+  { id: 'p_3', name: '親情勒索2.0',    desc: '爸媽×2 — 「你都不回訊息是不是不要我們了」', type: 'm', target: 'par', bonus: 2, cost: 100000,     req: { building: 'par', count: 15 },  emoji: '❤️' },
+  { id: 'p_4', name: '長輩圖核彈',     desc: '爸媽×2 — 早安圖的解析度突破了4K', type: 'm', target: 'par', bonus: 2, cost: 1000000,    req: { building: 'par', count: 25 },  emoji: '💣' },
+  { id: 'p_5', name: '全家都已讀',     desc: '爸媽×2 — 連狗都學會已讀了', type: 'm', target: 'par', bonus: 2, cost: 10000000,   req: { building: 'par', count: 50 },  emoji: '👨‍👩‍👧‍👦' },
+  { id: 'p_6', name: '祖宗十八代已讀', desc: '爸媽×2 — 連祖先牌位都顯示已讀', type: 'm', target: 'par', bonus: 2, cost: 100000000,  req: { building: 'par', count: 100 }, emoji: '🏛️' },
 
   // ═══════════════════════════════════════════════
   // BUILDING TIER UPGRADES — 忙朋友 (bsy)
@@ -240,5 +240,40 @@ export const UPGRADES = [
       { id: 'int', count: 100 }, { id: 'algo', count: 100 }, { id: 'ai', count: 100 },
       { id: 'alien', count: 100 }, { id: 'time', count: 100 },
     ] },
+  },
+
+  // ═══════════════════════════════════════════════
+  // GOLDEN COOKIE UPGRADES — unlock & enhance random events
+  // type: 'gc' — handled specially in App.jsx
+  // ═══════════════════════════════════════════════
+  {
+    id: 'gc1', name: '命運的通知',
+    desc: '解鎖金色事件。因為你值得被命運已讀。',
+    type: 'gc', bonus: 'unlock', cost: 1000, emoji: '🍪',
+    req: { allTime: 500 },
+  },
+  {
+    id: 'gc2', name: '幸運加速器',
+    desc: '金色事件出現頻率+30%。你的運氣也被已讀了。',
+    type: 'gc', bonus: 'freq', cost: 50000, emoji: '🍀',
+    req: { allTime: 25000 },
+  },
+  {
+    id: 'gc3', name: '黃金觸控',
+    desc: '金色事件倍率+1。手指碰到的都變成已讀。',
+    type: 'gc', bonus: 'power', cost: 500000, emoji: '✨',
+    req: { allTime: 250000 },
+  },
+  {
+    id: 'gc4', name: '幸運餅乾工廠',
+    desc: '金色事件持續時間+50%。工廠24小時輪班製造幸運。',
+    type: 'gc', bonus: 'duration', cost: 5000000, emoji: '🏭',
+    req: { allTime: 2500000 },
+  },
+  {
+    id: 'gc5', name: '宇宙彩券中獎',
+    desc: '解鎖×10超稀有金色事件。你的人品終於被看見了。',
+    type: 'gc', bonus: 'mega', cost: 100000000, emoji: '🎰',
+    req: { allTime: 50000000 },
   },
 ];
