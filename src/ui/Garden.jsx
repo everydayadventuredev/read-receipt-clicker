@@ -368,12 +368,12 @@ export default function Garden({ gardenState, exCount, onPlant, onHarvest, onCle
           <div style={{
             padding: 10,
             display: 'grid',
-            gridTemplateColumns: 'repeat(4, 1fr)',
+            gridTemplateColumns: `repeat(${Math.min(4, fieldCount)}, 1fr)`,
             gridAutoRows: 'minmax(80px, 110px)',
             gap: 6,
             alignContent: 'start',
           }}>
-            {slots.map((slot, i) => (
+            {slots.slice(0, fieldCount).map((slot, i) => (
               <PlotCell
                 key={i}
                 slot={slot}
