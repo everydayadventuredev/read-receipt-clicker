@@ -170,14 +170,20 @@ export default function App() {
       p += b.baseProd * (owned[b.id] ?? 0) * m;
     });
     const coldMasterMult = coldMaster ? 1.5 : 1;
+    // Guilt penalty — real production impact
+    const guiltPenalty = coldMaster ? 1 // cold master bypasses penalty
+      : guilt >= GUILT_THRESHOLDS.high ? 0.4
+      : guilt >= GUILT_THRESHOLDS.medium ? 0.7
+      : guilt >= GUILT_THRESHOLDS.low ? 0.9
+      : 1;
     const gardenBuff = getGardenBuffMult(gardenState);
     const gardenSeries = getSeriesBonusMult(gardenState);
     const mergeBuff = getMergeBuffMult(mergeState);
     const mergePerm = getMergePermMult(mergeState);
-    const total = p * prestigeMult * prestigeGlobalMult * chainGlobalBuff * tempMult * coldMasterMult * gardenBuff * gardenSeries * mergeBuff * mergePerm;
+    const total = p * prestigeMult * prestigeGlobalMult * chainGlobalBuff * tempMult * coldMasterMult * guiltPenalty * gardenBuff * gardenSeries * mergeBuff * mergePerm;
     setProdPerSec(total);
     psRef.current = total;
-  }, [owned, boughtUpgrades, prestigeMult, prestigeGlobalMult, chainGlobalBuff, tempMult, boughtPrestige, eventChainBuffs, gardenState, mergeState]);
+  }, [owned, boughtUpgrades, prestigeMult, prestigeGlobalMult, chainGlobalBuff, tempMult, boughtPrestige, eventChainBuffs, gardenState, mergeState, guilt, coldMaster]);
 
   const calcClickPower = useCallback(() => {
     let bonus = 1, pct = 0;
@@ -768,10 +774,21 @@ export default function App() {
   }, [gardenState]);
 
   // ── Merge handlers ──
+  const getGiftPlaceCost = useCallback(() => {
+    // Gift placement costs 2% of current reads (min 10, scales with economy)
+    return Math.max(10, Math.floor(readsRef.current * 0.02));
+  }, []);
+
   const handlePlaceGift = useCallback((slotIndex) => {
+    const cost = getGiftPlaceCost();
+    if (readsRef.current < cost) {
+      addToast(`💸 需要 ${fmt(cost)} 已讀來放置禮物`);
+      return;
+    }
     const result = placeGift(mergeState, slotIndex);
     if (!result) return;
     setMergeState(result.newState);
+    setReads(r => r - cost);
   }, [mergeState]);
 
   const handleMergeGifts = useCallback((srcIdx, tgtIdx) => {
@@ -1304,6 +1321,7 @@ export default function App() {
             mergeState={mergeState}
             reads={reads}
             onPlaceGift={handlePlaceGift}
+            giftPlaceCost={getGiftPlaceCost()}
             onMergeGifts={handleMergeGifts}
             onMoveGift={handleMoveGift}
             onExpandGrid={handleExpandGrid}

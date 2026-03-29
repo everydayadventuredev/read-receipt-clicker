@@ -6,7 +6,7 @@ import GameIcon, { getGiftIcon } from './GameIcon.jsx';
 /**
  * App-icon style merge cell — rounded square with shadow like iOS icons.
  */
-function MergeCell({ item, index, gridSize, selected, selectedTier, onSelect, pendingGifts, onPlace }) {
+function MergeCell({ item, index, gridSize, selected, selectedTier, onSelect, pendingGifts, onPlace, placeCost, reads }) {
   const isLocked = index >= gridSize;
 
   const iconBase = {
@@ -58,7 +58,11 @@ function MergeCell({ item, index, gridSize, selected, selectedTier, onSelect, pe
       >
         {canPlace && <>
           <span style={{ fontSize: 20, opacity: 0.5 }}>📦</span>
-          <span style={{ fontSize: 9, color: '#b45309', fontWeight: 600, marginTop: 2 }}>放置</span>
+          <span style={{
+            fontSize: 9, fontWeight: 700, marginTop: 2,
+            color: reads >= (placeCost ?? 0) ? '#b45309' : '#ef4444',
+            fontFamily: "'JetBrains Mono',monospace",
+          }}>{fmt(placeCost ?? 0)}</span>
         </>}
       </button>
     );
@@ -193,7 +197,7 @@ function MergeBuffBar({ activeBuffs }) {
 /**
  * MergeGame — App Store icon grid style.
  */
-export default function MergeGame({ mergeState, parCount, reads, onPlace, onMerge, onMove, onExpand }) {
+export default function MergeGame({ mergeState, parCount, reads, onPlace, placeCost, onMerge, onMove, onExpand }) {
   const [selected, setSelected] = useState(null);
   const [lastEvent, setLastEvent] = useState(null);
   const eventTimer = useRef(null);
@@ -350,6 +354,8 @@ export default function MergeGame({ mergeState, parCount, reads, onPlace, onMerg
             onSelect={handleSelect}
             pendingGifts={pendingGifts}
             onPlace={onPlace}
+            placeCost={placeCost}
+            reads={reads}
           />
         ))}
       </div>

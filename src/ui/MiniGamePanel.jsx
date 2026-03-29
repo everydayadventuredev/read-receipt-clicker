@@ -29,6 +29,7 @@ export default function MiniGamePanel({
   onClearWilted,
   // Merge props
   mergeState,
+  giftPlaceCost,
   onPlaceGift,
   onMergeGifts,
   onMoveGift,
@@ -137,6 +138,7 @@ export default function MiniGamePanel({
             parCount={owned.par ?? 0}
             reads={reads}
             onPlace={onPlaceGift}
+            placeCost={giftPlaceCost}
             onMerge={onMergeGifts}
             onMove={onMoveGift}
             onExpand={onExpandGrid}
