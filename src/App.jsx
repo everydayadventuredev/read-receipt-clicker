@@ -1023,71 +1023,131 @@ export default function App() {
       {/* ── TWO-COLUMN LAYOUT ── */}
       <div className="game-layout" style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', minHeight: 0 }}>
 
-        {/* LEFT — Counter + Guilt + Click (3 core blocks only) */}
+        {/* LEFT — Phone-style container */}
         <div className="section-hero" style={{
           display: 'flex', flexDirection: 'column', alignItems: 'center',
-          justifyContent: 'flex-start',
-          padding: '16px 14px 12px',
+          justifyContent: 'center',
+          padding: '12px',
           position: 'relative', flexShrink: 0, overflow: 'hidden',
         }}>
-          <CounterBanner />
-          {/* Hero counter — clickable! Tapping the number = click */}
-          {(() => {
-            const counterColor = reads >= 1e12 ? '#7c3aed'
-              : reads >= 1e9 ? '#b45309'
-              : reads >= 1e6 ? '#4f46e5'
-              : '#1e293b';
-            const counterGlow = reads >= 1e9
-              ? `0 0 30px ${counterColor}22, 0 0 60px ${counterColor}11`
-              : 'none';
-            return (
-              <button
-                onClick={handleClick}
-                style={{
-                  fontSize: 80, fontWeight: 900,
-                  fontFamily: "'Space Grotesk','JetBrains Mono',monospace",
-                  color: counterColor,
-                  animation: popAnim ? 'pn .18s ease-out' : 'none',
-                  letterSpacing: -4, lineHeight: 1,
-                  marginBottom: 2,
-                  textShadow: counterGlow,
-                  transition: 'color .5s, text-shadow .5s',
-                  background: 'none', border: 'none', cursor: 'pointer',
-                  padding: '8px 16px', borderRadius: 12,
-                }}
-              >
-                {fmt(reads)}
-              </button>
-            );
-          })()}
-
-          {/* CPS subtitle */}
+          {/* Phone frame */}
           <div style={{
-            fontSize: prodPerSec >= 1e6 ? 22 : 18,
-            color: prodPerSec >= 1e6 ? '#b45309' : '#94a3b8',
-            fontFamily: "'JetBrains Mono',monospace",
-            fontWeight: prodPerSec >= 1e6 ? 700 : 400,
-            marginBottom: 6, display: 'flex', alignItems: 'center', gap: 6,
-            transition: 'all .3s',
+            width: '100%', maxWidth: 340, flex: 1,
+            display: 'flex', flexDirection: 'column',
+            borderRadius: 28,
+            border: '3px solid #1e293b',
+            background: '#fff',
+            boxShadow: '0 8px 40px rgba(0,0,0,.12), inset 0 0 0 1px rgba(255,255,255,.8)',
+            overflow: 'hidden',
+            position: 'relative',
           }}>
-            <CheckIcon size={13} color={prodPerSec >= 1e6 ? '#b45309' : '#94a3b8'} />
-            {prodPerSec > 0 ? `${fmt(prodPerSec)}/秒` : '點擊開始已讀'}
-          </div>
-
-          {/* Compact stats — key info only */}
-          {allTime > 0 && (
+            {/* Phone notch */}
             <div style={{
-              display: 'flex', gap: 8, marginBottom: 8,
-              fontSize: 13, color: '#94a3b8',
-              fontFamily: "'JetBrains Mono',monospace",
+              position: 'absolute', top: 0, left: '50%', transform: 'translateX(-50%)',
+              width: 80, height: 22, background: '#1e293b',
+              borderRadius: '0 0 14px 14px', zIndex: 10,
             }}>
-              <span>生涯 {fmt(allTime)}</span>
-              <span>·</span>
-              <span>大師 {Object.values(owned).reduce((s, v) => s + v, 0)}</span>
-              <span>·</span>
-              <span>升級 {boughtUpgrades.size}/{UPGRADES.length}</span>
+              <div style={{
+                width: 8, height: 8, borderRadius: '50%',
+                background: '#374151', border: '1.5px solid #4b5563',
+                position: 'absolute', right: 14, top: 6,
+              }} />
             </div>
-          )}
+
+            {/* Status bar */}
+            <div style={{
+              padding: '6px 16px', paddingTop: 10,
+              display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+              fontSize: 10, color: '#64748b', fontWeight: 600,
+              fontFamily: "'JetBrains Mono',monospace",
+              background: 'rgba(248,250,252,.95)',
+              flexShrink: 0,
+            }}>
+              <span>{new Date().getHours()}:{String(new Date().getMinutes()).padStart(2, '0')}</span>
+              <span style={{ display: 'flex', gap: 4, alignItems: 'center' }}>
+                <span style={{ fontSize: 9 }}>📶</span>
+                <span style={{ fontSize: 9 }}>🔋</span>
+              </span>
+            </div>
+
+            {/* App header — 已讀收件匣 */}
+            <div onClick={handleClick} style={{
+              background: 'linear-gradient(135deg, #0d9488, #14b8a6)',
+              padding: '10px 14px',
+              display: 'flex', alignItems: 'center', gap: 8,
+              cursor: 'pointer', flexShrink: 0,
+            }}>
+              <div style={{
+                width: 32, height: 32, borderRadius: '50%',
+                background: 'rgba(255,255,255,.2)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+              }}>
+                <span style={{ fontSize: 14, color: '#fff' }}>●</span>
+              </div>
+              <div>
+                <div style={{ fontSize: 14, fontWeight: 700, color: '#fff' }}>已讀收件匣</div>
+                <div style={{ fontSize: 10, color: 'rgba(255,255,255,.7)' }}>
+                  {prodPerSec > 0 ? `${fmt(prodPerSec)}/秒` : '對方正在輸入...'}
+                </div>
+              </div>
+              <div style={{ flex: 1 }} />
+              {unlockedAchievements.length > 0 && (
+                <div style={{
+                  background: '#ef4444', color: '#fff',
+                  fontSize: 10, fontWeight: 800, minWidth: 18, height: 18,
+                  borderRadius: 9, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  padding: '0 4px',
+                }}>{unlockedAchievements.length}</div>
+              )}
+            </div>
+
+            {/* Counter — center of phone screen, clickable */}
+            <button
+              onClick={handleClick}
+              style={{
+                padding: '16px 0', display: 'flex', flexDirection: 'column',
+                alignItems: 'center', justifyContent: 'center',
+                background: 'none', border: 'none', cursor: 'pointer',
+                flexShrink: 0,
+              }}
+            >
+              {(() => {
+                const counterColor = reads >= 1e12 ? '#7c3aed'
+                  : reads >= 1e9 ? '#b45309'
+                  : reads >= 1e6 ? '#4f46e5'
+                  : '#1e293b';
+                const counterGlow = reads >= 1e9
+                  ? `0 0 30px ${counterColor}22, 0 0 60px ${counterColor}11`
+                  : 'none';
+                return (
+                  <span style={{
+                    fontSize: 64, fontWeight: 900,
+                    fontFamily: "'Space Grotesk','JetBrains Mono',monospace",
+                    color: counterColor,
+                    animation: popAnim ? 'pn .18s ease-out' : 'none',
+                    letterSpacing: -3, lineHeight: 1,
+                    textShadow: counterGlow,
+                    transition: 'color .5s, text-shadow .5s',
+                  }}>
+                    {fmt(reads)}
+                  </span>
+                );
+              })()}
+              <span style={{
+                fontSize: 14, color: '#94a3b8', marginTop: 4,
+                fontFamily: "'JetBrains Mono',monospace",
+              }}>
+                <CheckIcon size={11} color="#94a3b8" /> {prodPerSec > 0 ? `${fmt(prodPerSec)}/秒` : '點擊開始已讀'}
+              </span>
+              {allTime > 0 && (
+                <span style={{
+                  fontSize: 10, color: '#cbd5e1', marginTop: 2,
+                  fontFamily: "'JetBrains Mono',monospace",
+                }}>
+                  生涯 {fmt(allTime)} · 大師 {Object.values(owned).reduce((s, v) => s + v, 0)} · 升級 {boughtUpgrades.size}/{UPGRADES.length}
+                </span>
+              )}
+            </button>
 
           {/* Guilt indicator — always visible, between CPS and ClickArea */}
           <div style={{
@@ -1182,19 +1242,31 @@ export default function App() {
             )}
           </div>
 
-          {/* ClickArea — the primary interaction, fills remaining space */}
-          <div style={{ width: '100%', flex: 1, display: 'flex', justifyContent: 'center' }}>
-            <ClickArea
-              message={message}
-              isRead={isRead}
-              isFirstClick={showHint && !started}
-              popAnim={popAnim}
-              recentMessages={recentMsgs}
-              onClick={handleClick}
-              guilt={guilt}
-              guiltLevel={guiltLevel}
-            />
-          </div>
+            {/* ClickArea — chat messages inside phone */}
+            <div style={{ flex: 1, display: 'flex', overflow: 'hidden', minHeight: 0 }}>
+              <ClickArea
+                message={message}
+                isRead={isRead}
+                isFirstClick={showHint && !started}
+                popAnim={popAnim}
+                recentMessages={recentMsgs}
+                onClick={handleClick}
+                guilt={guilt}
+                guiltLevel={guiltLevel}
+              />
+            </div>
+
+            {/* Phone home indicator */}
+            <div style={{
+              padding: '6px 0', display: 'flex', justifyContent: 'center',
+              flexShrink: 0, background: '#fff',
+            }}>
+              <div style={{
+                width: 100, height: 4, borderRadius: 2,
+                background: '#1e293b', opacity: 0.2,
+              }} />
+            </div>
+          </div>{/* end phone frame */}
         </div>
 
         {/* MIDDLE — Ticker + Mini-Game */}
