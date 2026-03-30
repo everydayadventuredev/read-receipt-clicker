@@ -22,7 +22,30 @@ export const MINIGAME_REGISTRY = [
     emoji: '📈',
     unlockCount: 5,
   },
-  // Future mini-games:
+  {
+    buildingId: 'inf',
+    name: '打字衝刺',
+    emoji: '⌨️',
+    unlockCount: 10,
+  },
+  {
+    buildingId: 'hkr',
+    name: '駭客終端',
+    emoji: '💻',
+    unlockCount: 5,
+  },
+  {
+    buildingId: 'alien',
+    name: '宇宙郵局',
+    emoji: '📬',
+    unlockCount: 5,
+  },
+  {
+    buildingId: 'quantum',
+    name: '量子實驗室',
+    emoji: '⚛️',
+    unlockCount: 1,
+  },
 ];
 
 /**

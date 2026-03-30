@@ -3,7 +3,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { BUILDINGS, UNLOCK_THRESHOLDS } from './game/buildings.js';
 import { UPGRADES } from './game/upgrades.js';
 import { MILESTONES } from './game/milestones.js';
-import { ACHIEVEMENTS } from './game/achievements.js';
+import { ACHIEVEMENTS, getAchievementBonus } from './game/achievements.js';
 import { GOLDEN_COOKIES } from './game/events.js';
 import { MSG_GENERIC } from './game/messages.js';
 import { PRESTIGE_UPGRADES } from './game/prestige.js';
@@ -26,6 +26,7 @@ import ReadStorm from './ui/ReadStorm.jsx';
 import ReplyTrap from './ui/ReplyTrap.jsx';
 import Ticker from './ui/Ticker.jsx';
 import MiniGamePanel from './ui/MiniGamePanel.jsx';
+import HeroBackground from './ui/HeroBackground.jsx';
 import { StatsPanel, LogPanel, AchievementBadges } from './ui/Panels.jsx';
 import { HeaderBanner, TickerBanner, CounterBanner, ChatBanner, UpgradeBanner } from './ui/SectionBanners.jsx';
 
@@ -101,7 +102,19 @@ export default function App() {
   const [offlineBanner, setOfflineBanner] = useState(null);
   const [prodPerSec, setProdPerSec] = useState(0);
   const [showPrestigeShop, setShowPrestigeShop] = useState(false);
-  const [marketState,      setMarketState]      = useState(() => init.marketState ?? createMarketState());
+  const [marketState,      setMarketState]      = useState(() => {
+    const def = createMarketState();
+    const saved = init.marketState;
+    if (!saved) return def;
+    return {
+      prices: saved.prices ?? def.prices,
+      holdings: saved.holdings ?? def.holdings,
+      costBasis: saved.costBasis ?? def.costBasis,
+      history: saved.history ?? def.history,
+      modes: saved.modes ?? def.modes,
+      modeTimers: saved.modeTimers ?? def.modeTimers,
+    };
+  });
   const [gardenState,      setGardenState]      = useState(() => init.gardenState ?? createGardenState());
   const [mergeState,       setMergeState]       = useState(() => init.mergeState ?? createMergeState());
   const [activeMiniGame,   setActiveMiniGame]   = useState(null);
@@ -180,10 +193,12 @@ export default function App() {
     const gardenSeries = getSeriesBonusMult(gardenState);
     const mergeBuff = getMergeBuffMult(mergeState);
     const mergePerm = getMergePermMult(mergeState);
-    const total = p * prestigeMult * prestigeGlobalMult * chainGlobalBuff * tempMult * coldMasterMult * guiltPenalty * gardenBuff * gardenSeries * mergeBuff * mergePerm;
+    // Achievement permanent bonus (survives prestige)
+    const achievementMult = 1 + getAchievementBonus(unlockedAchievements);
+    const total = p * prestigeMult * prestigeGlobalMult * chainGlobalBuff * tempMult * coldMasterMult * guiltPenalty * gardenBuff * gardenSeries * mergeBuff * mergePerm * achievementMult;
     setProdPerSec(total);
     psRef.current = total;
-  }, [owned, boughtUpgrades, prestigeMult, prestigeGlobalMult, chainGlobalBuff, tempMult, boughtPrestige, eventChainBuffs, gardenState, mergeState, guilt, coldMaster]);
+  }, [owned, boughtUpgrades, prestigeMult, prestigeGlobalMult, chainGlobalBuff, tempMult, boughtPrestige, eventChainBuffs, gardenState, mergeState, guilt, coldMaster, unlockedAchievements]);
 
   const calcClickPower = useCallback(() => {
     let bonus = 1, pct = 0;
@@ -485,6 +500,13 @@ export default function App() {
     return () => clearTimeout(t);
   }, []);
 
+  const handleMiniGameEarn = useCallback((earned) => {
+    if (earned > 0) {
+      setReads(r => r + earned);
+      setAllTime(a => a + earned);
+    }
+  }, []);
+
   const handleStormComplete = useCallback((earned) => {
     setStormActive(false);
     setStormCount(c => c + 1);
@@ -729,7 +751,7 @@ export default function App() {
     if (bought > 0) {
       setMarketState(state);
       setReads(r => r - totalCost);
-      addToast(`📈 一口氣買入 ${bought} 股！`);
+      addToast(`📈 一口氣買入 ${bought} 股，花費 ${fmt(totalCost)}`);
     }
   }, [marketState]);
 
@@ -886,8 +908,8 @@ export default function App() {
         button:active { transform:scale(.96)!important }
         @media(min-width:768px) {
           .game-layout { flex-direction:row!important }
-          .section-hero   { width:25%!important; border-right:2px solid #e2e8f0 }
-          .section-middle { width:45%!important; border-right:2px solid #e2e8f0 }
+          .section-hero   { width:30%!important; border-right:2px solid #e2e8f0 }
+          .section-middle { width:40%!important; border-right:2px solid #e2e8f0 }
           .section-store  { width:30%!important }
         }
       `}</style>
@@ -987,53 +1009,7 @@ export default function App() {
       {/* Golden Cookie */}
       <GoldenCookie gc={goldenCookie} pos={gcPos} onClick={handleGoldenCookie} />
 
-      {/* Combo multiplier bar — shows all active boosts */}
-      {(() => {
-        const gardenBuff = getGardenBuffMult(gardenState);
-        const gardenExBuff = getGardenExBuffMult(gardenState);
-        const mergeBuff = getMergeBuffMult(mergeState);
-        const boosts = [];
-        if (tempMult > 1) boosts.push({ icon: '🔥', label: `×${tempMult}`, color: '#6366f1', sub: tempMultExpiry > 0 ? `${Math.max(0, Math.ceil((tempMultExpiry - Date.now()) / 1000))}s` : '' });
-        if (gardenBuff > 1) boosts.push({ icon: '🌸', label: `×${gardenBuff.toFixed(1)}`, color: '#22c55e', sub: '全局' });
-        if (gardenExBuff > 1) boosts.push({ icon: '💔', label: `×${gardenExBuff.toFixed(1)}`, color: '#f43f5e', sub: '前任' });
-        if (mergeBuff > 1) boosts.push({ icon: '🎁', label: `×${mergeBuff.toFixed(1)}`, color: '#f59e0b', sub: '合成' });
-        if (coldMaster) boosts.push({ icon: '🧊', label: '×1.5', color: '#06b6d4', sub: '冷漠' });
-        const totalCombo = tempMult * gardenBuff * mergeBuff * (coldMaster ? 1.5 : 1);
-        if (boosts.length === 0) return null;
-        return (
-          <div style={{
-            position: 'fixed', top: 56, left: '50%', transform: 'translateX(-50%)',
-            display: 'flex', alignItems: 'center', gap: 6,
-            background: 'rgba(255,255,255,.92)', backdropFilter: 'blur(12px)',
-            border: '1px solid rgba(99,102,241,.15)',
-            borderRadius: 14, padding: '5px 12px', zIndex: 200,
-            boxShadow: '0 4px 20px rgba(0,0,0,.06)',
-          }}>
-            {boosts.map((b, i) => (
-              <div key={i} style={{
-                display: 'flex', alignItems: 'center', gap: 3,
-                padding: '2px 8px', borderRadius: 8,
-                background: `${b.color}10`, border: `1px solid ${b.color}20`,
-              }}>
-                <span style={{ fontSize: 12 }}>{b.icon}</span>
-                <span style={{ fontSize: 12, fontWeight: 700, color: b.color, fontFamily: "'JetBrains Mono',monospace" }}>{b.label}</span>
-                {b.sub && <span style={{ fontSize: 9, color: '#94a3b8' }}>{b.sub}</span>}
-              </div>
-            ))}
-            {boosts.length >= 2 && (
-              <div style={{
-                padding: '2px 8px', borderRadius: 8,
-                background: 'linear-gradient(135deg, rgba(99,102,241,.1), rgba(245,158,11,.1))',
-                border: '1px solid rgba(99,102,241,.2)',
-              }}>
-                <span style={{ fontSize: 12, fontWeight: 800, color: '#4338ca', fontFamily: "'JetBrains Mono',monospace" }}>
-                  = ×{totalCombo.toFixed(1)}
-                </span>
-              </div>
-            )}
-          </div>
-        );
-      })()}
+      {/* Combo multiplier chips — moved to left panel */}
 
       {/* Header and Ticker moved into columns per Figma layout */}
 
@@ -1047,6 +1023,8 @@ export default function App() {
           padding: '12px',
           position: 'relative', flexShrink: 0, overflow: 'hidden',
         }}>
+          {/* Dynamic progression background — changes with building tiers */}
+          <HeroBackground owned={owned} allTime={allTime} />
           {/* Phone frame */}
           <div style={{
             width: '100%', maxWidth: 340, flex: 1,
@@ -1058,6 +1036,11 @@ export default function App() {
             overflow: 'hidden',
             position: 'relative',
           }}>
+            {/* Phone wallpaper — subtle teal gradient */}
+            <div style={{
+              position: 'absolute', inset: 0, pointerEvents: 'none', zIndex: 0,
+              background: 'linear-gradient(180deg, rgba(13,148,136,.03) 0%, transparent 40%, rgba(99,102,241,.02) 100%)',
+            }} />
             {/* Phone notch */}
             <div style={{
               position: 'absolute', top: 0, left: '50%', transform: 'translateX(-50%)',
@@ -1168,13 +1151,58 @@ export default function App() {
               </span>
               {allTime > 0 && (
                 <span style={{
-                  fontSize: 10, color: '#cbd5e1', marginTop: 2,
+                  fontSize: 11, color: '#94a3b8', marginTop: 2,
                   fontFamily: "'JetBrains Mono',monospace",
                 }}>
                   生涯 {fmt(allTime)} · 大師 {Object.values(owned).reduce((s, v) => s + v, 0)} · 升級 {boughtUpgrades.size}/{UPGRADES.length}
                 </span>
               )}
             </button>
+
+          {/* Combo boost chips — inside phone, near numbers */}
+          {(() => {
+            const gardenBuff = getGardenBuffMult(gardenState);
+            const gardenExBuff = getGardenExBuffMult(gardenState);
+            const mergeBuff = getMergeBuffMult(mergeState);
+            const boosts = [];
+            if (tempMult > 1) boosts.push({ icon: '🔥', label: `×${tempMult}`, color: '#6366f1', sub: tempMultExpiry > 0 ? `${Math.max(0, Math.ceil((tempMultExpiry - Date.now()) / 1000))}s` : '', title: '黃金訊息：全局產能加乘（限時）' });
+            if (gardenBuff > 1) boosts.push({ icon: '🌸', label: `×${gardenBuff.toFixed(1)}`, color: '#22c55e', sub: '全局', title: '花園 buff：採收花朵後獲得全局加成' });
+            if (gardenExBuff > 1) boosts.push({ icon: '💔', label: `×${gardenExBuff.toFixed(1)}`, color: '#f43f5e', sub: '前任', title: '前任 buff：花朵加成前任產能' });
+            if (mergeBuff > 1) boosts.push({ icon: '🎁', label: `×${mergeBuff.toFixed(1)}`, color: '#f59e0b', sub: '合成', title: '合成 buff：完成伴手禮合成後的臨時加成' });
+            if (coldMaster) boosts.push({ icon: '🧊', label: '×1.5', color: '#06b6d4', sub: '冷漠', title: '冷漠大師：已讀不回的修行，永久×1.5 產能' });
+            if (boosts.length === 0) return null;
+            const totalCombo = tempMult * gardenBuff * mergeBuff * (coldMaster ? 1.5 : 1);
+            return (
+              <div style={{
+                display: 'flex', flexWrap: 'wrap', justifyContent: 'center',
+                gap: 4, padding: '4px 10px', marginBottom: 4,
+              }}>
+                {boosts.map((b, i) => (
+                  <div key={i} title={b.title} style={{
+                    display: 'flex', alignItems: 'center', gap: 2,
+                    padding: '2px 7px', borderRadius: 8,
+                    background: `${b.color}10`, border: `1px solid ${b.color}20`,
+                    cursor: 'help',
+                  }}>
+                    <span style={{ fontSize: 10 }}>{b.icon}</span>
+                    <span style={{ fontSize: 11, fontWeight: 700, color: b.color, fontFamily: "'JetBrains Mono',monospace" }}>{b.label}</span>
+                    {b.sub && <span style={{ fontSize: 8, color: '#94a3b8' }}>{b.sub}</span>}
+                  </div>
+                ))}
+                {boosts.length >= 2 && (
+                  <div style={{
+                    padding: '2px 7px', borderRadius: 8,
+                    background: 'linear-gradient(135deg, rgba(99,102,241,.08), rgba(245,158,11,.08))',
+                    border: '1px solid rgba(99,102,241,.15)',
+                  }}>
+                    <span style={{ fontSize: 11, fontWeight: 800, color: '#4338ca', fontFamily: "'JetBrains Mono',monospace" }}>
+                      = ×{totalCombo.toFixed(1)}
+                    </span>
+                  </div>
+                )}
+              </div>
+            );
+          })()}
 
           {/* Guilt indicator — always visible, between CPS and ClickArea */}
           <div style={{
@@ -1328,6 +1356,7 @@ export default function App() {
             onMergeGifts={handleMergeGifts}
             onMoveGift={handleMoveGift}
             onExpandGrid={handleExpandGrid}
+            onMiniGameEarn={handleMiniGameEarn}
           />
 
         </div>
@@ -1400,7 +1429,7 @@ export default function App() {
             maxHeight: '25%', overflowY: 'auto', flexShrink: 0,
             borderBottom: '2px solid #e2e8f0',
             background: 'rgba(99,102,241,.02)',
-            position: 'relative', overflow: 'hidden',
+            position: 'relative', overflowX: 'hidden',
           }}>
             <UpgradeBanner />
             {upgradeStates.length > 0 ? (
@@ -1485,10 +1514,7 @@ export default function App() {
       <ReadStorm
         active={stormActive}
         perSecond={prodPerSec}
-        onComplete={(earned) => {
-          handleStormComplete(earned);
-          // Check if it was a perfect (ReadStorm internally tracks this via its own callback)
-        }}
+        onComplete={handleStormComplete}
         onPerfect={handleStormPerfect}
       />
 

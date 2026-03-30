@@ -5,21 +5,21 @@ import { BUILDINGS } from './buildings.js';
 
 export const ACHIEVEMENTS = [
   // ══════════════════════════════════════════════
-  // ── AllTime Milestones ──
+  // ── AllTime Milestones (bonus = permanent prod %) ──
   // ══════════════════════════════════════════════
   { id: 'a1',  name: '初次已讀',       desc: '已讀第1則訊息',             icon: '🐣', req: (at) => at >= 1 },
-  { id: 'a2',  name: '百則大師',       desc: '累計已讀100則',             icon: '💯', req: (at) => at >= 100 },
-  { id: 'a3',  name: '千則俱樂部',     desc: '累計已讀1,000則',           icon: '🏅', req: (at) => at >= 1000 },
-  { id: 'a4',  name: '萬則傳說',       desc: '累計已讀10,000則',          icon: '🌟', req: (at) => at >= 10000 },
-  { id: 'a5',  name: '十萬已讀王',     desc: '累計已讀100,000則',         icon: '👑', req: (at) => at >= 100000 },
-  { id: 'a6',  name: '百萬已讀神',     desc: '累計已讀1,000,000則',       icon: '🔱', req: (at) => at >= 1000000 },
-  { id: 'a14', name: '千萬已讀仙',     desc: '累計已讀10,000,000則',      icon: '🏆', req: (at) => at >= 10000000 },
-  { id: 'at1', name: '五千萬已讀帝',   desc: '累計已讀50,000,000則',      icon: '⭐', req: (at) => at >= 50000000 },
-  { id: 'at2', name: '億則超越者',     desc: '累計已讀100,000,000則',     icon: '🌠', req: (at) => at >= 100000000 },
-  { id: 'at3', name: '五億已讀魔王',   desc: '累計已讀500,000,000則',     icon: '😈', req: (at) => at >= 500000000 },
-  { id: 'at4', name: '十億已讀真神',   desc: '累計已讀1,000,000,000則',   icon: '🛐', req: (at) => at >= 1000000000 },
-  { id: 'at5', name: '百億虛空主宰',   desc: '累計已讀10,000,000,000則',  icon: '🌑', req: (at) => at >= 10000000000 },
-  { id: 'at6', name: '千億寂滅者',     desc: '累計已讀100,000,000,000則', icon: '💀', req: (at) => at >= 100000000000 },
+  { id: 'a2',  name: '百則大師',       desc: '累計已讀100則',             icon: '💯', bonus: 0.01, req: (at) => at >= 100 },
+  { id: 'a3',  name: '千則俱樂部',     desc: '累計已讀1,000則',           icon: '🏅', bonus: 0.02, req: (at) => at >= 1000 },
+  { id: 'a4',  name: '萬則傳說',       desc: '累計已讀10,000則',          icon: '🌟', bonus: 0.03, req: (at) => at >= 10000 },
+  { id: 'a5',  name: '十萬已讀王',     desc: '累計已讀100,000則',         icon: '👑', bonus: 0.04, req: (at) => at >= 100000 },
+  { id: 'a6',  name: '百萬已讀神',     desc: '累計已讀1,000,000則',       icon: '🔱', bonus: 0.05, req: (at) => at >= 1000000 },
+  { id: 'a14', name: '千萬已讀仙',     desc: '累計已讀10,000,000則',      icon: '🏆', bonus: 0.06, req: (at) => at >= 10000000 },
+  { id: 'at1', name: '五千萬已讀帝',   desc: '累計已讀50,000,000則',      icon: '⭐', bonus: 0.08, req: (at) => at >= 50000000 },
+  { id: 'at2', name: '億則超越者',     desc: '累計已讀100,000,000則',     icon: '🌠', bonus: 0.10, req: (at) => at >= 100000000 },
+  { id: 'at3', name: '五億已讀魔王',   desc: '累計已讀500,000,000則',     icon: '😈', bonus: 0.12, req: (at) => at >= 500000000 },
+  { id: 'at4', name: '十億已讀真神',   desc: '累計已讀1,000,000,000則',   icon: '🛐', bonus: 0.15, req: (at) => at >= 1000000000 },
+  { id: 'at5', name: '百億虛空主宰',   desc: '累計已讀10,000,000,000則',  icon: '🌑', bonus: 0.18, req: (at) => at >= 10000000000 },
+  { id: 'at6', name: '千億寂滅者',     desc: '累計已讀100,000,000,000則', icon: '💀', bonus: 0.20, req: (at) => at >= 100000000000 },
 
   // ══════════════════════════════════════════════
   // ── Building Collection: 前任 (ex) ──
@@ -100,8 +100,50 @@ export const ACHIEVEMENTS = [
   { id: 'time50',  name: '因果律崩壞',      desc: '僱用50個時間迴圈',       icon: '🌋', req: (at, ow) => ow.time >= 50 },
   { id: 'time100', name: '已讀先於存在',    desc: '僱用100個時間迴圈',      icon: '♾️', req: (at, ow) => ow.time >= 100 },
 
+  // ── Building Collection: 網紅 (inf) ──
+  { id: 'inf1',   name: '第一個粉絲',       desc: '僱用1個網紅',            icon: '📸', req: (at, ow) => (ow.inf ?? 0) >= 1 },
+  { id: 'inf10',  name: '流量密碼',         desc: '僱用10個網紅',           icon: '📲', req: (at, ow) => (ow.inf ?? 0) >= 10 },
+  { id: 'inf25',  name: '限動大軍',         desc: '僱用25個網紅',           icon: '📱', req: (at, ow) => (ow.inf ?? 0) >= 25 },
+  { id: 'inf50',  name: '已讀KOL帝國',      desc: '僱用50個網紅',           icon: '🌟', req: (at, ow) => (ow.inf ?? 0) >= 50 },
+  { id: 'inf100', name: '網紅黑洞',         desc: '僱用100個網紅',          icon: '🕳️', req: (at, ow) => (ow.inf ?? 0) >= 100, bonus: 0.02 },
+
+  // ── Building Collection: 前輩 (sen) ──
+  { id: 'sen1',   name: '聽我說',           desc: '僱用1個前輩',            icon: '🧓', req: (at, ow) => (ow.sen ?? 0) >= 1 },
+  { id: 'sen10',  name: '職場傳承',         desc: '僱用10個前輩',           icon: '🎖️', req: (at, ow) => (ow.sen ?? 0) >= 10 },
+  { id: 'sen25',  name: '已讀文化代代傳',   desc: '僱用25個前輩',           icon: '📜', req: (at, ow) => (ow.sen ?? 0) >= 25 },
+  { id: 'sen50',  name: '傳說前輩聯盟',     desc: '僱用50個前輩',           icon: '🏅', req: (at, ow) => (ow.sen ?? 0) >= 50 },
+  { id: 'sen100', name: '已讀學院派',       desc: '僱用100個前輩',          icon: '🎓', req: (at, ow) => (ow.sen ?? 0) >= 100, bonus: 0.02 },
+
+  // ── Building Collection: 記者 (rep) ──
+  { id: 'rep1',   name: '線報已收',         desc: '僱用1個記者',            icon: '📰', req: (at, ow) => (ow.rep ?? 0) >= 1 },
+  { id: 'rep10',  name: '媒體大亨',         desc: '僱用10個記者',           icon: '🗞️', req: (at, ow) => (ow.rep ?? 0) >= 10 },
+  { id: 'rep25',  name: '已讀無所遁形',     desc: '僱用25個記者',           icon: '🔍', req: (at, ow) => (ow.rep ?? 0) >= 25 },
+  { id: 'rep50',  name: '第四權已讀化',     desc: '僱用50個記者',           icon: '📡', req: (at, ow) => (ow.rep ?? 0) >= 50 },
+  { id: 'rep100', name: '已讀新聞帝國',     desc: '僱用100個記者',          icon: '🏢', req: (at, ow) => (ow.rep ?? 0) >= 100, bonus: 0.02 },
+
+  // ── Building Collection: 駭客 (hkr) ──
+  { id: 'hkr1',   name: '後門開啟',         desc: '僱用1個駭客',            icon: '💻', req: (at, ow) => (ow.hkr ?? 0) >= 1 },
+  { id: 'hkr10',  name: '黑帽已讀',         desc: '僱用10個駭客',           icon: '🎩', req: (at, ow) => (ow.hkr ?? 0) >= 10 },
+  { id: 'hkr25',  name: '已讀基礎設施入侵', desc: '僱用25個駭客',           icon: '🔓', req: (at, ow) => (ow.hkr ?? 0) >= 25 },
+  { id: 'hkr50',  name: '零日已讀漏洞',     desc: '僱用50個駭客',           icon: '🛡️', req: (at, ow) => (ow.hkr ?? 0) >= 50 },
+  { id: 'hkr100', name: '已讀網域霸主',     desc: '僱用100個駭客',          icon: '👑', req: (at, ow) => (ow.hkr ?? 0) >= 100, bonus: 0.03 },
+
+  // ── Building Collection: 平行自我 (par2) ──
+  { id: 'par21',   name: '鏡中影',          desc: '僱用1個平行自我',        icon: '🪞', req: (at, ow) => (ow.par2 ?? 0) >= 1 },
+  { id: 'par210',  name: '多元自我',         desc: '僱用10個平行自我',       icon: '🔮', req: (at, ow) => (ow.par2 ?? 0) >= 10 },
+  { id: 'par225',  name: '宇宙自我認知',     desc: '僱用25個平行自我',       icon: '🌐', req: (at, ow) => (ow.par2 ?? 0) >= 25 },
+  { id: 'par250',  name: '全宇宙已讀一致',   desc: '僱用50個平行自我',       icon: '✨', req: (at, ow) => (ow.par2 ?? 0) >= 50 },
+  { id: 'par2100', name: '已讀多元宇宙主宰', desc: '僱用100個平行自我',      icon: '♾️', req: (at, ow) => (ow.par2 ?? 0) >= 100, bonus: 0.04 },
+
+  // ── Building Collection: 意識蜂巢 (hive) ──
+  { id: 'hive1',   name: '融入集體',         desc: '僱用1個意識蜂巢',        icon: '🧠', req: (at, ow) => (ow.hive ?? 0) >= 1 },
+  { id: 'hive10',  name: '蜂群思維',         desc: '僱用10個意識蜂巢',       icon: '🐝', req: (at, ow) => (ow.hive ?? 0) >= 10 },
+  { id: 'hive25',  name: '集體意識覺醒',     desc: '僱用25個意識蜂巢',       icon: '🌊', req: (at, ow) => (ow.hive ?? 0) >= 25 },
+  { id: 'hive50',  name: '神經網路已讀',     desc: '僱用50個意識蜂巢',       icon: '⚡', req: (at, ow) => (ow.hive ?? 0) >= 50 },
+  { id: 'hive100', name: '宇宙意識統一已讀', desc: '僱用100個意識蜂巢',      icon: '🌌', req: (at, ow) => (ow.hive ?? 0) >= 100, bonus: 0.05 },
+
   // ── Building Collection: Special ──
-  { id: 'a13', name: '已讀帝國',     desc: '同時擁有所有建築',         icon: '🏰', req: (at, ow) => BUILDINGS.every(b => ow[b.id] > 0) },
+  { id: 'a13', name: '已讀帝國',     desc: '同時擁有所有建築',         icon: '🏰', bonus: 0.05, req: (at, ow) => BUILDINGS.every(b => ow[b.id] > 0) },
 
   // ══════════════════════════════════════════════
   // ── Speed Achievements (prodPerSec) ──
@@ -116,11 +158,11 @@ export const ACHIEVEMENTS = [
   // ══════════════════════════════════════════════
   // ── Prestige Achievements ──
   // ══════════════════════════════════════════════
-  { id: 'a10', name: '已讀不回之神',   desc: '達成首次Inbox Zero',        icon: '🌀', req: (at, ow, pc) => pc >= 1 },
-  { id: 'a11', name: '時空旅人',       desc: '重生3次',                   icon: '⏳', req: (at, ow, pc) => pc >= 3 },
-  { id: 'a20', name: '輪迴大師',       desc: '重生5次',                   icon: '🔄', req: (at, ow, pc) => pc >= 5 },
-  { id: 'a21', name: '超越者',         desc: '重生10次',                  icon: '🚀', req: (at, ow, pc) => pc >= 10 },
-  { id: 'pr1', name: '存在主義危機',   desc: '重生20次',                  icon: '🫠', req: (at, ow, pc) => pc >= 20 },
+  { id: 'a10', name: '已讀不回之神',   desc: '達成首次Inbox Zero',        icon: '🌀', bonus: 0.05, req: (at, ow, pc) => pc >= 1 },
+  { id: 'a11', name: '時空旅人',       desc: '重生3次',                   icon: '⏳', bonus: 0.08, req: (at, ow, pc) => pc >= 3 },
+  { id: 'a20', name: '輪迴大師',       desc: '重生5次',                   icon: '🔄', bonus: 0.10, req: (at, ow, pc) => pc >= 5 },
+  { id: 'a21', name: '超越者',         desc: '重生10次',                  icon: '🚀', bonus: 0.15, req: (at, ow, pc) => pc >= 10 },
+  { id: 'pr1', name: '存在主義危機',   desc: '重生20次',                  icon: '🫠', bonus: 0.20, req: (at, ow, pc) => pc >= 20 },
   { id: 'a22', name: '已讀力收藏家',   desc: '購買5個重生升級',           icon: '🛒', req: (at, ow, pc, ps, ex) => ex.boughtPrestige >= 5 },
 
   // ══════════════════════════════════════════════
@@ -177,3 +219,17 @@ export const ACHIEVEMENTS = [
   { id: 'hm9', name: '植物學博士',       desc: '在花園圖鑑中收集全部20種花', icon: '🎓', hidden: true, req: (at, ow, pc, ps, ex) => (ex.flowersCollected ?? 0) >= 20 },
   { id: 'hm10', name: '什麼都不做',      desc: '開啟遊戲後等待5分鐘不做任何操作', icon: '🧘', hidden: true, req: (at, ow, pc, ps, ex) => (ex.idleMinutes ?? 0) >= 5 },
 ];
+
+/**
+ * Compute the sum of all permanent production bonus % from unlocked achievements.
+ * Returns a multiplier, e.g. 0.15 means +15%.
+ * Apply as: baseProd * (1 + getAchievementBonus(unlockedSet))
+ */
+export function getAchievementBonus(unlockedAchievements) {
+  let total = 0;
+  for (const id of unlockedAchievements) {
+    const a = ACHIEVEMENTS.find(x => x.id === id);
+    if (a?.bonus) total += a.bonus;
+  }
+  return total;
+}

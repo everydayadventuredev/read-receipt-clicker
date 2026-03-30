@@ -56,7 +56,7 @@ export function TickerBanner() {
 export function CounterBanner() {
   return (
     <svg viewBox="0 0 400 300" preserveAspectRatio="xMidYMid slice"
-      style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', opacity: 0.07, pointerEvents: 'none' }}>
+      style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', opacity: 0.22, pointerEvents: 'none' }}>
       {/* Giant phone outline */}
       <rect x={80} y={20} width={240} height={260} rx={16} fill="none" stroke="#6366f1" strokeWidth={3} />
       <rect x={160} y={268} width={80} height={4} rx={2} fill="#6366f1" />
@@ -113,116 +113,384 @@ export function ChatBanner() {
 }
 
 // ══════════════════════════════════════
-// GARDEN — greenhouse with soil rows and sun
+// GARDEN — vibrant farm landscape
 // ══════════════════════════════════════
 export function GardenBanner() {
   return (
     <svg viewBox={`0 0 ${W} 600`} preserveAspectRatio="xMidYMid slice"
-      style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', opacity: 0.07, pointerEvents: 'none' }}>
-      {/* Greenhouse frame */}
-      <rect x={20} y={20} width={W - 40} height={560} rx={8} fill="none" stroke="#22c55e" strokeWidth={2} />
-      {/* Arch roof */}
-      <rect x={20} y={20} width={W - 40} height={40} fill="#22c55e" opacity={0.1} />
-      {/* Soil rows */}
-      {Array.from({ length: 8 }, (_, i) => (
-        <g key={i}>
-          <rect x={40} y={80 + i * 65} width={W - 80} height={8} fill="#8B4513" opacity={0.2} />
-          {/* Small sprouts */}
-          {Array.from({ length: 6 }, (_, j) => (
-            <g key={j}>
-              <rect x={80 + j * 120} y={72 + i * 65} width={2} height={8} fill="#22c55e" opacity={0.3} />
-              <rect x={76 + j * 120} y={68 + i * 65} width={10} height={4} rx={2} fill="#22c55e" opacity={0.2} />
-            </g>
+      style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', opacity: 0.25, pointerEvents: 'none' }}>
+      {/* Sky */}
+      <rect width={W} height={200} fill="#87CEEB" opacity={0.3} />
+      {/* Ground */}
+      <rect y={180} width={W} height={420} fill="#7ec87e" opacity={0.3} />
+      {/* Sun */}
+      <circle cx={680} cy={50} r={30} fill="#FFD93D" opacity={0.4} />
+      {Array.from({ length: 8 }, (_, i) => {
+        const a = (i / 8) * Math.PI * 2;
+        return <line key={`sr${i}`} x1={680 + Math.cos(a) * 35} y1={50 + Math.sin(a) * 35}
+          x2={680 + Math.cos(a) * 50} y2={50 + Math.sin(a) * 50}
+          stroke="#FFD93D" strokeWidth={2.5} opacity={0.3} />;
+      })}
+      {/* Clouds */}
+      {[60, 300, 520].map((cx, i) => (
+        <g key={`cl${i}`}>
+          <rect x={cx} y={30 + i * 25} width={60} height={20} rx={10} fill="#fff" opacity={0.4} />
+          <rect x={cx + 12} y={20 + i * 25} width={36} height={16} rx={8} fill="#fff" opacity={0.35} />
+        </g>
+      ))}
+      {/* Wheat field */}
+      <rect x={30} y={200} width={200} height={100} rx={6} fill="#F4D03F" opacity={0.4} />
+      <rect x={30} y={200} width={200} height={100} rx={6} fill="none" stroke="#D4AC0D" strokeWidth={1.5} opacity={0.3} />
+      {Array.from({ length: 12 }, (_, i) => (
+        <g key={`wh${i}`}>
+          <rect x={42 + i * 16} y={220} width={2} height={22} fill="#B7950B" opacity={0.5} />
+          <circle cx={43 + i * 16} cy={216} r={4} fill="#F9E154" opacity={0.45} />
+        </g>
+      ))}
+      {/* Purple flower field */}
+      <rect x={260} y={200} width={180} height={100} rx={6} fill="#D7BDE2" opacity={0.35} />
+      {Array.from({ length: 15 }, (_, i) => (
+        <circle key={`pf${i}`} cx={278 + (i % 5) * 32} cy={225 + Math.floor(i / 5) * 28}
+          r={5} fill="#8E44AD" opacity={0.4} />
+      ))}
+      {/* Pumpkin patch */}
+      <rect x={480} y={200} width={150} height={100} rx={6} fill="#F5CBA7" opacity={0.35} />
+      {Array.from({ length: 6 }, (_, i) => (
+        <g key={`pk${i}`}>
+          <circle cx={510 + (i % 3) * 40} cy={240 + Math.floor(i / 3) * 35} r={10} fill="#E67E22" opacity={0.4} />
+          <rect x={508 + (i % 3) * 40} y={228 + Math.floor(i / 3) * 35} width={3} height={8} fill="#27AE60" opacity={0.4} />
+        </g>
+      ))}
+      {/* Green rows */}
+      <rect x={30} y={330} width={300} height={80} rx={6} fill="#ABEBC6" opacity={0.35} />
+      {Array.from({ length: 5 }, (_, i) => (
+        <g key={`gr${i}`}>
+          <rect x={40} y={340 + i * 14} width={280} height={3} rx={1} fill="#196F3D" opacity={0.25} />
+          {Array.from({ length: 10 }, (_, j) => (
+            <circle key={j} cx={50 + j * 28} cy={340 + i * 14} r={4} fill="#27AE60" opacity={0.35} />
           ))}
         </g>
       ))}
-      {/* Sun */}
-      <rect x={700} y={30} width={40} height={40} rx={20} fill="#fdcb6e" opacity={0.15} />
-      {/* Sun rays */}
-      {Array.from({ length: 8 }, (_, i) => {
-        const angle = (i / 8) * Math.PI * 2;
-        return <line key={i} x1={720} y1={50} x2={720 + Math.cos(angle) * 40} y2={50 + Math.sin(angle) * 40}
-          stroke="#fdcb6e" strokeWidth={1.5} opacity={0.1} />;
-      })}
-      {/* Water drops */}
-      {Array.from({ length: 15 }, (_, i) => (
-        <rect key={`w${i}`} x={60 + i * 50} y={40 + (i * 37) % 500} width={2} height={5} fill="#60a5fa" opacity={0.15} />
+      {/* Sunflowers */}
+      {Array.from({ length: 8 }, (_, i) => (
+        <g key={`sf${i}`}>
+          <rect x={370 + i * 30} y={345} width={2} height={28} fill="#27AE60" opacity={0.35} />
+          <circle cx={371 + i * 30} cy={340} r={9} fill="#F4D03F" opacity={0.4} />
+          <circle cx={371 + i * 30} cy={340} r={4} fill="#8B6914" opacity={0.35} />
+        </g>
       ))}
+      {/* Fence */}
+      {Array.from({ length: 20 }, (_, i) => (
+        <g key={`fn${i}`}>
+          <rect x={25 + i * 35} y={430} width={4} height={20} fill="#8B6914" opacity={0.35} />
+          {i < 19 && <rect x={25 + i * 35} y={436} width={35} height={2.5} fill="#A67C00" opacity={0.3} />}
+        </g>
+      ))}
+      {/* Trees */}
+      {[60, 180, 350, 500, 650].map((tx, i) => (
+        <g key={`tr${i}`}>
+          <rect x={tx - 4} y={470} width={8} height={25} fill="#8B6914" opacity={0.3} />
+          <circle cx={tx} cy={462} r={18} fill="#27AE60" opacity={0.3} />
+          <circle cx={tx - 8} cy={466} r={12} fill="#2ECC71" opacity={0.25} />
+          <circle cx={tx + 9} cy={465} r={14} fill="#1ABC9C" opacity={0.22} />
+        </g>
+      ))}
+      {/* Strawberries */}
+      <rect x={30} y={460} width={180} height={60} rx={6} fill="#FADBD8" opacity={0.3} />
+      {Array.from({ length: 8 }, (_, i) => (
+        <circle key={`sb${i}`} cx={50 + (i % 4) * 42} cy={480 + Math.floor(i / 4) * 25}
+          r={6} fill="#E74C3C" opacity={0.35} />
+      ))}
+      {/* Pond */}
+      <ellipse cx={580} cy={510} rx={50} ry={25} fill="#5DADE2" opacity={0.25} />
+      <ellipse cx={575} cy={507} rx={20} ry={10} fill="#AED6F1" opacity={0.2} />
     </svg>
   );
 }
 
 // ══════════════════════════════════════
-// STOCK MARKET — trading screens and charts
+// STOCK MARKET — vibrant trading floor
 // ══════════════════════════════════════
 export function StockBanner() {
   return (
     <svg viewBox={`0 0 ${W} 600`} preserveAspectRatio="xMidYMid slice"
-      style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', opacity: 0.07, pointerEvents: 'none' }}>
-      {/* Monitor grid */}
-      {Array.from({ length: 6 }, (_, row) =>
-        Array.from({ length: 4 }, (_, col) => {
-          const x = 30 + col * 190;
-          const y = 20 + row * 95;
+      style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', opacity: 0.22, pointerEvents: 'none' }}>
+      {/* Dark trading room background */}
+      <rect width={W} height={600} fill="#0f172a" opacity={0.15} />
+      {/* Monitor wall — 3×4 grid */}
+      {Array.from({ length: 4 }, (_, row) =>
+        Array.from({ length: 3 }, (_, col) => {
+          const x = 40 + col * 240;
+          const y = 20 + row * 145;
+          const green = (row + col) % 2 === 0;
           return (
             <g key={`${row}-${col}`}>
-              <rect x={x} y={y} width={170} height={75} rx={4} fill="#1e293b" opacity={0.3} />
-              <rect x={x + 4} y={y + 4} width={162} height={50} fill="#0f172a" opacity={0.2} />
-              {/* Chart line */}
-              <polyline
-                points={Array.from({ length: 8 }, (_, i) => {
-                  const px = x + 8 + i * 20;
-                  const py = y + 30 + Math.sin((row + col + i) * 1.2) * 15;
-                  return `${px},${py}`;
-                }).join(' ')}
-                fill="none" stroke={col % 2 === 0 ? '#10b981' : '#ef4444'} strokeWidth={1.5} opacity={0.3}
-              />
-              {/* Price text placeholder */}
-              <rect x={x + 8} y={y + 58} width={40} height={4} fill="#94a3b8" opacity={0.2} />
+              <rect x={x} y={y} width={220} height={125} rx={6} fill="#1e293b" opacity={0.4} />
+              <rect x={x + 6} y={y + 6} width={208} height={85} fill="#0f172a" opacity={0.3} />
+              {/* Candlestick chart */}
+              {Array.from({ length: 10 }, (_, i) => {
+                const cx = x + 16 + i * 20;
+                const h = 15 + Math.sin((row * 3 + col + i) * 1.5) * 12;
+                const cy = y + 50 - h / 2;
+                const up = Math.sin((row + col + i) * 2.1) > 0;
+                return (
+                  <g key={`c${i}`}>
+                    <rect x={cx} y={cy - 5} width={1.5} height={h + 10} fill={up ? '#10b981' : '#ef4444'} opacity={0.4} />
+                    <rect x={cx - 3} y={cy} width={8} height={h} fill={up ? '#10b981' : '#ef4444'} opacity={0.35} />
+                  </g>
+                );
+              })}
+              {/* Price ticker */}
+              <rect x={x + 10} y={y + 98} width={60} height={6} rx={2} fill={green ? '#10b981' : '#ef4444'} opacity={0.3} />
+              <rect x={x + 80} y={y + 98} width={40} height={6} rx={2} fill="#94a3b8" opacity={0.2} />
+              {/* Volume bars */}
+              {Array.from({ length: 10 }, (_, i) => (
+                <rect key={`v${i}`} x={x + 150 + i * 6} y={y + 105 - (5 + Math.sin(i + row) * 4)}
+                  width={4} height={5 + Math.sin(i + row) * 4} fill="#6366f1" opacity={0.25} />
+              ))}
             </g>
           );
         })
       )}
+      {/* Ticker tape at bottom */}
+      <rect y={580} width={W} height={20} fill="#1e293b" opacity={0.3} />
+      {Array.from({ length: 8 }, (_, i) => (
+        <g key={`tk${i}`}>
+          <rect x={20 + i * 95} y={584} width={50} height={5} rx={2} fill={i % 2 === 0 ? '#10b981' : '#ef4444'} opacity={0.35} />
+          <rect x={75 + i * 95} y={584} width={25} height={5} rx={2} fill="#64748b" opacity={0.2} />
+        </g>
+      ))}
     </svg>
   );
 }
 
 // ══════════════════════════════════════
-// MERGE — gift workshop with conveyor belt
+// MERGE — vibrant gift workshop
 // ══════════════════════════════════════
 export function MergeBanner() {
+  const giftColors = ['#ef4444', '#f59e0b', '#10b981', '#6366f1', '#ec4899', '#8B5CF6', '#06b6d4', '#f97316'];
   return (
     <svg viewBox={`0 0 ${W} 600`} preserveAspectRatio="xMidYMid slice"
-      style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', opacity: 0.07, pointerEvents: 'none' }}>
-      {/* Conveyor belts */}
-      {Array.from({ length: 4 }, (_, i) => (
-        <g key={i}>
-          <rect x={20} y={60 + i * 140} width={W - 40} height={8} fill="#78909c" opacity={0.3} />
-          {/* Rollers */}
-          {Array.from({ length: 12 }, (_, j) => (
-            <rect key={j} x={40 + j * 62} y={62 + i * 140} width={4} height={4} rx={2} fill="#546e7a" opacity={0.4} />
-          ))}
-          {/* Gift boxes on belt */}
-          {Array.from({ length: 5 }, (_, j) => {
-            const x = 60 + j * 150;
-            const size = 16 + (j % 3) * 6;
+      style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', opacity: 0.22, pointerEvents: 'none' }}>
+      {/* Warm workshop background */}
+      <rect width={W} height={600} fill="#FEF3C7" opacity={0.15} />
+      {/* Wooden shelves */}
+      {Array.from({ length: 5 }, (_, i) => (
+        <g key={`sh${i}`}>
+          <rect x={20} y={40 + i * 115} width={W - 40} height={6} fill="#92400E" opacity={0.25} />
+          <rect x={20} y={46 + i * 115} width={W - 40} height={3} fill="#78350F" opacity={0.15} />
+          {/* Gifts on shelf */}
+          {Array.from({ length: 6 }, (_, j) => {
+            const x = 50 + j * 120;
+            const size = 20 + (j + i) % 4 * 8;
+            const color = giftColors[(i * 3 + j) % giftColors.length];
             return (
               <g key={`g${j}`}>
-                <rect x={x} y={60 + i * 140 - size} width={size} height={size} rx={2}
-                  fill={['#ef4444', '#f59e0b', '#10b981', '#6366f1', '#ec4899'][j % 5]} opacity={0.2} />
-                {/* Ribbon */}
-                <rect x={x + size / 2 - 1} y={60 + i * 140 - size} width={2} height={size} fill="#fff" opacity={0.15} />
-                <rect x={x} y={60 + i * 140 - size / 2 - 1} width={size} height={2} fill="#fff" opacity={0.15} />
+                <rect x={x} y={40 + i * 115 - size} width={size} height={size} rx={3}
+                  fill={color} opacity={0.3} />
+                {/* Ribbon cross */}
+                <rect x={x + size / 2 - 1.5} y={40 + i * 115 - size} width={3} height={size}
+                  fill="#fff" opacity={0.2} />
+                <rect x={x} y={40 + i * 115 - size / 2 - 1.5} width={size} height={3}
+                  fill="#fff" opacity={0.2} />
+                {/* Bow */}
+                <circle cx={x + size / 2} cy={40 + i * 115 - size} r={4}
+                  fill="#fff" opacity={0.25} />
               </g>
             );
           })}
         </g>
       ))}
-      {/* Stars / sparkles */}
+      {/* Sparkles scattered */}
+      {Array.from({ length: 30 }, (_, i) => {
+        const x = (i * 47 + 13) % W;
+        const y = (i * 73 + 19) % 600;
+        const big = i % 5 === 0;
+        return (
+          <g key={`sp${i}`}>
+            <rect x={x - 1} y={y - (big ? 5 : 3)} width={2} height={big ? 10 : 6}
+              fill="#fbbf24" opacity={0.3} />
+            <rect x={x - (big ? 5 : 3)} y={y - 1} width={big ? 10 : 6} height={2}
+              fill="#fbbf24" opacity={0.3} />
+          </g>
+        );
+      })}
+      {/* Conveyor belt at bottom */}
+      <rect x={0} y={575} width={W} height={25} fill="#78909c" opacity={0.2} />
+      {Array.from({ length: 16 }, (_, i) => (
+        <circle key={`r${i}`} cx={30 + i * 48} cy={587} r={5} fill="#546e7a" opacity={0.25} />
+      ))}
+    </svg>
+  );
+}
+
+// ══════════════════════════════════════
+// TYPE SPRINT — social media studio
+// ══════════════════════════════════════
+export function TypeSprintBanner() {
+  return (
+    <svg viewBox={`0 0 ${W} 600`} preserveAspectRatio="xMidYMid slice"
+      style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', opacity: 0.18, pointerEvents: 'none' }}>
+      {/* Studio background */}
+      <rect width={W} height={600} fill="#fff7ed" opacity={0.2} />
+      {/* Keyboard rows */}
+      {[0, 1, 2, 3].map(row => (
+        Array.from({ length: 10 + row }, (_, i) => (
+          <rect key={`k${row}-${i}`}
+            x={30 + i * 74 + row * 12} y={380 + row * 55}
+            width={60} height={44} rx={6}
+            fill="#f97316" opacity={0.12 + row * 0.03} />
+        ))
+      ))}
+      {/* Floating likes */}
+      {Array.from({ length: 18 }, (_, i) => (
+        <g key={`lk${i}`}>
+          <rect x={(i * 61 + 20) % W} y={50 + (i * 47) % 280} width={16} height={16} rx={8}
+            fill={['#ef4444', '#f97316', '#6366f1', '#10b981'][i % 4]} opacity={0.2} />
+        </g>
+      ))}
+      {/* Screen / notification panel */}
+      <rect x={50} y={30} width={280} height={180} rx={12} fill="#f97316" opacity={0.08} />
+      <rect x={60} y={50} width={180} height={12} rx={3} fill="#f97316" opacity={0.15} />
+      <rect x={60} y={72} width={220} height={8} rx={3} fill="#f97316" opacity={0.10} />
+      <rect x={60} y={90} width={150} height={8} rx={3} fill="#f97316" opacity={0.08} />
+      {/* Follower bars */}
+      {Array.from({ length: 5 }, (_, i) => (
+        <rect key={`fb${i}`} x={60} y={115 + i * 18} width={60 + i * 35} height={10} rx={3}
+          fill="#f97316" opacity={0.15 - i * 0.02} />
+      ))}
+    </svg>
+  );
+}
+
+// ══════════════════════════════════════
+// HACKER TERMINAL — dark cyberpunk terminal
+// ══════════════════════════════════════
+export function HackerBanner() {
+  return (
+    <svg viewBox={`0 0 ${W} 600`} preserveAspectRatio="xMidYMid slice"
+      style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', opacity: 0.25, pointerEvents: 'none' }}>
+      {/* Dark background */}
+      <rect width={W} height={600} fill="#001400" opacity={0.7} />
+      {/* Matrix rain columns */}
+      {Array.from({ length: 32 }, (_, col) => (
+        Array.from({ length: 20 }, (_, row) => (
+          <rect key={`m${col}-${row}`}
+            x={col * 25 + 2} y={row * 30 + (col * 17) % 30}
+            width={10} height={10} rx={2}
+            fill="#22c55e"
+            opacity={0.04 + Math.sin(col * 0.7 + row * 0.5) * 0.08} />
+        ))
+      ))}
+      {/* Horizontal scan lines */}
+      {Array.from({ length: 30 }, (_, i) => (
+        <rect key={`sl${i}`} x={0} y={i * 20} width={W} height={1}
+          fill="#22c55e" opacity={0.04} />
+      ))}
+      {/* Network node connections */}
+      {[
+        [120, 80, 380, 200], [380, 200, 600, 120], [600, 120, 720, 350],
+        [120, 80, 250, 300], [250, 300, 500, 400], [500, 400, 700, 280],
+      ].map(([x1, y1, x2, y2], i) => (
+        <line key={`ln${i}`} x1={x1} y1={y1} x2={x2} y2={y2}
+          stroke="#22c55e" strokeWidth={1} opacity={0.12} />
+      ))}
+      {/* Nodes */}
+      {[[120, 80], [380, 200], [600, 120], [250, 300], [500, 400], [720, 350]].map(([cx, cy], i) => (
+        <circle key={`nd${i}`} cx={cx} cy={cy} r={6} fill="none"
+          stroke="#22c55e" strokeWidth={1.5} opacity={0.2} />
+      ))}
+    </svg>
+  );
+}
+
+// ══════════════════════════════════════
+// COSMIC POST OFFICE — galactic sorting desk
+// ══════════════════════════════════════
+export function CosmicBanner() {
+  return (
+    <svg viewBox={`0 0 ${W} 600`} preserveAspectRatio="xMidYMid slice"
+      style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', opacity: 0.18, pointerEvents: 'none' }}>
+      {/* Deep space */}
+      <rect width={W} height={600} fill="#0a0520" opacity={0.3} />
+      {/* Stars */}
+      {Array.from({ length: 80 }, (_, i) => (
+        <circle key={`st${i}`} cx={(i * 97 + 13) % W} cy={(i * 73 + 7) % 600}
+          r={1 + (i % 3) * 0.5} fill="#fff" opacity={0.15 + (i % 5) * 0.05} />
+      ))}
+      {/* Planets */}
+      {[
+        [180, 150, 35, '#ef4444'],  // Mars
+        [480, 250, 45, '#3b82f6'],  // Neptune
+        [700, 120, 50, '#f59e0b'],  // Saturn
+        [300, 400, 40, '#a855f7'],  // Alien
+      ].map(([cx, cy, r, color], i) => (
+        <g key={`pl${i}`}>
+          <circle cx={cx} cy={cy} r={r} fill={color} opacity={0.15} />
+          <circle cx={cx} cy={cy} r={r} fill="none" stroke={color} strokeWidth={1.5} opacity={0.2} />
+          {i === 2 && <ellipse cx={cx} cy={cy} rx={r + 22} ry={8} fill="none"
+            stroke="#f59e0b" strokeWidth={2} opacity={0.12} />}
+        </g>
+      ))}
+      {/* Post office desk */}
+      <rect x={0} y={520} width={W} height={80} fill="#4a3728" opacity={0.2} />
+      {/* Letter slots */}
+      {Array.from({ length: 4 }, (_, i) => (
+        <rect key={`ls${i}`} x={80 + i * 180} y={505} width={120} height={30} rx={4}
+          fill={['#ef4444', '#3b82f6', '#f59e0b', '#a855f7'][i]} opacity={0.12} />
+      ))}
+    </svg>
+  );
+}
+
+// ══════════════════════════════════════
+// QUANTUM LAB — physics experiment room
+// ══════════════════════════════════════
+export function QuantumBanner() {
+  return (
+    <svg viewBox={`0 0 ${W} 600`} preserveAspectRatio="xMidYMid slice"
+      style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', opacity: 0.18, pointerEvents: 'none' }}>
+      {/* Lab background */}
+      <rect width={W} height={600} fill="#ecfeff" opacity={0.15} />
+      {/* Probability wave (sine curve) */}
+      <path d={`M 0 300 ${Array.from({ length: 40 }, (_, i) => {
+        const x = i * 20;
+        const y = 300 + Math.sin(i * 0.4) * 80;
+        return `L ${x} ${y}`;
+      }).join(' ')} L 800 300`}
+        fill="none" stroke="#22d3ee" strokeWidth={2} opacity={0.2} />
+      {/* Second wave */}
+      <path d={`M 0 300 ${Array.from({ length: 40 }, (_, i) => {
+        const x = i * 20;
+        const y = 300 + Math.sin(i * 0.4 + 1.5) * 60;
+        return `L ${x} ${y}`;
+      }).join(' ')} L 800 300`}
+        fill="none" stroke="#6366f1" strokeWidth={1.5} opacity={0.12} />
+      {/* Lab equipment — test tubes */}
+      {Array.from({ length: 8 }, (_, i) => (
+        <g key={`tt${i}`}>
+          <rect x={60 + i * 90} y={440} width={14} height={60} rx={7}
+            fill={['#22d3ee', '#6366f1', '#22c55e', '#f59e0b'][i % 4]} opacity={0.12} />
+          <circle cx={67 + i * 90} cy={502} r={7} fill={['#22d3ee', '#6366f1', '#22c55e', '#f59e0b'][i % 4]}
+            opacity={0.15} />
+        </g>
+      ))}
+      {/* Atom diagrams */}
+      {[[150, 150], [550, 200], [400, 450]].map(([cx, cy], i) => (
+        <g key={`at${i}`}>
+          <circle cx={cx} cy={cy} r={6} fill="#22d3ee" opacity={0.2} />
+          <ellipse cx={cx} cy={cy} rx={30} ry={14} fill="none"
+            stroke="#22d3ee" strokeWidth={1} opacity={0.15} />
+          <ellipse cx={cx} cy={cy} rx={30} ry={14} fill="none"
+            stroke="#6366f1" strokeWidth={1} opacity={0.12}
+            transform={`rotate(60 ${cx} ${cy})`} />
+        </g>
+      ))}
+      {/* Measurement ruler */}
+      <rect x={20} y={290} width={760} height={4} rx={2} fill="#22d3ee" opacity={0.1} />
       {Array.from({ length: 20 }, (_, i) => (
-        <rect key={`s${i}`} x={(i * 43 + 17) % W} y={(i * 67 + 23) % 600}
-          width={3} height={3} fill="#fbbf24" opacity={0.15}
-          transform={`rotate(45 ${(i * 43 + 17) % W + 1.5} ${(i * 67 + 23) % 600 + 1.5})`} />
+        <rect key={`ru${i}`} x={20 + i * 38} y={286} width={1.5} height={12}
+          fill="#22d3ee" opacity={0.12} />
       ))}
     </svg>
   );
@@ -234,7 +502,7 @@ export function MergeBanner() {
 export function UpgradeBanner() {
   return (
     <svg viewBox="0 0 800 300" preserveAspectRatio="xMidYMid slice"
-      style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', opacity: 0.07, pointerEvents: 'none' }}>
+      style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', opacity: 0.22, pointerEvents: 'none' }}>
       {/* Workbench */}
       <rect x={10} y={240} width={780} height={8} fill="#8B4513" opacity={0.3} />
       {/* Shelves */}

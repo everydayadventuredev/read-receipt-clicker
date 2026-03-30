@@ -1,4 +1,4 @@
-import { MSG_EX, MSG_PARENTS, MSG_BUSY, MSG_HR, MSG_DELIVERY, MSG_GOV, MSG_INTEL, MSG_ALGO, MSG_AI, MSG_ALIEN, MSG_TIME, MSG_QUANTUM, MSG_VOID, MSG_GOD } from './messages.js';
+import { MSG_EX, MSG_PARENTS, MSG_BUSY, MSG_HR, MSG_DELIVERY, MSG_GOV, MSG_INTEL, MSG_ALGO, MSG_AI, MSG_ALIEN, MSG_TIME, MSG_QUANTUM, MSG_VOID, MSG_GOD, MSG_INF, MSG_SEN, MSG_REP, MSG_HKR, MSG_PAR2, MSG_HIVE } from './messages.js';
 
 export const BUILDINGS = [
   {
@@ -27,6 +27,19 @@ export const BUILDINGS = [
     },
   },
   {
+    id: 'inf', name: '網紅', emoji: '📸', color: '#f97316',
+    baseCost: 250, baseProd: 6, desc: '已讀粉絲，順手業配',
+    messages: MSG_INF,
+    unlockAt: 150,
+    milestones: {
+      1: '你的第一位網紅。10萬粉絲，回覆率0%。',
+      5: '5個網紅。限動都是已讀畫面。',
+      10: '10個。粉絲集體已讀，形成生態系。',
+      25: '25個。網紅公會成立，宗旨：不回覆。',
+      50: '50個。已讀文化成為主流媒體話題。',
+    },
+  },
+  {
     id: 'bsy', name: '忙朋友', emoji: '🏃', color: '#10b981',
     baseCost: 500, baseProd: 10, desc: '產能波動，有時消失再爆發',
     messages: MSG_BUSY,
@@ -39,10 +52,22 @@ export const BUILDINGS = [
     },
   },
   {
+    id: 'sen', name: '前輩', emoji: '🧓', color: '#a16207',
+    baseCost: 1500, baseProd: 28, desc: '已讀晚輩的求助，以身作則',
+    messages: MSG_SEN,
+    unlockAt: 800,
+    milestones: {
+      1: '前輩加入。「我當年也是這樣過來的。」',
+      5: '5位前輩。辦公室充滿「聽我說」。',
+      10: '10位。晚輩集體已讀前輩的傳授。',
+      25: '25位。職場已讀文化代代相傳。',
+    },
+  },
+  {
     id: 'hr', name: '公司HR', emoji: '💼', color: '#6366f1',
     baseCost: 3000, baseProd: 50, desc: '已讀所有意見，永不改變',
     messages: MSG_HR,
-    unlockAt: 2000,
+    unlockAt: 4000,
     milestones: {
       1: 'HR已讀你的建議。「轉達相關部門」。',
       10: '公司前所未有地「重視員工聲音」。',
@@ -53,7 +78,7 @@ export const BUILDINGS = [
     id: 'del', name: '外送客服', emoji: '🛵', color: '#06b6d4',
     baseCost: 15000, baseProd: 200, desc: '永遠在「為您查詢中」',
     messages: MSG_DELIVERY,
-    unlockAt: 10000,
+    unlockAt: 30000,
     milestones: {
       1: '客服已上線。您的已讀很重要。',
       10: '10位客服。都說一模一樣的話。',
@@ -61,10 +86,22 @@ export const BUILDINGS = [
     },
   },
   {
+    id: 'rep', name: '記者', emoji: '📰', color: '#0891b2',
+    baseCost: 40000, baseProd: 500, desc: '已讀爆料，截稿時間永遠是現在',
+    messages: MSG_REP,
+    unlockAt: 25000,
+    milestones: {
+      1: '第一位記者。「請問您方便已讀嗎？」',
+      5: '5位記者。獨家報導：全員已讀不回。',
+      10: '10位。頭版頭條：已讀文化席捲全球。',
+      25: '25位記者。新聞自由包含已讀自由。',
+    },
+  },
+  {
     id: 'gov', name: '政府承辦', emoji: '🏛️', color: '#8b5cf6',
     baseCost: 80000, baseProd: 800, desc: '流程需6-8個月',
     messages: MSG_GOV,
-    unlockAt: 50000,
+    unlockAt: 150000,
     milestones: {
       1: '已讀申請通過初審。複審3-5工作天。',
       10: '公文速度提升0.3%，創歷史新高。',
@@ -75,7 +112,7 @@ export const BUILDINGS = [
     id: 'int', name: '情報機構', emoji: '🕵️', color: '#ec4899',
     baseCost: 400000, baseProd: 3600, desc: '此建築已被列為機密',
     messages: MSG_INTEL,
-    unlockAt: 250000,
+    unlockAt: 800000,
     milestones: {
       1: '此建築的存在已被列為機密。',
       10: '你的已讀被14國情報機構監控。',
@@ -83,10 +120,22 @@ export const BUILDINGS = [
     },
   },
   {
+    id: 'hkr', name: '駭客', emoji: '💻', color: '#22c55e',
+    baseCost: 900000, baseProd: 9000, desc: '入侵已讀系統，解密所有訊息',
+    messages: MSG_HKR,
+    unlockAt: 600000,
+    milestones: {
+      1: '首位駭客加入。防火牆已被繞過。',
+      5: '5個駭客。他們互相入侵，然後已讀。',
+      10: '10個。已讀系統漏洞已成為功能。',
+      25: '25個。已讀基礎設施已被完全掌控。',
+    },
+  },
+  {
     id: 'algo', name: '社群演算法', emoji: '📱', color: '#3b82f6',
     baseCost: 2000000, baseProd: 16000, desc: '自動推送，永不停歇',
     messages: MSG_ALGO,
-    unlockAt: 1000000,
+    unlockAt: 3000000,
     milestones: {
       1: '演算法開始運作。你的動態牆永遠不會空。',
       5: '5個演算法。推薦越來越精準地戳你痛點。',
@@ -98,7 +147,7 @@ export const BUILDINGS = [
     id: 'ai', name: 'AI客服', emoji: '🤖', color: '#14b8a6',
     baseCost: 10000000, baseProd: 72000, desc: '效率極高，但完全沒有靈魂',
     messages: MSG_AI,
-    unlockAt: 5000000,
+    unlockAt: 15000000,
     milestones: {
       1: 'AI上線。「您好，請問有什麼可以幫您已讀的？」',
       5: '5個AI。它們開始互相已讀對方的訊息。',
@@ -110,7 +159,7 @@ export const BUILDINGS = [
     id: 'alien', name: '外星通訊', emoji: '👽', color: '#a855f7',
     baseCost: 50000000, baseProd: 320000, desc: '跨越光年的已讀',
     messages: MSG_ALIEN,
-    unlockAt: 25000000,
+    unlockAt: 80000000,
     milestones: {
       1: '收到來自仙女座的訊號。他們也已讀不回。',
       5: '5個星際通道開啟。宇宙級的社交焦慮。',
@@ -119,10 +168,22 @@ export const BUILDINGS = [
     },
   },
   {
+    id: 'par2', name: '平行自我', emoji: '🪞', color: '#c084fc',
+    baseCost: 130000000, baseProd: 850000, desc: '每個平行宇宙的你都在已讀',
+    messages: MSG_PAR2,
+    unlockAt: 80000000,
+    milestones: {
+      1: '你遇見了另一個自己。你們互相已讀。',
+      5: '5個平行自我。投票結果：全員不回覆。',
+      10: '10個。多元宇宙的共識已達成：已讀。',
+      25: '25個平行自我組成委員會，會議結論：已讀。',
+    },
+  },
+  {
     id: 'time', name: '時間迴圈', emoji: '⏳', color: '#ef4444',
     baseCost: 250000000, baseProd: 1500000, desc: '在訊息發出前就已讀',
     messages: MSG_TIME,
-    unlockAt: 100000000,
+    unlockAt: 400000000,
     milestones: {
       1: '時間線已被扭曲。你在對方打字前就已讀了。',
       5: '5個時間迴圈。因果律表示抗議。',
@@ -134,7 +195,7 @@ export const BUILDINGS = [
     id: 'quantum', name: '量子已讀', emoji: '⚛️', color: '#22d3ee',
     baseCost: 1500000000, baseProd: 7000000, desc: '同時已讀與未讀，直到有人觀察',
     messages: MSG_QUANTUM,
-    unlockAt: 500000000,
+    unlockAt: 2000000000,
     milestones: {
       1: '量子已讀啟動。薛丁格的訊息同時被已讀與未讀。',
       5: '5個量子態。觀測者效應導致所有訊息坍縮為已讀。',
@@ -146,7 +207,7 @@ export const BUILDINGS = [
     id: 'void', name: '虛空已讀', emoji: '🕳️', color: '#1e1b4b',
     baseCost: 10000000000, baseProd: 35000000, desc: '在虛無中已讀，已讀即虛無',
     messages: MSG_VOID,
-    unlockAt: 3000000000,
+    unlockAt: 15000000000,
     milestones: {
       1: '你凝視虛空，虛空已讀了你。',
       5: '5個虛空。存在的意義被已讀取代。',
@@ -155,10 +216,22 @@ export const BUILDINGS = [
     },
   },
   {
+    id: 'hive', name: '意識蜂巢', emoji: '🧠', color: '#84cc16',
+    baseCost: 40000000000, baseProd: 120000000, desc: '全體意志共同已讀，個體意識不存在',
+    messages: MSG_HIVE,
+    unlockAt: 15000000000,
+    milestones: {
+      1: '個體意識已融入蜂巢。歡迎加入已讀集體。',
+      5: '5個蜂巢。7億個思維同步已讀。',
+      10: '10個。蜂后頒布命令：全體永久已讀。',
+      25: '25個意識蜂巢。個體已不復存在，只剩已讀。',
+    },
+  },
+  {
     id: 'god', name: '神之已讀', emoji: '👁️', color: '#fbbf24',
     baseCost: 100000000000, baseProd: 200000000, desc: '祂已讀了一切，包括你還沒發送的訊息',
     messages: MSG_GOD,
-    unlockAt: 20000000000,
+    unlockAt: 100000000000,
     milestones: {
       1: '神開始已讀。全知全能，就是不回覆。',
       5: '5位神祇。多神教的已讀比一神教還多。',
@@ -170,7 +243,9 @@ export const BUILDINGS = [
 
 export const INITIAL_UNLOCKED = new Set(['ex', 'par', 'bsy']);
 export const UNLOCK_THRESHOLDS = {
-  hr: 2000, del: 10000, gov: 50000, int: 250000,
-  algo: 1000000, ai: 5000000, alien: 25000000, time: 100000000,
-  quantum: 500000000, void: 3000000000, god: 20000000000,
+  inf: 150, sen: 800,
+  hr: 4000, del: 30000, rep: 25000, gov: 150000,
+  int: 800000, hkr: 600000, algo: 3000000, ai: 15000000,
+  alien: 80000000, par2: 80000000, time: 400000000,
+  quantum: 2000000000, void: 15000000000, hive: 15000000000, god: 100000000000,
 };
