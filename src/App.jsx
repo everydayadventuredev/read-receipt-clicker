@@ -764,7 +764,7 @@ export default function App() {
     if (readsRef.current < cost) return;
 
     const newCount = count + n;
-    setReads(r => r - cost);
+    setReads(r => Math.max(0, r - cost));
     setOwned(o => ({ ...o, [b.id]: newCount }));
     setNewBuildings(prev => { const s = new Set(prev); s.delete(b.id); return s; });
     for (let i = count + 1; i <= newCount; i++) {
@@ -775,7 +775,7 @@ export default function App() {
 
   const handleBuyUpgrade = useCallback((u) => {
     if (readsRef.current < u.cost || boughtRef.current.has(u.id)) return;
-    setReads(r => r - u.cost);
+    setReads(r => Math.max(0, r - u.cost));
     setBoughtUpgrades(s => new Set([...s, u.id]));
     addToast(`⬆️ ${u.name}！${u.desc}`);
     playUpgrade();
@@ -786,7 +786,7 @@ export default function App() {
     const result = buyShare(marketState, channelId, readsRef.current, psRef.current);
     if (!result) return;
     setMarketState(result.newState);
-    setReads(r => r - result.cost);
+    setReads(r => Math.max(0, r - result.cost));
   }, [marketState]);
 
   const handleSellShare = useCallback((channelId) => {
@@ -812,7 +812,7 @@ export default function App() {
     }
     if (bought > 0) {
       setMarketState(state);
-      setReads(r => r - totalCost);
+      setReads(r => Math.max(0, r - totalCost));
       addToast(`📈 一口氣買入 ${bought} 股，花費 ${fmt(totalCost)}`);
     }
   }, [marketState]);
@@ -842,7 +842,7 @@ export default function App() {
     const result = investFutures(marketState, channelId, amount, riskLevel);
     if (!result) return;
     setMarketState(result.newState);
-    setReads(r => r - result.cost);
+    setReads(r => Math.max(0, r - result.cost));
     const riskLabel = riskLevel === 'aggressive' ? '積極' : '穩健';
     addToast(`📈 投資 ${fmt(amount)} 已讀期貨（${riskLabel}）`);
   }, [marketState]);
@@ -893,7 +893,7 @@ export default function App() {
     const result = placeGift(mergeState, slotIndex);
     if (!result) return;
     setMergeState(result.newState);
-    setReads(r => r - cost);
+    setReads(r => Math.max(0, r - cost));
   }, [mergeState]);
 
   const handleMergeGifts = useCallback((srcIdx, tgtIdx) => {
@@ -918,7 +918,7 @@ export default function App() {
     const result = expandGrid(mergeState, readsRef.current);
     if (!result) return;
     setMergeState(result.newState);
-    setReads(r => r - result.cost);
+    setReads(r => Math.max(0, r - result.cost));
     addToast(`📦 ${result.reason}`);
   }, [mergeState]);
 
@@ -1558,7 +1558,7 @@ export default function App() {
                 }
                 if (bought.length > 0) {
                   const totalCost = bought.reduce((s, u) => s + u.cost, 0);
-                  setReads(r => r - totalCost);
+                  setReads(r => Math.max(0, r - totalCost));
                   setBoughtUpgrades(s => {
                     const next = new Set(s);
                     bought.forEach(u => next.add(u.id));

@@ -108,7 +108,7 @@ export default function PrestigeBar({ allTime, prestigeEarned, prestigeCount = 0
         }}>
           <div style={{
             height: '100%',
-            background: barGradient,
+            backgroundImage: barGradient,
             backgroundSize: isComplete ? '200% 100%' : '100% 100%',
             borderRadius: 4,
             transition: 'width .3s cubic-bezier(.4,0,.2,1)',

@@ -182,6 +182,7 @@ function FutureCard({ future, currentPrice, priceScale, onCollect }) {
  * StockMarket — 已讀期貨 futures-based UI.
  */
 export default function StockMarket({ marketState, algoCount, reads, prodPerSec, onInvest, onCollect, onCollapse }) {
+  if (!marketState) return null;
   const [investModal, setInvestModal] = useState(null); // { channelId } | null
   const [investAmount, setInvestAmount] = useState('');
   const [investRisk, setInvestRisk] = useState('safe');
