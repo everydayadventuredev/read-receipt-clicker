@@ -110,6 +110,7 @@ function FutureCard({ future, currentPrice, priceScale, onCollect }) {
   return (
     <div style={{
       padding: '10px 14px', borderRadius: 12,
+      animation: matured ? 'futureMatured 2s ease-in-out infinite' : undefined,
       background: matured
         ? 'linear-gradient(135deg, rgba(16,185,129,.08), rgba(16,185,129,.03))'
         : 'rgba(99,102,241,.04)',
@@ -309,6 +310,7 @@ export default function StockMarket({ marketState, algoCount, reads, prodPerSec,
               background: '#fff', borderRadius: 20, padding: '20px 24px',
               boxShadow: '0 8px 40px rgba(0,0,0,.15)',
               maxWidth: 320, width: '90%',
+              animation: 'modalSlideUp 0.25s ease-out',
             }}>
               <div style={{ textAlign: 'center', marginBottom: 16 }}>
                 <span style={{ fontSize: 32 }}>{ch?.emoji}</span>

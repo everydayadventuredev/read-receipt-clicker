@@ -539,6 +539,7 @@ export default function Garden({ gardenState, exCount, onPlant, onHarvest, onCle
                 background: '#fff', borderRadius: 20, padding: '20px 24px',
                 boxShadow: '0 8px 40px rgba(0,0,0,.15)',
                 maxWidth: 320, width: '90%', textAlign: 'center',
+                animation: 'modalSlideUp 0.25s ease-out',
               }}>
                 <div style={{ fontSize: 40, marginBottom: 8 }}>
                   {harvestModal.flower?.emoji ?? '🌸'}

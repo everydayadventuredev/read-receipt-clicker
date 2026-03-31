@@ -258,8 +258,11 @@ export default function QuantumLab({ onResonance, quantumCount, onCollapse, cool
           )}
 
           {phase === 'collapsed' && (
-            <div style={{ textAlign: 'center' }}>
-              <div style={{ fontSize: 22, fontWeight: 800, color: resultColor }}>
+            <div style={{ textAlign: 'center', animation: 'modalSlideUp 0.3s ease-out' }}>
+              <div style={{
+                fontSize: 22, fontWeight: 800, color: resultColor,
+                textShadow: collapseResult === 'perfect' ? '0 0 20px rgba(245,158,11,.4)' : undefined,
+              }}>
                 {resultLabel}
               </div>
               <div style={{ fontSize: 13, color: 'var(--text-secondary)', marginTop: 6 }}>

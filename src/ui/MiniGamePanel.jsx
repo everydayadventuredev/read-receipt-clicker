@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { MINIGAME_REGISTRY, getUnlockedMinigames } from '../game/minigames.js';
+import { getBuffMultiplier, getActiveBuffs, getSourceMult } from '../game/buffSystem.js';
 import StockMarket from './StockMarket.jsx';
 import Garden from './Garden.jsx';
 import MergeGame from './MergeGame.jsx';
@@ -194,56 +195,218 @@ export default function MiniGamePanel({
     algo: SECTION_SUMMARY.algo(marketState, prodPerSec),
   };
 
-  // Storm cooldown state
+  // Cooldown & buff state
+  const now = Date.now();
   const stormCooldownEnd = buffState?.stormCooldownEnd ?? 0;
-  const stormOnCooldown = stormCooldownEnd > Date.now();
+  const quantumCooldownEnd = buffState?.quantumCooldownEnd ?? 0;
+  const stormOnCooldown = stormCooldownEnd > now;
+  const quantumOnCooldown = quantumCooldownEnd > now;
+  const resonance = buffState?.quantumResonance;
+  const hasResonance = resonance && !resonance.consumed;
+  const liveBuffs = buffState ? getActiveBuffs(buffState) : [];
+  const totalMult = buffState ? getBuffMultiplier(buffState) : 1;
 
-  // Force re-render for cooldown countdown
-  const [, forceUpdate] = React.useState(0);
-  React.useEffect(() => {
-    if (!stormOnCooldown) return;
+  // Force re-render every second for countdowns
+  const [, forceUpdate] = useState(0);
+  useEffect(() => {
+    const hasTimers = stormOnCooldown || quantumOnCooldown || liveBuffs.length > 0;
+    if (!hasTimers) return;
     const iv = setInterval(() => forceUpdate(n => n + 1), 1000);
     return () => clearInterval(iv);
-  }, [stormOnCooldown]);
+  }, [stormOnCooldown, quantumOnCooldown, liveBuffs.length]);
 
-  const stormCooldownSecs = stormOnCooldown ? Math.max(0, Math.ceil((stormCooldownEnd - Date.now()) / 1000)) : 0;
+  const fmtCd = (end) => {
+    const s = Math.max(0, Math.ceil((end - Date.now()) / 1000));
+    return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
+  };
+
+  // Source info for buff pills
+  const SOURCE_INFO = {
+    storm:  { icon: '🌪️', color: '#6366f1', label: '風暴' },
+    garden: { icon: '🌸', color: '#22c55e', label: '花園' },
+    merge:  { icon: '🎁', color: '#f59e0b', label: '合成' },
+  };
 
   return (
     <div style={{
       flex: 1, display: 'flex', flexDirection: 'column',
       minHeight: 0, overflowY: 'auto',
     }}>
-      {/* Storm trigger bar */}
+      {/* ═══ Buff Bar ═══ */}
       {unlocked.length > 0 && (
-        <div style={{
-          padding: '8px 14px', flexShrink: 0,
-          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-          background: 'linear-gradient(90deg, rgba(99,102,241,.04), rgba(99,102,241,.02))',
-          borderBottom: '1px solid rgba(99,102,241,.1)',
-        }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-            <span style={{ fontSize: 16 }}>🌪️</span>
-            <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-secondary)' }}>已讀風暴</span>
-          </div>
-          {stormActive ? (
-            <span style={{ fontSize: 12, fontWeight: 700, color: '#6366f1', animation: 'pulse 1s infinite' }}>進行中...</span>
-          ) : stormOnCooldown ? (
-            <span style={{
-              fontSize: 12, fontWeight: 700, color: 'var(--text-muted)',
-              fontFamily: "'JetBrains Mono',monospace",
+        <div style={{ flexShrink: 0, borderBottom: '1px solid rgba(148,163,184,.1)' }}>
+          {/* Row 1: Active buffs + total multiplier */}
+          {(liveBuffs.length > 0 || hasResonance) && (
+            <div style={{
+              padding: '6px 12px',
+              display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap',
+              background: totalMult > 1
+                ? `linear-gradient(90deg, rgba(99,102,241,.03), rgba(245,158,11,.03))`
+                : 'transparent',
             }}>
-              {Math.floor(stormCooldownSecs / 60)}:{String(stormCooldownSecs % 60).padStart(2, '0')}
-            </span>
-          ) : (
-            <button onClick={onStartStorm} style={{
-              padding: '4px 14px', fontSize: 12, fontWeight: 700,
-              background: 'linear-gradient(135deg, #6366f1, #4f46e5)',
-              color: '#fff', border: 'none', borderRadius: 10,
-              cursor: 'pointer', boxShadow: '0 2px 8px rgba(99,102,241,.3)',
-            }}>
-              啟動 ▶
-            </button>
+              {/* Active buff pills */}
+              {liveBuffs.filter(b => b.scope === 'global').map((b, i) => {
+                const info = SOURCE_INFO[b.source] ?? { icon: '✨', color: '#8b5cf6', label: b.source };
+                const remaining = Math.max(0, Math.ceil((b.expiresAt - Date.now()) / 1000));
+                const isExpiring = remaining <= 10;
+                return (
+                  <div key={b.id ?? i} style={{
+                    display: 'flex', alignItems: 'center', gap: 3,
+                    padding: '3px 8px', borderRadius: 8,
+                    background: `${info.color}10`,
+                    border: `1px solid ${info.color}25`,
+                    animation: isExpiring ? 'buffExpire 0.5s ease-in-out infinite' : undefined,
+                  }}>
+                    <span style={{ fontSize: 11 }}>{info.icon}</span>
+                    <span style={{
+                      fontSize: 11, fontWeight: 700, color: info.color,
+                      fontFamily: "'JetBrains Mono',monospace",
+                    }}>×{b.mult.toFixed(1)}</span>
+                    <span style={{
+                      fontSize: 9, color: isExpiring ? '#ef4444' : 'var(--text-muted)',
+                      fontFamily: "'JetBrains Mono',monospace",
+                      fontWeight: isExpiring ? 700 : 500,
+                    }}>{remaining}s</span>
+                  </div>
+                );
+              })}
+
+              {/* Quantum resonance indicator */}
+              {hasResonance && (
+                <div style={{
+                  display: 'flex', alignItems: 'center', gap: 3,
+                  padding: '3px 8px', borderRadius: 8,
+                  background: resonance.mult >= 1.3
+                    ? 'linear-gradient(135deg, rgba(245,158,11,.12), rgba(245,158,11,.06))'
+                    : 'rgba(239,68,68,.08)',
+                  border: resonance.mult >= 1.3
+                    ? '1px solid rgba(245,158,11,.3)'
+                    : '1px solid rgba(239,68,68,.2)',
+                  animation: 'resonancePulse 2s ease-in-out infinite',
+                }}>
+                  <span style={{ fontSize: 11 }}>⚛️</span>
+                  <span style={{
+                    fontSize: 11, fontWeight: 800,
+                    color: resonance.mult >= 1.3 ? '#f59e0b' : '#ef4444',
+                    fontFamily: "'JetBrains Mono',monospace",
+                  }}>×{resonance.mult}</span>
+                  <span style={{ fontSize: 9, color: 'var(--text-muted)' }}>待用</span>
+                </div>
+              )}
+
+              {/* Total multiplier badge */}
+              {totalMult > 1 && (
+                <div style={{
+                  marginLeft: 'auto',
+                  padding: '3px 10px', borderRadius: 8,
+                  background: 'linear-gradient(135deg, rgba(99,102,241,.1), rgba(245,158,11,.1))',
+                  border: '1px solid rgba(99,102,241,.2)',
+                }}>
+                  <span style={{
+                    fontSize: 12, fontWeight: 800,
+                    background: 'linear-gradient(135deg, #6366f1, #f59e0b)',
+                    WebkitBackgroundClip: 'text',
+                    WebkitTextFillColor: 'transparent',
+                    fontFamily: "'JetBrains Mono',monospace",
+                  }}>
+                    合計 ×{totalMult.toFixed(1)}
+                  </span>
+                </div>
+              )}
+            </div>
           )}
+
+          {/* Row 2: Action buttons — Storm + Quantum cooldowns */}
+          <div style={{
+            padding: '6px 12px',
+            display: 'flex', alignItems: 'center', gap: 8,
+          }}>
+            {/* Storm trigger */}
+            <div style={{
+              display: 'flex', alignItems: 'center', gap: 5, flex: 1,
+            }}>
+              <span style={{ fontSize: 14 }}>🌪️</span>
+              {stormActive ? (
+                <span style={{
+                  fontSize: 11, fontWeight: 700, color: '#6366f1',
+                  animation: 'stormActivePulse 1s ease-in-out infinite',
+                }}>進行中...</span>
+              ) : stormOnCooldown ? (
+                <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                  <div style={{
+                    width: 40, height: 4, borderRadius: 2,
+                    background: 'rgba(99,102,241,.1)', overflow: 'hidden',
+                  }}>
+                    <div style={{
+                      height: '100%', borderRadius: 2, background: '#6366f1',
+                      width: `${Math.max(0, 100 - ((stormCooldownEnd - Date.now()) / 180000) * 100)}%`,
+                      transition: 'width 1s linear',
+                    }} />
+                  </div>
+                  <span style={{
+                    fontSize: 10, fontWeight: 600, color: 'var(--text-muted)',
+                    fontFamily: "'JetBrains Mono',monospace",
+                  }}>{fmtCd(stormCooldownEnd)}</span>
+                </div>
+              ) : (
+                <button onClick={onStartStorm} style={{
+                  padding: '3px 12px', fontSize: 11, fontWeight: 700,
+                  background: 'linear-gradient(135deg, #6366f1, #4f46e5)',
+                  color: '#fff', border: 'none', borderRadius: 8,
+                  cursor: 'pointer', boxShadow: '0 2px 6px rgba(99,102,241,.25)',
+                  animation: 'readyGlow 2s ease-in-out infinite',
+                }}>
+                  啟動 ▶
+                </button>
+              )}
+            </div>
+
+            {/* Divider */}
+            <div style={{ width: 1, height: 16, background: 'rgba(148,163,184,.12)' }} />
+
+            {/* Quantum cooldown indicator */}
+            <div style={{
+              display: 'flex', alignItems: 'center', gap: 5, flex: 1,
+            }}>
+              <span style={{ fontSize: 14 }}>⚛️</span>
+              {quantumOnCooldown ? (
+                <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                  <div style={{
+                    width: 40, height: 4, borderRadius: 2,
+                    background: 'rgba(34,211,238,.1)', overflow: 'hidden',
+                  }}>
+                    <div style={{
+                      height: '100%', borderRadius: 2, background: '#22d3ee',
+                      width: `${Math.max(0, 100 - ((quantumCooldownEnd - Date.now()) / 300000) * 100)}%`,
+                      transition: 'width 1s linear',
+                    }} />
+                  </div>
+                  <span style={{
+                    fontSize: 10, fontWeight: 600, color: 'var(--text-muted)',
+                    fontFamily: "'JetBrains Mono',monospace",
+                  }}>{fmtCd(quantumCooldownEnd)}</span>
+                </div>
+              ) : (
+                <span style={{
+                  fontSize: 10, fontWeight: 600, color: '#22d3ee',
+                }}>就緒</span>
+              )}
+            </div>
+
+            {/* Futures count */}
+            {marketState?.futures?.length > 0 && (
+              <>
+                <div style={{ width: 1, height: 16, background: 'rgba(148,163,184,.12)' }} />
+                <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                  <span style={{ fontSize: 14 }}>📈</span>
+                  <span style={{
+                    fontSize: 10, fontWeight: 600, color: '#6366f1',
+                    fontFamily: "'JetBrains Mono',monospace",
+                  }}>{marketState.futures.length} 合約</span>
+                </div>
+              </>
+            )}
+          </div>
         </div>
       )}
 
