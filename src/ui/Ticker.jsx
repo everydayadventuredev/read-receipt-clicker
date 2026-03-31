@@ -103,12 +103,12 @@ export default function Ticker({ allTime, logEntries = [] }) {
       position: 'relative',
       overflow: 'hidden',
     }}>
-      {/* Left color accent bar */}
+      {/* Subtle bottom accent instead of left bar */}
       <div style={{
-        position: 'absolute', left: 0, top: 0, bottom: 0, width: 4,
-        background: display.color,
+        position: 'absolute', left: 16, right: 16, bottom: 0, height: 2,
+        background: `linear-gradient(90deg, ${display.color}40, transparent)`,
         transition: 'background .3s',
-        borderRadius: '0 2px 2px 0',
+        borderRadius: 1,
       }} />
 
       {/* Icon prefix */}
