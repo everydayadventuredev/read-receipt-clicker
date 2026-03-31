@@ -150,6 +150,26 @@ export default function MiniGamePanel({
     }
   }, [unlocked.length]);
 
+  // Cooldown & buff state (must be before early return to satisfy Rules of Hooks)
+  const now = Date.now();
+  const stormCooldownEnd = buffState?.stormCooldownEnd ?? 0;
+  const quantumCooldownEnd = buffState?.quantumCooldownEnd ?? 0;
+  const stormOnCooldown = stormCooldownEnd > now;
+  const quantumOnCooldown = quantumCooldownEnd > now;
+  const resonance = buffState?.quantumResonance;
+  const hasResonance = resonance && !resonance.consumed;
+  const liveBuffs = buffState ? getActiveBuffs(buffState) : [];
+  const totalMult = buffState ? getBuffMultiplier(buffState) : 1;
+
+  // Force re-render every second for countdowns
+  const [, forceUpdate] = useState(0);
+  useEffect(() => {
+    const hasTimers = stormOnCooldown || quantumOnCooldown || liveBuffs.length > 0;
+    if (!hasTimers) return;
+    const iv = setInterval(() => forceUpdate(n => n + 1), 1000);
+    return () => clearInterval(iv);
+  }, [stormOnCooldown, quantumOnCooldown, liveBuffs.length]);
+
   // Nothing unlocked → placeholder
   if (unlocked.length === 0) {
     return (
@@ -194,26 +214,6 @@ export default function MiniGamePanel({
     par: SECTION_SUMMARY.par(mergeState),
     algo: SECTION_SUMMARY.algo(marketState, prodPerSec),
   };
-
-  // Cooldown & buff state
-  const now = Date.now();
-  const stormCooldownEnd = buffState?.stormCooldownEnd ?? 0;
-  const quantumCooldownEnd = buffState?.quantumCooldownEnd ?? 0;
-  const stormOnCooldown = stormCooldownEnd > now;
-  const quantumOnCooldown = quantumCooldownEnd > now;
-  const resonance = buffState?.quantumResonance;
-  const hasResonance = resonance && !resonance.consumed;
-  const liveBuffs = buffState ? getActiveBuffs(buffState) : [];
-  const totalMult = buffState ? getBuffMultiplier(buffState) : 1;
-
-  // Force re-render every second for countdowns
-  const [, forceUpdate] = useState(0);
-  useEffect(() => {
-    const hasTimers = stormOnCooldown || quantumOnCooldown || liveBuffs.length > 0;
-    if (!hasTimers) return;
-    const iv = setInterval(() => forceUpdate(n => n + 1), 1000);
-    return () => clearInterval(iv);
-  }, [stormOnCooldown, quantumOnCooldown, liveBuffs.length]);
 
   const fmtCd = (end) => {
     const s = Math.max(0, Math.ceil((end - Date.now()) / 1000));
