@@ -875,7 +875,7 @@ export default function App() {
 
   return (
     <div style={{
-      height: '100vh', background: '#f8f9fb', color: '#1e293b',
+      height: '100vh', background: 'var(--bg)', color: 'var(--text)',
       display: 'flex', flexDirection: 'column',
       fontFamily: "'Noto Sans TC',-apple-system,sans-serif",
       position: 'relative', overflow: 'hidden',
@@ -958,7 +958,7 @@ export default function App() {
           style={{
             position: 'fixed', left: f.x - 18, top: f.y - 22,
             pointerEvents: 'none', fontWeight: 800, fontSize: 21,
-            color: '#b45309',
+            color: 'var(--amber-text)',
             textShadow: '0 0 8px rgba(180,83,9,.2), 0 1px 2px rgba(255,255,255,.8)',
             animation: 'fu .85s ease-out forwards', zIndex: 200,
             fontFamily: "'JetBrains Mono',monospace",
@@ -973,11 +973,11 @@ export default function App() {
           style={{
             position: 'fixed', top: 16, left: '50%', transform: 'translateX(-50%)',
             background: 'rgba(255,255,255,.95)',
-            color: '#1e293b', padding: '14px 24px', borderRadius: 12, fontSize: 13,
+            color: 'var(--text)', padding: '14px 24px', borderRadius: 12, fontSize: 13,
             boxShadow: '0 8px 40px rgba(0,0,0,.1), 0 0 0 1px rgba(0,0,0,.04)',
             zIndex: 300, maxWidth: '90vw', textAlign: 'center',
             animation: 'ti .3s cubic-bezier(.4,0,.2,1)',
-            border: '1px solid #e2e8f0', lineHeight: 1.5,
+            border: '1px solid var(--border)', lineHeight: 1.5,
             overflow: 'hidden',
           }}
           onAnimationEnd={() => { setTimeout(() => setToasts(ts => ts.filter(x => x.id !== t.id)), 3000); }}
@@ -999,7 +999,7 @@ export default function App() {
           position: 'fixed', top: 65, left: '50%', transform: 'translateX(-50%)',
           background: 'rgba(255,251,235,.9)', border: '1px solid #fde68a',
           borderRadius: 16, padding: '10px 20px', fontSize: 13,
-          color: '#b45309', fontWeight: 700, zIndex: 200,
+          color: 'var(--amber-text)', fontWeight: 700, zIndex: 200,
           boxShadow: '0 4px 24px rgba(217,119,6,.08)',
         }}>
           {offlineBanner}
@@ -1044,7 +1044,7 @@ export default function App() {
             {/* Phone notch */}
             <div style={{
               position: 'absolute', top: 0, left: '50%', transform: 'translateX(-50%)',
-              width: 80, height: 22, background: '#1e293b',
+              width: 80, height: 22, background: 'var(--text)',
               borderRadius: '0 0 14px 14px', zIndex: 10,
             }}>
               <div style={{
@@ -1058,7 +1058,7 @@ export default function App() {
             <div style={{
               padding: '6px 16px', paddingTop: 10,
               display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-              fontSize: 10, color: '#64748b', fontWeight: 600,
+              fontSize: 10, color: 'var(--text-secondary)', fontWeight: 600,
               fontFamily: "'JetBrains Mono',monospace",
               background: 'rgba(248,250,252,.95)',
               flexShrink: 0,
@@ -1144,14 +1144,14 @@ export default function App() {
                 );
               })()}
               <span style={{
-                fontSize: 14, color: '#94a3b8', marginTop: 4,
+                fontSize: 14, color: 'var(--text-muted)', marginTop: 4,
                 fontFamily: "'JetBrains Mono',monospace",
               }}>
                 <CheckIcon size={11} color="#94a3b8" /> {prodPerSec > 0 ? `${fmt(prodPerSec)}/秒` : '點擊開始已讀'}
               </span>
               {allTime > 0 && (
                 <span style={{
-                  fontSize: 11, color: '#94a3b8', marginTop: 2,
+                  fontSize: 11, color: 'var(--text-muted)', marginTop: 2,
                   fontFamily: "'JetBrains Mono',monospace",
                 }}>
                   生涯 {fmt(allTime)} · 大師 {Object.values(owned).reduce((s, v) => s + v, 0)} · 升級 {boughtUpgrades.size}/{UPGRADES.length}
@@ -1186,7 +1186,7 @@ export default function App() {
                   }}>
                     <span style={{ fontSize: 10 }}>{b.icon}</span>
                     <span style={{ fontSize: 11, fontWeight: 700, color: b.color, fontFamily: "'JetBrains Mono',monospace" }}>{b.label}</span>
-                    {b.sub && <span style={{ fontSize: 8, color: '#94a3b8' }}>{b.sub}</span>}
+                    {b.sub && <span style={{ fontSize: 8, color: 'var(--text-muted)' }}>{b.sub}</span>}
                   </div>
                 ))}
                 {boosts.length >= 2 && (
@@ -1195,7 +1195,7 @@ export default function App() {
                     background: 'linear-gradient(135deg, rgba(99,102,241,.08), rgba(245,158,11,.08))',
                     border: '1px solid rgba(99,102,241,.15)',
                   }}>
-                    <span style={{ fontSize: 11, fontWeight: 800, color: '#4338ca', fontFamily: "'JetBrains Mono',monospace" }}>
+                    <span style={{ fontSize: 11, fontWeight: 800, color: 'var(--purple-dark)', fontFamily: "'JetBrains Mono',monospace" }}>
                       = ×{totalCombo.toFixed(1)}
                     </span>
                   </div>
@@ -1279,8 +1279,8 @@ export default function App() {
                           title={`${r.name}：${r.desc}（-${r.guiltReduce}罪惡感）`}
                           style={{
                             fontSize: 14, padding: '8px 12px', borderRadius: 8, minHeight: 44,
-                            border: '1px solid #e2e8f0',
-                            background: onCooldown ? '#f1f5f9' : '#fff',
+                            border: '1px solid var(--border)',
+                            background: onCooldown ? 'var(--surface-hover)' : 'var(--surface)',
                             cursor: onCooldown ? 'default' : 'pointer',
                             opacity: onCooldown ? 0.35 : 1,
                             fontFamily: 'inherit', transition: 'all .15s',
@@ -1318,7 +1318,7 @@ export default function App() {
             }}>
               <div style={{
                 width: 100, height: 4, borderRadius: 2,
-                background: '#1e293b', opacity: 0.2,
+                background: 'var(--text)', opacity: 0.2,
               }} />
             </div>
           </div>{/* end phone frame */}
@@ -1371,7 +1371,7 @@ export default function App() {
           <div style={{
             padding: '8px 12px', display: 'flex', alignItems: 'center',
             flexShrink: 0, gap: 8,
-            borderBottom: '1px solid #e2e8f0',
+            borderBottom: '1px solid var(--border)',
             background: 'rgba(255,255,255,.6)',
             position: 'relative',
           }}>
@@ -1379,48 +1379,48 @@ export default function App() {
             {/* Logo */}
             <div style={{
               width: 24, height: 24, borderRadius: 8,
-              background: 'linear-gradient(135deg, #6366f1, #4338ca)',
+              background: 'linear-gradient(135deg, var(--purple), var(--purple-dark))',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               flexShrink: 0,
             }}>
               <CheckIcon size={12} color="#fff" />
             </div>
             <span style={{
-              fontSize: 13, fontWeight: 800, color: '#1e293b',
+              fontSize: 13, fontWeight: 800, color: 'var(--text)',
               letterSpacing: 1, fontFamily: "'JetBrains Mono',monospace",
             }}>已讀</span>
             {prestigePower > 0 && (
               <span style={{
-                fontSize: 9, color: '#4f46e5',
+                fontSize: 9, color: 'var(--purple-text)',
                 background: 'rgba(99,102,241,.08)',
                 padding: '1px 6px', borderRadius: 6,
                 fontFamily: "'JetBrains Mono',monospace",
                 border: '1px solid rgba(99,102,241,.15)',
               }}>✦{prestigePower}</span>
             )}
-            <span style={{ fontSize: 10, color: '#94a3b8', fontFamily: "'JetBrains Mono',monospace" }}>
+            <span style={{ fontSize: 10, color: 'var(--text-muted)', fontFamily: "'JetBrains Mono',monospace" }}>
               {unlockedAchievements.length}/{103}⭐
             </span>
             <div style={{ flex: 1 }} />
             {prestigeCount > 0 && (
               <button onClick={() => setShowPrestigeShop(true)} style={{
                 background: 'rgba(99,102,241,.08)', border: '1px solid rgba(99,102,241,.2)',
-                borderRadius: 6, padding: '6px 10px', color: '#4f46e5',
+                borderRadius: 6, padding: '6px 10px', color: 'var(--purple-text)',
                 fontSize: 11, fontWeight: 700, cursor: 'pointer',
                 fontFamily: "'JetBrains Mono',monospace", minHeight: 32,
               }}>✦商店</button>
             )}
             {prestigeEarned >= 1 && (
               <button onClick={handlePrestige} style={{
-                background: 'linear-gradient(135deg, #6366f1, #4338ca)',
-                color: '#fff', border: 'none', borderRadius: 6,
+                background: 'linear-gradient(135deg, var(--purple), var(--purple-dark))',
+                color: 'var(--text-on-dark)', border: 'none', borderRadius: 6,
                 padding: '6px 10px', fontSize: 11, fontWeight: 700,
                 cursor: 'pointer', boxShadow: '0 2px 8px rgba(99,102,241,.3)', minHeight: 32,
               }}>重生 +✦{prestigeEarned}</button>
             )}
             <button onClick={() => { const m = toggleMute(); setMutedUI(m); }} style={{
-              background: '#f1f5f9', border: '1px solid #e2e8f0',
-              borderRadius: 6, padding: '8px 12px', color: '#64748b', fontSize: 14,
+              background: 'var(--surface-hover)', border: '1px solid var(--border)',
+              borderRadius: 6, padding: '8px 12px', color: 'var(--text-secondary)', fontSize: 14,
               minWidth: 44, minHeight: 44, cursor: 'pointer',
             }}>{mutedUI ? '🔇' : '🔊'}</button>
           </div>
@@ -1428,7 +1428,7 @@ export default function App() {
           {/* Upgrades — compact, capped height */}
           <div style={{
             maxHeight: '25%', overflowY: 'auto', flexShrink: 0,
-            borderBottom: '2px solid #e2e8f0',
+            borderBottom: '2px solid var(--border)',
             background: 'rgba(99,102,241,.02)',
             position: 'relative', overflowX: 'hidden',
           }}>
@@ -1457,7 +1457,7 @@ export default function App() {
                 }
               }} compact />
             ) : (
-              <div style={{ padding: '8px 12px', fontSize: 11, color: '#94a3b8', fontStyle: 'italic' }}>
+              <div style={{ padding: '8px 12px', fontSize: 11, color: 'var(--text-muted)', fontStyle: 'italic' }}>
                 繼續已讀就會解鎖升級
               </div>
             )}
@@ -1492,13 +1492,13 @@ export default function App() {
             boxShadow: '0 20px 60px rgba(0,0,0,.15)',
           }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
-              <div style={{ fontSize: 15, fontWeight: 800, color: '#1e293b' }}>✦ 已讀之力商店</div>
+              <div style={{ fontSize: 15, fontWeight: 800, color: 'var(--text)' }}>✦ 已讀之力商店</div>
               <button
                 onClick={() => setShowPrestigeShop(false)}
                 style={{
-                  background: '#f1f5f9', border: '1px solid #e2e8f0',
+                  background: 'var(--surface-hover)', border: '1px solid var(--border)',
                   borderRadius: 8, padding: '4px 12px', fontSize: 12,
-                  cursor: 'pointer', color: '#64748b', fontFamily: 'inherit',
+                  cursor: 'pointer', color: 'var(--text-secondary)', fontFamily: 'inherit',
                 }}
               >關閉</button>
             </div>
@@ -1534,10 +1534,10 @@ export default function App() {
             maxWidth: 400, width: '90vw',
             boxShadow: '0 20px 60px rgba(0,0,0,.15)',
           }}>
-            <div style={{ fontSize: 16, fontWeight: 800, color: '#1e293b', marginBottom: 4 }}>
+            <div style={{ fontSize: 16, fontWeight: 800, color: 'var(--text)', marginBottom: 4 }}>
               ⚡ {chainChoice.chain.name}
             </div>
-            <div style={{ fontSize: 12, color: '#64748b', marginBottom: 16 }}>選擇你的應對方式：</div>
+            <div style={{ fontSize: 12, color: 'var(--text-secondary)', marginBottom: 16 }}>選擇你的應對方式：</div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
               {chainChoice.options.map((opt, i) => (
                 <button
@@ -1546,17 +1546,17 @@ export default function App() {
                   style={{
                     display: 'flex', alignItems: 'center', gap: 10,
                     padding: '12px 16px', borderRadius: 12,
-                    background: '#f8f9fb', border: '1px solid #e2e8f0',
+                    background: 'var(--bg)', border: '1px solid var(--border)',
                     cursor: 'pointer', textAlign: 'left',
                     transition: 'all .15s', fontFamily: 'inherit',
                   }}
-                  onMouseEnter={e => { e.target.style.borderColor = '#6366f1'; e.target.style.background = '#f0f0ff'; }}
-                  onMouseLeave={e => { e.target.style.borderColor = '#e2e8f0'; e.target.style.background = '#f8f9fb'; }}
+                  onMouseEnter={e => { e.target.style.borderColor = 'var(--purple)'; e.target.style.background = '#f0f0ff'; }}
+                  onMouseLeave={e => { e.target.style.borderColor = 'var(--border)'; e.target.style.background = 'var(--bg)'; }}
                 >
                   <span style={{ fontSize: 24 }}>{opt.emoji}</span>
                   <div>
-                    <div style={{ fontSize: 13, fontWeight: 700, color: '#1e293b' }}>{opt.label}</div>
-                    <div style={{ fontSize: 11, color: '#64748b', marginTop: 2 }}>{opt.desc}</div>
+                    <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--text)' }}>{opt.label}</div>
+                    <div style={{ fontSize: 11, color: 'var(--text-secondary)', marginTop: 2 }}>{opt.desc}</div>
                   </div>
                 </button>
               ))}

@@ -51,7 +51,7 @@ export default function PrestigeBar({ allTime, prestigeEarned, prestigeCount = 0
         width: '100%', maxWidth: 300, marginTop: 12,
         background: '#fff',
         borderRadius: 16, padding: '10px 14px',
-        border: '1px solid #e2e8f0',
+        border: '1px solid var(--border)',
         boxShadow: '0 1px 3px rgba(0,0,0,.06)',
         animation: isComplete ? 'cardPulse 2s ease-in-out infinite' : 'none',
       }}>
@@ -60,13 +60,13 @@ export default function PrestigeBar({ allTime, prestigeEarned, prestigeCount = 0
           fontSize: 11, marginBottom: 6,
         }}>
           <span style={{
-            color: '#64748b', fontFamily: "'JetBrains Mono',monospace",
+            color: 'var(--text-secondary)', fontFamily: "'JetBrains Mono',monospace",
             display: 'flex', alignItems: 'center', gap: 4,
           }}>
             🌀 Inbox Zero
             {canPrestige && (
               <span style={{
-                color: '#4f46e5', background: 'rgba(99,102,241,.08)',
+                color: 'var(--purple-text)', background: 'rgba(99,102,241,.08)',
                 padding: '1px 6px', borderRadius: 6, fontSize: 10,
                 animation: 'prestigePulse 2s ease-in-out infinite',
               }}>+✦{prestigeEarned}</span>
@@ -96,14 +96,14 @@ export default function PrestigeBar({ allTime, prestigeEarned, prestigeCount = 0
                   }} />
                   重生
                 </button>
-              : <span style={{ color: '#94a3b8', fontFamily: "'JetBrains Mono',monospace", fontSize: 10 }}>
+              : <span style={{ color: 'var(--text-muted)', fontFamily: "'JetBrains Mono',monospace", fontSize: 10 }}>
                   需{fmt(500000)}已讀
                 </span>
             }
           </span>
         </div>
         <div style={{
-          height: 4, background: '#f1f5f9',
+          height: 4, background: 'var(--surface-hover)',
           borderRadius: 4, overflow: 'hidden',
         }}>
           <div style={{

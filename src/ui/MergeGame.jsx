@@ -60,7 +60,7 @@ function MergeCell({ item, index, gridSize, selected, selectedTier, onSelect, pe
           <span style={{ fontSize: 20, opacity: 0.5 }}>📦</span>
           <span style={{
             fontSize: 9, fontWeight: 700, marginTop: 2,
-            color: reads >= (placeCost ?? 0) ? '#b45309' : '#ef4444',
+            color: reads >= (placeCost ?? 0) ? 'var(--amber-text)' : '#ef4444',
             fontFamily: "'JetBrains Mono',monospace",
           }}>{fmt(placeCost ?? 0)}</span>
         </>}
@@ -185,7 +185,7 @@ function MergeBuffBar({ activeBuffs }) {
             }
             <span>×{b.mult}</span>
             <span style={{
-              fontFamily: "'JetBrains Mono',monospace", fontSize: 10, color: '#94a3b8',
+              fontFamily: "'JetBrains Mono',monospace", fontSize: 10, color: 'var(--text-muted)',
             }}>{min}:{String(sec).padStart(2, '0')}</span>
           </div>
         );
@@ -259,7 +259,7 @@ export default function MergeGame({ mergeState, parCount, reads, onPlace, placeC
           <span style={{ fontSize: 22 }}>{activeVisitor.visitor.emoji}</span>
           <span style={{ fontSize: 13, color: '#ef4444', fontWeight: 600 }}>
             {activeVisitor.visitor.message}
-            <span style={{ color: '#94a3b8', marginLeft: 4 }}>
+            <span style={{ color: 'var(--text-muted)', marginLeft: 4 }}>
               (拿走了 {activeVisitor.stolenCount} 個)
             </span>
           </span>
@@ -279,7 +279,7 @@ export default function MergeGame({ mergeState, parCount, reads, onPlace, placeC
           {onCollapse && (
             <button onClick={onCollapse} style={{
               background: 'none', border: 'none', cursor: 'pointer',
-              fontSize: 13, color: '#94a3b8', padding: '2px 4px', lineHeight: 1,
+              fontSize: 13, color: 'var(--text-muted)', padding: '2px 4px', lineHeight: 1,
             }} title="收合">▲</button>
           )}
           <div style={{
@@ -291,8 +291,8 @@ export default function MergeGame({ mergeState, parCount, reads, onPlace, placeC
             <span style={{ fontSize: 14 }}>🎁</span>
           </div>
           <div>
-            <div style={{ fontSize: 14, fontWeight: 800, color: '#1e293b', lineHeight: 1 }}>伴手禮合成</div>
-            <div style={{ fontSize: 10, color: '#94a3b8', marginTop: 1 }}>合成 {totalMerges} 次</div>
+            <div style={{ fontSize: 14, fontWeight: 800, color: 'var(--text)', lineHeight: 1 }}>伴手禮合成</div>
+            <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 1 }}>合成 {totalMerges} 次</div>
           </div>
         </div>
         <div style={{
@@ -333,7 +333,7 @@ export default function MergeGame({ mergeState, parCount, reads, onPlace, placeC
               {t.emoji}
             </div>
             {i < GIFT_TIERS.length - 1 && (
-              <span style={{ fontSize: 10, color: '#cbd5e1' }}>→</span>
+              <span style={{ fontSize: 10, color: 'var(--text-disabled)' }}>→</span>
             )}
           </div>
         ))}
@@ -379,7 +379,7 @@ export default function MergeGame({ mergeState, parCount, reads, onPlace, placeC
         borderTop: '1px solid rgba(148,163,184,.08)',
         display: 'flex', justifyContent: 'space-between', alignItems: 'center',
       }}>
-        <span style={{ fontSize: 11, color: '#94a3b8', fontStyle: 'italic' }}>
+        <span style={{ fontSize: 11, color: 'var(--text-muted)', fontStyle: 'italic' }}>
           點選兩個相同禮物來合成
         </span>
         {expandCost !== null && (
@@ -388,7 +388,7 @@ export default function MergeGame({ mergeState, parCount, reads, onPlace, placeC
             disabled={!canExpand}
             style={{
               padding: '5px 12px', fontSize: 12, fontWeight: 700,
-              color: canExpand ? '#f59e0b' : '#cbd5e1',
+              color: canExpand ? '#f59e0b' : 'var(--text-disabled)',
               background: canExpand ? 'rgba(245,158,11,.08)' : '#f8fafc',
               border: `1px solid ${canExpand ? 'rgba(245,158,11,.25)' : '#e2e8f0'}`,
               borderRadius: 10, cursor: canExpand ? 'pointer' : 'default',

@@ -26,7 +26,7 @@ export default function PrestigeShop({ prestigePower, boughtPrestige, onBuy }) {
   if (!PRESTIGE_UPGRADES.length) {
     return (
       <div style={{
-        textAlign: 'center', color: '#94a3b8',
+        textAlign: 'center', color: 'var(--text-muted)',
         fontSize: 13, padding: '32px 16px',
       }}>
         尚無可用的已讀之力升級
@@ -56,7 +56,7 @@ export default function PrestigeShop({ prestigePower, boughtPrestige, onBuy }) {
         </span>
         <span style={{
           fontFamily: "'JetBrains Mono', monospace",
-          fontSize: 14, fontWeight: 700, color: '#4f46e5',
+          fontSize: 14, fontWeight: 700, color: 'var(--purple-text)',
           background: 'linear-gradient(135deg, rgba(99,102,241,.1), rgba(139,92,246,.12))',
           padding: '3px 10px', borderRadius: 10,
           border: '1px solid rgba(99,102,241,.2)',
@@ -94,10 +94,10 @@ export default function PrestigeShop({ prestigePower, boughtPrestige, onBuy }) {
                     ? '#eef2ff'
                     : '#fff',
                 border: bought
-                  ? '1px solid #e2e8f0'
+                  ? '1px solid var(--border)'
                   : canBuy
                     ? '1.5px solid #6366f1'
-                    : '1px solid #e2e8f0',
+                    : '1px solid var(--border)',
                 borderRadius: 12,
                 padding: '10px 10px 8px',
                 cursor: canBuy ? 'pointer' : 'default',
@@ -131,7 +131,7 @@ export default function PrestigeShop({ prestigePower, boughtPrestige, onBuy }) {
 
               {/* Name */}
               <div style={{
-                fontSize: 13, fontWeight: 700, color: '#1e293b',
+                fontSize: 13, fontWeight: 700, color: 'var(--text)',
                 marginBottom: 2, lineHeight: 1.3,
               }}>
                 {up.name}
@@ -139,7 +139,7 @@ export default function PrestigeShop({ prestigePower, boughtPrestige, onBuy }) {
 
               {/* Description */}
               <div style={{
-                fontSize: 11, color: '#64748b',
+                fontSize: 11, color: 'var(--text-secondary)',
                 lineHeight: 1.35, marginBottom: 6,
               }}>
                 {up.desc}
@@ -152,15 +152,15 @@ export default function PrestigeShop({ prestigePower, boughtPrestige, onBuy }) {
                 fontWeight: 600,
               }}>
                 {bought ? null : canBuy ? (
-                  <span style={{ color: '#4f46e5' }}>
+                  <span style={{ color: 'var(--purple-text)' }}>
                     ✦{up.cost}
                   </span>
                 ) : (
-                  <span style={{ color: '#94a3b8' }}>
+                  <span style={{ color: 'var(--text-muted)' }}>
                     ✦{up.cost}
                     <span style={{
                       marginLeft: 4, fontSize: 10,
-                      fontWeight: 400, color: '#b45309',
+                      fontWeight: 400, color: 'var(--amber-text)',
                     }}>
                       還差 ✦{deficit}
                     </span>

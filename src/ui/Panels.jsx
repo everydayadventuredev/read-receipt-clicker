@@ -26,7 +26,7 @@ export function StatsPanel({ reads, allTime, prodPerSec, clickPower, owned, seen
     ['生涯', fmt(allTime), allTimeGold ? '#d97706' : '#4f46e5'],
     ['產能', `${fmt(prodPerSec)}/s`, '#b45309'],
     ['點擊', fmt(clickPower), '#4f46e5'],
-    ['大師', totalOwned, '#1e293b'],
+    ['大師', totalOwned, 'var(--text)'],
   ];
   const right = [
     ['里程', `${seenMilestones.size}/${MILESTONES.length}`, '#f59e0b'],
@@ -62,7 +62,7 @@ export function StatsPanel({ reads, allTime, prodPerSec, clickPower, owned, seen
         display: 'flex', justifyContent: 'space-between', alignItems: 'center',
         padding: '2px 0',
       }}>
-        <span style={{ fontSize: 10, color: '#94a3b8' }}>{label}</span>
+        <span style={{ fontSize: 10, color: 'var(--text-muted)' }}>{label}</span>
         <span style={{
           fontSize: 12, fontWeight: 700, color,
           fontFamily: "'JetBrains Mono',monospace",
@@ -81,7 +81,7 @@ export function StatsPanel({ reads, allTime, prodPerSec, clickPower, owned, seen
         display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: '0 2px',
         padding: '2px 4px',
         background: 'rgba(255,255,255,.5)',
-        borderBottom: '1px solid #e2e8f0',
+        borderBottom: '1px solid var(--border)',
       }}>
         {allItems.map(([label, value, color]) => {
           const isFlashing = flashKeys.has(label);
@@ -91,7 +91,7 @@ export function StatsPanel({ reads, allTime, prodPerSec, clickPower, owned, seen
               display: 'flex', alignItems: 'center', gap: 3,
               padding: '2px 8px',
             }}>
-              <span style={{ fontSize: 9, color: '#94a3b8' }}>{label}</span>
+              <span style={{ fontSize: 9, color: 'var(--text-muted)' }}>{label}</span>
               <span style={{
                 fontSize: 11, fontWeight: 700, color,
                 fontFamily: "'JetBrains Mono',monospace",
@@ -110,7 +110,7 @@ export function StatsPanel({ reads, allTime, prodPerSec, clickPower, owned, seen
       display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0 12px',
       padding: '6px 8px',
       background: 'rgba(255,255,255,.6)',
-      borderRadius: 8, border: '1px solid #e2e8f0',
+      borderRadius: 8, border: '1px solid var(--border)',
     }}>
       <div>{renderCol(left)}</div>
       <div>{renderCol(right)}</div>
@@ -122,16 +122,16 @@ export function LogPanel({ log }) {
   return (
     <div style={{ padding: '12px 0', maxHeight: 200, overflowY: 'auto' }}>
       <div style={{
-        fontSize: 11, fontWeight: 600, color: '#94a3b8',
+        fontSize: 11, fontWeight: 600, color: 'var(--text-muted)',
         marginBottom: 8, letterSpacing: 0.5, textTransform: 'uppercase',
       }}>紀錄</div>
       {log.length === 0
-        ? <div style={{ fontSize: 12, color: '#94a3b8', fontStyle: 'italic' }}>開始已讀就會有紀錄出現</div>
+        ? <div style={{ fontSize: 12, color: 'var(--text-muted)', fontStyle: 'italic' }}>開始已讀就會有紀錄出現</div>
         : log.map((l, i) => (
           <div key={l.id} style={{
-            fontSize: 12, color: '#64748b',
+            fontSize: 12, color: 'var(--text-secondary)',
             padding: '5px 0',
-            borderBottom: i < log.length - 1 ? '1px solid #f1f5f9' : 'none',
+            borderBottom: i < log.length - 1 ? '1px solid var(--surface-hover)' : 'none',
             lineHeight: 1.5,
           }}>{l.m}</div>
         ))
@@ -214,12 +214,12 @@ export function AchievementBadges({ unlockedAchievements, maxVisible }) {
       })}
       {(lockedCount > 0 || hiddenCount > 0 || overflowUnlocked > 0) && (
         <span style={{
-          fontSize: 11, color: '#94a3b8',
+          fontSize: 11, color: 'var(--text-muted)',
           fontFamily: "'JetBrains Mono',monospace",
           padding: '2px 6px',
         }}>
           {allUnlocked.length}/{ACHIEVEMENTS.length - hiddenCount}
-          {hiddenCount > 0 && <span style={{ color: '#cbd5e1' }}> +?</span>}
+          {hiddenCount > 0 && <span style={{ color: 'var(--text-disabled)' }}> +?</span>}
         </span>
       )}
     </div>

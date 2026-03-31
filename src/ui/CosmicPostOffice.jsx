@@ -140,7 +140,7 @@ export default function CosmicPostOffice({ perSecond, onEarn, alienCount, onColl
           <span style={{ fontSize: 18 }}>📬</span>
           <span style={{
             fontFamily: "'Space Grotesk', sans-serif",
-            fontWeight: 700, fontSize: 14, color: '#1e293b',
+            fontWeight: 700, fontSize: 14, color: 'var(--text)',
           }}>宇宙郵局</span>
           {bestRound > 0 && (
             <span style={{
@@ -154,7 +154,7 @@ export default function CosmicPostOffice({ perSecond, onEarn, alienCount, onColl
         </div>
         <button onClick={onCollapse} style={{
           background: 'none', border: 'none', cursor: 'pointer',
-          fontSize: 12, color: '#94a3b8', fontWeight: 600, padding: '2px 6px',
+          fontSize: 12, color: 'var(--text-muted)', fontWeight: 600, padding: '2px 6px',
         }}>▲ 收合</button>
       </div>
 
@@ -167,8 +167,8 @@ export default function CosmicPostOffice({ perSecond, onEarn, alienCount, onColl
           borderBottom: '1px solid rgba(168,85,247,.08)',
           flexShrink: 0,
         }}>
-          <span style={{ fontSize: 11, color: '#94a3b8' }}>總分類: <b style={{ color: '#a855f7' }}>{totalSorted}</b></span>
-          <span style={{ fontSize: 11, color: '#94a3b8' }}>外星通訊: <b style={{ color: '#a855f7' }}>{alienCount}</b></span>
+          <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>總分類: <b style={{ color: '#a855f7' }}>{totalSorted}</b></span>
+          <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>外星通訊: <b style={{ color: '#a855f7' }}>{alienCount}</b></span>
           {phase === 'active' && (
             <>
               <span style={{ fontSize: 11, color: '#10b981' }}>✓ {sorted}</span>
@@ -184,7 +184,7 @@ export default function CosmicPostOffice({ perSecond, onEarn, alienCount, onColl
             alignItems: 'center', justifyContent: 'center', gap: 12, padding: 20,
           }}>
             <div style={{ fontSize: 32, lineHeight: 1 }}>📬🪐👽🛸</div>
-            <div style={{ fontSize: 13, color: '#64748b', textAlign: 'center', lineHeight: 1.5, maxWidth: 280 }}>
+            <div style={{ fontSize: 13, color: 'var(--text-secondary)', textAlign: 'center', lineHeight: 1.5, maxWidth: 280 }}>
               把落下的星際訊息<br />
               拖拉到正確的星球收件匣！<br />
               <span style={{ color: '#a855f7', fontWeight: 600 }}>看表情符號判斷目的地</span>
@@ -223,7 +223,7 @@ export default function CosmicPostOffice({ perSecond, onEarn, alienCount, onColl
                     boxShadow: '0 2px 8px rgba(0,0,0,.08)',
                     fontFamily: "'Space Grotesk',sans-serif",
                     fontSize: 13, fontWeight: 600,
-                    color: '#1e293b',
+                    color: 'var(--text)',
                     userSelect: 'none',
                     whiteSpace: 'nowrap',
                     animation: 'cosmic-fall 5s linear forwards',
@@ -294,7 +294,7 @@ export default function CosmicPostOffice({ perSecond, onEarn, alienCount, onColl
             }}>
               +{earned.toLocaleString()} 已讀
             </div>
-            <div style={{ fontSize: 12, color: '#94a3b8' }}>冷卻中... {cooldown}s</div>
+            <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>冷卻中... {cooldown}s</div>
           </div>
         )}
       </div>

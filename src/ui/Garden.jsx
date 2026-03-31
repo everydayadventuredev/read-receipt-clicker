@@ -80,7 +80,7 @@ function PlotCell({ slot, index, fieldCount, seeds, onPlant, onHarvest, onClear 
         border: '1.5px dashed rgba(148,163,184,.18)',
       }}>
         <FieldBg state="locked" />
-        <span style={{ fontSize: 12, color: '#cbd5e1', opacity: 0.5, zIndex: 1 }}>🔒</span>
+        <span style={{ fontSize: 12, color: 'var(--text-disabled)', opacity: 0.5, zIndex: 1 }}>🔒</span>
       </div>
     );
   }
@@ -128,7 +128,7 @@ function PlotCell({ slot, index, fieldCount, seeds, onPlant, onHarvest, onClear 
             ? <GameIcon src={getFlowerIcon(flower.id)} size={32} color="#94a3b8" />
             : <span style={{ fontSize: 32 }}>{flower?.emoji ?? '🍂'}</span>
           }
-          <div style={{ fontSize: 10, color: '#94a3b8', marginTop: 2 }}>枯萎了</div>
+          <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 2 }}>枯萎了</div>
         </div>
       </button>
     );
@@ -222,7 +222,7 @@ function CollectionView({ collection, completedSeries }) {
   return (
     <div style={{ padding: '10px 12px', overflowY: 'auto', flex: 1 }}>
       <div style={{
-        fontSize: 13, color: '#64748b', marginBottom: 10,
+        fontSize: 13, color: 'var(--text-secondary)', marginBottom: 10,
         fontFamily: "'JetBrains Mono',monospace",
         display: 'flex', alignItems: 'center', gap: 6,
       }}>
@@ -243,7 +243,7 @@ function CollectionView({ collection, completedSeries }) {
             borderRadius: 14,
           }}>
             <div style={{
-              fontSize: 14, fontWeight: 700, color: '#1e293b',
+              fontSize: 14, fontWeight: 700, color: 'var(--text)',
               marginBottom: 6, display: 'flex', alignItems: 'center', gap: 6,
             }}>
               <span>{series.emoji}</span>
@@ -253,7 +253,7 @@ function CollectionView({ collection, completedSeries }) {
                 background: 'rgba(245,158,11,.1)', padding: '2px 6px', borderRadius: 4,
               }}>✨ ×1.05 永久</span>}
             </div>
-            <div style={{ fontSize: 11, color: '#94a3b8', marginBottom: 8 }}>{series.desc}</div>
+            <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 8 }}>{series.desc}</div>
             <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
               {series.flowerIds.map(fid => {
                 const flower = getFlowerById(fid);
@@ -276,7 +276,7 @@ function CollectionView({ collection, completedSeries }) {
                     </div>
                     <div style={{
                       fontSize: 9, fontWeight: 600,
-                      color: found ? rarity.color : '#cbd5e1',
+                      color: found ? rarity.color : 'var(--text-disabled)',
                       marginTop: 2,
                     }}>
                       {found ? flower.name : '???'}
@@ -329,7 +329,7 @@ function BuffBar({ activeBuffs }) {
             }
             <span>×{b.mult}</span>
             <span style={{
-              fontFamily: "'JetBrains Mono',monospace", fontSize: 10, color: '#94a3b8',
+              fontFamily: "'JetBrains Mono',monospace", fontSize: 10, color: 'var(--text-muted)',
             }}>{fmtTime(remaining)}</span>
           </div>
         );
@@ -390,7 +390,7 @@ export default function Garden({ gardenState, exCount, onPlant, onHarvest, onCle
           {onCollapse && (
             <button onClick={onCollapse} style={{
               background: 'none', border: 'none', cursor: 'pointer',
-              fontSize: 13, color: '#94a3b8', padding: '2px 4px',
+              fontSize: 13, color: 'var(--text-muted)', padding: '2px 4px',
               lineHeight: 1,
             }} title="收合">▲</button>
           )}
@@ -403,8 +403,8 @@ export default function Garden({ gardenState, exCount, onPlant, onHarvest, onCle
             <GameIcon src={UI_ICON_MAP.seed} size={14} color="#fff" />
           </div>
           <div>
-            <div style={{ fontSize: 14, fontWeight: 800, color: '#1e293b', lineHeight: 1 }}>放下花園</div>
-            <div style={{ fontSize: 10, color: '#94a3b8', marginTop: 1 }}>{fieldCount} 塊田地</div>
+            <div style={{ fontSize: 14, fontWeight: 800, color: 'var(--text)', lineHeight: 1 }}>放下花園</div>
+            <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 1 }}>{fieldCount} 塊田地</div>
           </div>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -428,7 +428,7 @@ export default function Garden({ gardenState, exCount, onPlant, onHarvest, onCle
               background: showCollection ? 'rgba(99,102,241,.12)' : 'rgba(148,163,184,.08)',
               border: showCollection ? '1.5px solid rgba(99,102,241,.3)' : '1.5px solid rgba(148,163,184,.2)',
               borderRadius: 10, cursor: 'pointer',
-              color: showCollection ? '#6366f1' : '#64748b',
+              color: showCollection ? '#6366f1' : 'var(--text-secondary)',
               display: 'flex', alignItems: 'center', gap: 4,
               boxShadow: showCollection ? '0 0 0 2px rgba(99,102,241,.1)' : 'none',
               transition: 'all .15s',
@@ -463,7 +463,7 @@ export default function Garden({ gardenState, exCount, onPlant, onHarvest, onCle
                 <div style={{ fontSize: 12, fontWeight: 800, color: newFlowerFlash.color }}>
                   新發現！
                 </div>
-                <div style={{ fontSize: 11, fontWeight: 700, color: '#1e293b' }}>
+                <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--text)' }}>
                   {newFlowerFlash.name}
                   <span style={{
                     marginLeft: 5, fontSize: 10, fontWeight: 600,
@@ -480,7 +480,7 @@ export default function Garden({ gardenState, exCount, onPlant, onHarvest, onCle
             textAlign: 'center',
           }}>
             <span style={{
-              fontSize: 12, color: '#94a3b8',
+              fontSize: 12, color: 'var(--text-muted)',
               fontStyle: 'italic', letterSpacing: 0.4,
               lineHeight: 1.6,
             }}>

@@ -1,15 +1,41 @@
 :root {
+  /* Surfaces */
   --bg: #f8f9fb;
   --surface: #ffffff;
+  --surface-hover: #f1f5f9;
+  --surface-dim: #f8fafc;
+
+  /* Text */
   --text: #1e293b;
   --text-secondary: #64748b;
   --text-muted: #94a3b8;
+  --text-on-dark: #ffffff;
+  --text-disabled: #cbd5e1;
+
+  /* Brand */
   --purple: #6366f1;
   --purple-text: #4f46e5;
-  --lime: #d97706;
-  --lime-text: #b45309;
+  --purple-dark: #4338ca;
+
+  /* Accent (amber) */
+  --amber: #d97706;
+  --amber-text: #b45309;
+  --amber-light: #f59e0b;
+
+  /* Semantic */
+  --success: #10b981;
+  --error: #ef4444;
+  --warning: #f59e0b;
+  --info: #3b82f6;
+
+  /* Borders */
   --border: #e2e8f0;
-  --surface-hover: #f1f5f9;
+  --border-light: #eef0f2;
+  --border-muted: #d1d5db;
+
+  /* Legacy aliases */
+  --lime: var(--amber);
+  --lime-text: var(--amber-text);
 }
 
 html, body, #root {

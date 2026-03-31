@@ -80,13 +80,13 @@ function SectionHeader({ mg, isUnlocked, currentCount, onToggle, summary }) {
       <span style={{ fontSize: 20 }}>{mg.emoji}</span>
       <div style={{ flex: 1, minWidth: 0 }}>
         <div style={{
-          fontSize: 14, fontWeight: 700, color: '#1e293b',
+          fontSize: 14, fontWeight: 700, color: 'var(--text)',
         }}>
           {mg.name}
         </div>
         {isUnlocked && summary && (
           <div style={{
-            fontSize: 11, color: '#94a3b8', fontWeight: 500,
+            fontSize: 11, color: 'var(--text-muted)', fontWeight: 500,
             marginTop: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
           }}>
             {summary}
@@ -94,14 +94,14 @@ function SectionHeader({ mg, isUnlocked, currentCount, onToggle, summary }) {
         )}
         {!isUnlocked && (
           <div style={{
-            fontSize: 11, color: '#94a3b8', fontWeight: 500, marginTop: 1,
+            fontSize: 11, color: 'var(--text-muted)', fontWeight: 500, marginTop: 1,
           }}>
             🔒 需要 {mg.unlockCount} 個{BUILDING_NAMES[mg.buildingId] ?? mg.buildingId}（目前 {currentCount}）
           </div>
         )}
       </div>
       {isUnlocked && (
-        <span style={{ fontSize: 11, color: '#94a3b8', fontWeight: 600 }}>▼</span>
+        <span style={{ fontSize: 11, color: 'var(--text-muted)', fontWeight: 600 }}>▼</span>
       )}
     </button>
   );
@@ -168,10 +168,10 @@ export default function MiniGamePanel({
             pointerEvents: 'none',
           }} />
           <div style={{ fontSize: 32, opacity: 0.3 }}>🔮</div>
-          <div style={{ fontSize: 13, fontWeight: 700, color: '#94a3b8', letterSpacing: 1 }}>
+          <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-muted)', letterSpacing: 1 }}>
             子系統
           </div>
-          <div style={{ fontSize: 11, color: '#cbd5e1', textAlign: 'center', lineHeight: 1.5, maxWidth: 260 }}>
+          <div style={{ fontSize: 11, color: 'var(--text-disabled)', textAlign: 'center', lineHeight: 1.5, maxWidth: 260 }}>
             建築達到特定等級後，將解鎖專屬子系統玩法
           </div>
           <div style={{ fontSize: 10, color: '#d1d5db', fontFamily: "'JetBrains Mono',monospace", marginTop: 4 }}>

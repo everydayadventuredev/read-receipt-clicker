@@ -41,8 +41,8 @@ function ChannelCard({ channel, price, prevPrice, history, holdings, costBasis, 
   }, [price]);
 
   const change = prevPrice ? ((price - prevPrice) / prevPrice * 100) : 0;
-  const changeColor = change > 0.5 ? '#10b981' : change < -0.5 ? '#ef4444' : '#94a3b8';
-  const sparkColor = change >= 0 ? '#10b981' : '#ef4444';
+  const changeColor = change > 0.5 ? 'var(--success)' : change < -0.5 ? 'var(--error)' : 'var(--text-muted)';
+  const sparkColor = change >= 0 ? 'var(--success)' : 'var(--error)';
 
   const scaledPrice = price * (priceScale ?? 1);
   const profit = holdings > 0 ? (holdings * scaledPrice) - costBasis : 0;
@@ -64,10 +64,10 @@ function ChannelCard({ channel, price, prevPrice, history, holdings, costBasis, 
           ? <GameIcon src={getStockIcon(channel.id)} size={22} color="#64748b" />
           : <span style={{ fontSize: 22 }}>{channel.emoji}</span>
         }
-        <span style={{ fontSize: 16, fontWeight: 700, color: '#1e293b' }}>{channel.name}</span>
+        <span style={{ fontSize: 16, fontWeight: 700, color: 'var(--text)' }}>{channel.name}</span>
         <div style={{ flex: 1 }} />
         <span style={{
-          fontSize: 20, fontWeight: 800, color: '#1e293b',
+          fontSize: 20, fontWeight: 800, color: 'var(--text)',
           fontFamily: "'JetBrains Mono',monospace",
         }}>
           {fmt(Math.round(price * (priceScale ?? 1)))}
@@ -86,7 +86,7 @@ function ChannelCard({ channel, price, prevPrice, history, holdings, costBasis, 
         {holdings > 0 && (
           <span style={{
             fontSize: 12, fontWeight: 600,
-            color: profit >= 0 ? '#10b981' : '#ef4444',
+            color: profit >= 0 ? 'var(--success)' : 'var(--error)',
             fontFamily: "'JetBrains Mono',monospace",
             marginLeft: 'auto',
           }}>
@@ -102,9 +102,9 @@ function ChannelCard({ channel, price, prevPrice, history, holdings, costBasis, 
           disabled={!canBuy}
           style={{
             flex: 1, padding: '8px 0', fontSize: 14, fontWeight: 700,
-            color: !canBuy ? '#cbd5e1' : '#10b981',
+            color: !canBuy ? 'var(--text-disabled)' : 'var(--success)',
             background: !canBuy ? '#f8fafc' : 'rgba(16,185,129,.08)',
-            border: `1px solid ${!canBuy ? '#e2e8f0' : 'rgba(16,185,129,.25)'}`,
+            border: `1px solid ${!canBuy ? 'var(--border)' : 'rgba(16,185,129,.25)'}`,
             borderRadius: 6, cursor: !canBuy ? 'default' : 'pointer',
           }}
         >買入</button>
@@ -113,9 +113,9 @@ function ChannelCard({ channel, price, prevPrice, history, holdings, costBasis, 
           disabled={holdings <= 0}
           style={{
             flex: 1, padding: '8px 0', fontSize: 14, fontWeight: 700,
-            color: holdings <= 0 ? '#cbd5e1' : '#ef4444',
+            color: holdings <= 0 ? 'var(--text-disabled)' : 'var(--error)',
             background: holdings <= 0 ? '#f8fafc' : 'rgba(239,68,68,.06)',
-            border: `1px solid ${holdings <= 0 ? '#e2e8f0' : 'rgba(239,68,68,.25)'}`,
+            border: `1px solid ${holdings <= 0 ? 'var(--border)' : 'rgba(239,68,68,.25)'}`,
             borderRadius: 6, cursor: holdings <= 0 ? 'default' : 'pointer',
           }}
         >賣出</button>
@@ -142,18 +142,18 @@ export default function StockMarket({ marketState, algoCount, reads, prodPerSec,
       <div style={{
         padding: '8px 12px',
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-        borderBottom: '1px solid #e2e8f0',
+        borderBottom: '1px solid var(--border)',
         flexShrink: 0,
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
           {onCollapse && (
             <button onClick={onCollapse} style={{
               background: 'none', border: 'none', cursor: 'pointer',
-              fontSize: 13, color: '#94a3b8', padding: '2px 4px', lineHeight: 1,
+              fontSize: 13, color: 'var(--text-muted)', padding: '2px 4px', lineHeight: 1,
             }} title="收合">▲</button>
           )}
           <span style={{ fontSize: 18 }}>📈</span>
-          <span style={{ fontSize: 16, fontWeight: 800, color: '#1e293b' }}>Feed 操盤手</span>
+          <span style={{ fontSize: 16, fontWeight: 800, color: 'var(--text)' }}>Feed 操盤手</span>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
           <span style={{
@@ -165,7 +165,7 @@ export default function StockMarket({ marketState, algoCount, reads, prodPerSec,
           {totalCost > 0 && (
             <span style={{
               fontSize: 11, fontWeight: 700,
-              color: totalProfit >= 0 ? '#10b981' : '#ef4444',
+              color: totalProfit >= 0 ? 'var(--success)' : 'var(--error)',
               fontFamily: "'JetBrains Mono',monospace",
             }}>
               {totalProfit >= 0 ? '+' : ''}{fmt(Math.round(totalProfit))}
@@ -174,14 +174,14 @@ export default function StockMarket({ marketState, algoCount, reads, prodPerSec,
           {onBuyAll && (
             <button onClick={onBuyAll} style={{
               padding: '2px 8px', fontSize: 11, fontWeight: 700,
-              color: '#10b981', background: 'rgba(16,185,129,.08)',
+              color: 'var(--success)', background: 'rgba(16,185,129,.08)',
               border: '1px solid rgba(16,185,129,.2)', borderRadius: 6, cursor: 'pointer',
             }}>全買</button>
           )}
           {onSellAll && (
             <button onClick={onSellAll} style={{
               padding: '2px 8px', fontSize: 11, fontWeight: 700,
-              color: '#ef4444', background: 'rgba(239,68,68,.06)',
+              color: 'var(--error)', background: 'rgba(239,68,68,.06)',
               border: '1px solid rgba(239,68,68,.2)', borderRadius: 6, cursor: 'pointer',
             }}>全賣</button>
           )}
@@ -212,8 +212,8 @@ export default function StockMarket({ marketState, algoCount, reads, prodPerSec,
       {/* Footer */}
       <div style={{
         padding: '8px 12px', flexShrink: 0,
-        borderTop: '1px solid #f1f5f9',
-        fontSize: 12, color: '#94a3b8', textAlign: 'center',
+        borderTop: '1px solid var(--surface-hover)',
+        fontSize: 12, color: 'var(--text-muted)', textAlign: 'center',
       }}>
         低買高賣 · 賣出 = 按當前價格換回已讀
       </div>

@@ -221,14 +221,14 @@ export default function ReadStorm({ active, onComplete, perSecond, onPerfect }) 
           <span style={{
             fontFamily: "'JetBrains Mono', monospace",
             fontWeight: 700, fontSize: 22,
-            color: timeLeft <= 3 ? "#ef4444" : "#4f46e5",
+            color: timeLeft <= 3 ? "var(--error)" : "var(--purple-text)",
             minWidth: 32, textAlign: "center",
           }}>
             {timeLeft}s
           </span>
           <span style={{
             fontFamily: "'JetBrains Mono', monospace",
-            fontWeight: 600, fontSize: 13, color: "#10b981",
+            fontWeight: 600, fontSize: 13, color: "var(--success)",
           }}>
             +{earned}
           </span>
@@ -272,7 +272,7 @@ export default function ReadStorm({ active, onComplete, perSecond, onPerfect }) 
                 <span style={{ fontSize: 15, whiteSpace: "nowrap", fontWeight: 600 }}>{b.msg}</span>
                 <span style={{
                   fontFamily: "'JetBrains Mono', monospace",
-                  fontSize: 12, fontWeight: 700, color: "#b45309",
+                  fontSize: 12, fontWeight: 700, color: "var(--amber-text)",
                 }}>
                   +{b.value}
                 </span>
@@ -292,7 +292,7 @@ export default function ReadStorm({ active, onComplete, perSecond, onPerfect }) 
               pointerEvents: "none",
               animation: "rs-float-up 800ms forwards",
               fontFamily: "'JetBrains Mono', monospace",
-              fontWeight: 700, fontSize: 20, color: "#4f46e5",
+              fontWeight: 700, fontSize: 20, color: "var(--purple-text)",
               zIndex: 10002,
               textShadow: "0 1px 4px rgba(99,102,241,.3)",
             }}

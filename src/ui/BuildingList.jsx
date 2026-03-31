@@ -48,22 +48,22 @@ function BuildingBar({ b, count, cost, prodRate, canAfford, buyN, isNew, onBuy, 
           : `linear-gradient(90deg, ${b.color}05, transparent)`,
       }}>
         <span style={{
-          fontSize: 16, fontWeight: 800, color: hasAny ? '#fff' : '#1e293b', lineHeight: 1.2,
+          fontSize: 16, fontWeight: 800, color: hasAny ? '#fff' : 'var(--text)', lineHeight: 1.2,
           textShadow: hasAny ? '0 1px 3px rgba(0,0,0,.5)' : 'none',
         }}>{b.name}</span>
         <span style={{
-          fontSize: 11, color: hasAny ? 'rgba(255,255,255,.7)' : '#64748b', lineHeight: 1.2, marginTop: 2,
+          fontSize: 11, color: hasAny ? 'rgba(255,255,255,.7)' : 'var(--text-secondary)', lineHeight: 1.2, marginTop: 2,
           whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
         }}>{b.desc}</span>
         <div style={{
           fontSize: 13, fontWeight: 700,
-          color: hasAny ? '#fdcb6e' : canAfford ? '#b45309' : '#94a3b8',
+          color: hasAny ? '#fdcb6e' : canAfford ? '#b45309' : 'var(--text-muted)',
           fontFamily: "'JetBrains Mono',monospace",
           marginTop: 2,
           textShadow: hasAny ? '0 1px 2px rgba(0,0,0,.5)' : 'none',
         }}>
           {fmt(cost)}{buyN > 1 ? ` ×${buyN}` : ''}
-          <span style={{ fontSize: 11, color: hasAny ? 'rgba(255,255,255,.5)' : '#94a3b8', marginLeft: 4 }}>
+          <span style={{ fontSize: 11, color: hasAny ? 'rgba(255,255,255,.5)' : 'var(--text-muted)', marginLeft: 4 }}>
             {hasAny ? `${fmt(prodRate)}/s` : `+${fmt(b.baseProd)}/s`}
           </span>
         </div>
@@ -77,7 +77,7 @@ function BuildingBar({ b, count, cost, prodRate, canAfford, buyN, isNew, onBuy, 
         width: 44, flexShrink: 0,
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         fontSize: hasAny ? 24 : 14, fontWeight: 900,
-        color: hasAny ? '#fff' : '#cbd5e1',
+        color: hasAny ? '#fff' : 'var(--text-disabled)',
         textShadow: hasAny ? '0 2px 4px rgba(0,0,0,.6)' : 'none',
         fontFamily: "'Space Grotesk','JetBrains Mono',monospace",
         opacity: hasAny ? 0.9 : 0.4,
@@ -133,8 +133,8 @@ export default function BuildingList({ buildings, owned, reads, allTime, unlocke
         }}>🏰 已讀大師</div>
         <div style={{
           display: 'flex', gap: 2,
-          background: '#f1f5f9', borderRadius: 8, padding: 2,
-          border: '1px solid #e2e8f0',
+          background: 'var(--surface-hover)', borderRadius: 8, padding: 2,
+          border: '1px solid var(--border)',
         }}>
           {[1, 10, 100].map(n => (
             <button
@@ -143,7 +143,7 @@ export default function BuildingList({ buildings, owned, reads, allTime, unlocke
               style={{
                 fontSize: 12, padding: '10px 12px', borderRadius: 6, border: 'none', minHeight: 44,
                 background: buyN === n ? 'linear-gradient(135deg, #6366f1, #4338ca)' : 'transparent',
-                color: buyN === n ? '#fff' : '#94a3b8',
+                color: buyN === n ? '#fff' : 'var(--text-muted)',
                 fontWeight: 700, fontFamily: "'JetBrains Mono',monospace",
                 cursor: 'pointer',
               }}
@@ -191,7 +191,7 @@ export default function BuildingList({ buildings, owned, reads, allTime, unlocke
               <div key={b.id} style={{
                 display: 'flex', alignItems: 'center', gap: 4,
                 padding: '2px 8px', height: 22,
-                opacity: 0.4, fontSize: 10, color: '#94a3b8',
+                opacity: 0.4, fontSize: 10, color: 'var(--text-muted)',
               }}>
                 <span style={{ fontSize: 8 }}>🔒</span>
                 <span style={{ fontWeight: 600, minWidth: 50 }}>{b.name}</span>

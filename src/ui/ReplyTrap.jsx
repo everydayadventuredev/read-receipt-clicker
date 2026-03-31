@@ -53,10 +53,10 @@ export default function ReplyTrap({ trap, onReply, onIgnore }) {
         }}>
           <span style={{ fontSize: 18 }}>{trap.emoji}</span>
           <div>
-            <div style={{ fontSize: 10, color: '#ef4444', fontWeight: 700, letterSpacing: 0.5 }}>
+            <div style={{ fontSize: 10, color: 'var(--error)', fontWeight: 700, letterSpacing: 0.5 }}>
               新訊息
             </div>
-            <div style={{ fontSize: 9, color: '#94a3b8' }}>
+            <div style={{ fontSize: 9, color: 'var(--text-muted)' }}>
               {timeLeft}秒後消失...
             </div>
           </div>
@@ -67,7 +67,7 @@ export default function ReplyTrap({ trap, onReply, onIgnore }) {
             overflow: 'hidden',
           }}>
             <div style={{
-              height: '100%', background: '#ef4444', borderRadius: 2,
+              height: '100%', background: 'var(--error)', borderRadius: 2,
               transition: 'width 1s linear',
               width: `${(timeLeft / 8) * 100}%`,
             }} />
@@ -77,7 +77,7 @@ export default function ReplyTrap({ trap, onReply, onIgnore }) {
         {/* Message */}
         <div style={{ padding: '14px 16px' }}>
           <div style={{
-            fontSize: 15, color: '#1e293b', fontWeight: 500,
+            fontSize: 15, color: 'var(--text)', fontWeight: 500,
             lineHeight: 1.5, marginBottom: 12,
           }}>
             {trap.msg}
@@ -102,8 +102,8 @@ export default function ReplyTrap({ trap, onReply, onIgnore }) {
               onClick={() => { setFading(true); setTimeout(onIgnore, 400); }}
               style={{
                 flex: 1, padding: '10px 0',
-                background: '#f1f5f9',
-                color: '#64748b', border: '1px solid #e2e8f0', borderRadius: 10,
+                background: 'var(--surface-hover)',
+                color: 'var(--text-secondary)', border: '1px solid var(--border)', borderRadius: 10,
                 fontSize: 13, fontWeight: 700, cursor: 'pointer',
                 transition: 'all .15s',
                 fontFamily: 'inherit',

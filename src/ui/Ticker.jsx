@@ -96,7 +96,7 @@ export default function Ticker({ allTime, logEntries = [] }) {
     <div style={{
       padding: '10px 16px',
       background: 'rgba(255,255,255,.85)',
-      borderBottom: '1px solid #e2e8f0',
+      borderBottom: '1px solid var(--border)',
       minHeight: 52,
       display: 'flex', alignItems: 'center',
       flexShrink: 0, gap: 10,
@@ -120,7 +120,7 @@ export default function Ticker({ allTime, logEntries = [] }) {
 
       {/* Message text */}
       <span style={{
-        color: display.isEvent ? '#1e293b' : '#64748b',
+        color: display.isEvent ? 'var(--text)' : 'var(--text-secondary)',
         fontSize: 14,
         fontWeight: display.isEvent ? 600 : 500,
         transition: 'opacity .3s, color .3s',

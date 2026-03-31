@@ -77,7 +77,7 @@ export default function TypeSprint({ perSecond, onEarn, infCount, onCollapse }) 
   // Character-by-character coloring
   const renderPhrase = () => {
     return phrase.split('').map((ch, i) => {
-      let color = '#94a3b8'; // untyped
+      let color = 'var(--text-muted)'; // untyped
       if (i < typed.length) {
         color = typed[i] === ch ? '#10b981' : '#ef4444'; // correct/wrong
       }
@@ -103,7 +103,7 @@ export default function TypeSprint({ perSecond, onEarn, infCount, onCollapse }) 
           <span style={{ fontSize: 18 }}>⌨️</span>
           <span style={{
             fontFamily: "'Space Grotesk', sans-serif",
-            fontWeight: 700, fontSize: 14, color: '#1e293b',
+            fontWeight: 700, fontSize: 14, color: 'var(--text)',
           }}>打字衝刺</span>
           {bestWpm > 0 && (
             <span style={{
@@ -120,7 +120,7 @@ export default function TypeSprint({ perSecond, onEarn, infCount, onCollapse }) 
           onClick={onCollapse}
           style={{
             background: 'none', border: 'none', cursor: 'pointer',
-            fontSize: 12, color: '#94a3b8', fontWeight: 600,
+            fontSize: 12, color: 'var(--text-muted)', fontWeight: 600,
             padding: '2px 6px',
           }}
         >▲ 收合</button>
@@ -140,7 +140,7 @@ export default function TypeSprint({ perSecond, onEarn, infCount, onCollapse }) 
             background: 'rgba(249,115,22,.06)', borderRadius: 10,
             padding: '6px 14px', textAlign: 'center',
           }}>
-            <div style={{ fontSize: 11, color: '#94a3b8', fontWeight: 600 }}>衝刺次數</div>
+            <div style={{ fontSize: 11, color: 'var(--text-muted)', fontWeight: 600 }}>衝刺次數</div>
             <div style={{ fontSize: 18, fontWeight: 700, color: '#f97316', fontFamily: "'JetBrains Mono',monospace" }}>
               {totalSprints}
             </div>
@@ -149,7 +149,7 @@ export default function TypeSprint({ perSecond, onEarn, infCount, onCollapse }) 
             background: 'rgba(16,185,129,.06)', borderRadius: 10,
             padding: '6px 14px', textAlign: 'center',
           }}>
-            <div style={{ fontSize: 11, color: '#94a3b8', fontWeight: 600 }}>網紅數</div>
+            <div style={{ fontSize: 11, color: 'var(--text-muted)', fontWeight: 600 }}>網紅數</div>
             <div style={{ fontSize: 18, fontWeight: 700, color: '#10b981', fontFamily: "'JetBrains Mono',monospace" }}>
               {infCount}
             </div>
@@ -159,7 +159,7 @@ export default function TypeSprint({ perSecond, onEarn, infCount, onCollapse }) 
         {/* Phase: idle */}
         {phase === 'idle' && (
           <div style={{ textAlign: 'center' }}>
-            <div style={{ fontSize: 13, color: '#64748b', marginBottom: 12, lineHeight: 1.5 }}>
+            <div style={{ fontSize: 13, color: 'var(--text-secondary)', marginBottom: 12, lineHeight: 1.5 }}>
               快速打出短語，打得越快獎勵越多！<br />
               100 WPM = 2.5× 加成
             </div>
@@ -206,7 +206,7 @@ export default function TypeSprint({ perSecond, onEarn, infCount, onCollapse }) 
                 boxSizing: 'border-box',
               }}
             />
-            <div style={{ fontSize: 11, color: '#94a3b8', marginTop: 6 }}>
+            <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 6 }}>
               打出上方短語即可完成
             </div>
           </div>
@@ -222,7 +222,7 @@ export default function TypeSprint({ perSecond, onEarn, infCount, onCollapse }) 
             }}>
               {wpm} WPM
             </div>
-            <div style={{ fontSize: 13, color: '#64748b', marginTop: 4 }}>
+            <div style={{ fontSize: 13, color: 'var(--text-secondary)', marginTop: 4 }}>
               {wpm >= 100 ? '🔥 神速！' : wpm >= 60 ? '⚡ 不錯！' : '👍 繼續練習！'}
             </div>
             <div style={{
@@ -233,7 +233,7 @@ export default function TypeSprint({ perSecond, onEarn, infCount, onCollapse }) 
               +{earned.toLocaleString()} 已讀
             </div>
             <div style={{
-              marginTop: 8, fontSize: 12, color: '#94a3b8',
+              marginTop: 8, fontSize: 12, color: 'var(--text-muted)',
             }}>
               冷卻中... {cooldown}s
             </div>
@@ -242,7 +242,7 @@ export default function TypeSprint({ perSecond, onEarn, infCount, onCollapse }) 
 
         {/* Phase: cooldown (same as result but no earned showing) */}
         {phase === 'cooldown' && (
-          <div style={{ textAlign: 'center', color: '#94a3b8', fontSize: 13 }}>
+          <div style={{ textAlign: 'center', color: 'var(--text-muted)', fontSize: 13 }}>
             冷卻中... {cooldown}s
           </div>
         )}

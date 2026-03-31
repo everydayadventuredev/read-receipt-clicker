@@ -82,7 +82,7 @@ export default function ClickArea({ message, isRead, isFirstClick, popAnim, rece
               textAlign: 'center', padding: '8px 0',
               animation: 'hf 4s ease-out forwards',
             }}>
-              <div style={{ fontSize: 13, color: '#94a3b8', fontWeight: 500 }}>
+              <div style={{ fontSize: 13, color: 'var(--text-muted)', fontWeight: 500 }}>
                 👇 點一下訊息已讀
               </div>
             </div>
@@ -101,16 +101,16 @@ export default function ClickArea({ message, isRead, isFirstClick, popAnim, rece
                   <div style={{
                     maxWidth: '82%',
                     background: '#fff',
-                    border: '1px solid #e2e8f0',
+                    border: '1px solid var(--border)',
                     borderRadius: '4px 12px 12px 12px',
                     padding: '5px 10px',
-                    fontSize: 12, color: '#64748b', lineHeight: 1.4,
+                    fontSize: 12, color: 'var(--text-secondary)', lineHeight: 1.4,
                   }}>
                     {m}
                   </div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 2, marginTop: 2 }}>
                     <CheckIcon size={7} color="#6366f1" />
-                    <span style={{ fontSize: 9, color: '#94a3b8' }}>
+                    <span style={{ fontSize: 9, color: 'var(--text-muted)' }}>
                       {now.getHours()}:{String(Math.max(0, now.getMinutes() - age)).padStart(2, '0')}
                     </span>
                   </div>
@@ -132,10 +132,10 @@ export default function ClickArea({ message, isRead, isFirstClick, popAnim, rece
                 <div style={{
                   maxWidth: '90%',
                   background: isRead
-                    ? '#f1f5f9'
+                    ? 'var(--surface-hover)'
                     : 'linear-gradient(145deg, rgba(99,102,241,.12), rgba(99,102,241,.05))',
                   border: isRead
-                    ? '1px solid #e2e8f0'
+                    ? '1px solid var(--border)'
                     : '2px solid rgba(99,102,241,.3)',
                   borderRadius: '4px 16px 16px 16px',
                   padding: '12px 16px',
@@ -147,7 +147,7 @@ export default function ClickArea({ message, isRead, isFirstClick, popAnim, rece
                   animation: !isRead && !isFirstClick ? 'ib 2.5s ease-in-out infinite' : 'none',
                 }}>
                   <div style={{
-                    color: isRead ? '#94a3b8' : '#1e293b',
+                    color: isRead ? 'var(--text-muted)' : 'var(--text)',
                     fontSize: 17, lineHeight: 1.5, fontWeight: 600,
                   }}>
                     {message}
@@ -157,7 +157,7 @@ export default function ClickArea({ message, isRead, isFirstClick, popAnim, rece
                   display: 'flex', alignItems: 'center',
                   gap: 3, marginTop: 3,
                 }}>
-                  <span style={{ fontSize: 10, color: '#94a3b8' }}>{timeStr}</span>
+                  <span style={{ fontSize: 10, color: 'var(--text-muted)' }}>{timeStr}</span>
                   {isRead && (
                     <span style={{ animation: 'ci .3s ease-out' }}>
                       <CheckIcon size={10} color="#6366f1" />
@@ -172,15 +172,15 @@ export default function ClickArea({ message, isRead, isFirstClick, popAnim, rece
         {/* Input bar (decorative) */}
         <div style={{
           padding: '6px 10px',
-          borderTop: '1px solid #e2e8f0',
+          borderTop: '1px solid var(--border)',
           display: 'flex', alignItems: 'center', gap: 8,
           background: '#fff', flexShrink: 0,
         }}>
           <div style={{
             flex: 1, padding: '6px 12px',
-            background: '#f1f5f9', borderRadius: 16,
-            fontSize: 12, color: '#94a3b8',
-            border: '1px solid #e2e8f0',
+            background: 'var(--surface-hover)', borderRadius: 16,
+            fontSize: 12, color: 'var(--text-muted)',
+            border: '1px solid var(--border)',
           }}>
             {inputText}
           </div>

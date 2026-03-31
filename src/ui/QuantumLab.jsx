@@ -116,7 +116,7 @@ export default function QuantumLab({ perSecond, onEarn, quantumCount, onCollapse
           <span style={{ fontSize: 18 }}>⚛️</span>
           <span style={{
             fontFamily: "'Space Grotesk', sans-serif",
-            fontWeight: 700, fontSize: 14, color: '#1e293b',
+            fontWeight: 700, fontSize: 14, color: 'var(--text)',
           }}>量子實驗室</span>
           {perfectCount > 0 && (
             <span style={{
@@ -130,7 +130,7 @@ export default function QuantumLab({ perSecond, onEarn, quantumCount, onCollapse
         </div>
         <button onClick={onCollapse} style={{
           background: 'none', border: 'none', cursor: 'pointer',
-          fontSize: 12, color: '#94a3b8', fontWeight: 600, padding: '2px 6px',
+          fontSize: 12, color: 'var(--text-muted)', fontWeight: 600, padding: '2px 6px',
         }}>▲ 收合</button>
       </div>
 
@@ -142,7 +142,7 @@ export default function QuantumLab({ perSecond, onEarn, quantumCount, onCollapse
             background: 'rgba(34,211,238,.06)', borderRadius: 10,
             padding: '6px 14px', textAlign: 'center', flex: 1,
           }}>
-            <div style={{ fontSize: 11, color: '#94a3b8', fontWeight: 600 }}>坍縮次數</div>
+            <div style={{ fontSize: 11, color: 'var(--text-muted)', fontWeight: 600 }}>坍縮次數</div>
             <div style={{
               fontSize: 20, fontWeight: 700, color: '#22d3ee',
               fontFamily: "'JetBrains Mono',monospace",
@@ -152,7 +152,7 @@ export default function QuantumLab({ perSecond, onEarn, quantumCount, onCollapse
             background: 'rgba(245,158,11,.06)', borderRadius: 10,
             padding: '6px 14px', textAlign: 'center', flex: 1,
           }}>
-            <div style={{ fontSize: 11, color: '#94a3b8', fontWeight: 600 }}>完美坍縮</div>
+            <div style={{ fontSize: 11, color: 'var(--text-muted)', fontWeight: 600 }}>完美坍縮</div>
             <div style={{
               fontSize: 20, fontWeight: 700, color: '#f59e0b',
               fontFamily: "'JetBrains Mono',monospace",
@@ -162,9 +162,9 @@ export default function QuantumLab({ perSecond, onEarn, quantumCount, onCollapse
             background: 'rgba(99,102,241,.06)', borderRadius: 10,
             padding: '6px 14px', textAlign: 'center', flex: 1,
           }}>
-            <div style={{ fontSize: 11, color: '#94a3b8', fontWeight: 600 }}>量子建築</div>
+            <div style={{ fontSize: 11, color: 'var(--text-muted)', fontWeight: 600 }}>量子建築</div>
             <div style={{
-              fontSize: 20, fontWeight: 700, color: '#6366f1',
+              fontSize: 20, fontWeight: 700, color: 'var(--purple)',
               fontFamily: "'JetBrains Mono',monospace",
             }}>{quantumCount}</div>
           </div>
@@ -232,7 +232,7 @@ export default function QuantumLab({ perSecond, onEarn, quantumCount, onCollapse
         }}>
           {phase === 'idle' && (
             <>
-              <div style={{ fontSize: 13, color: '#64748b', textAlign: 'center', lineHeight: 1.5 }}>
+              <div style={{ fontSize: 13, color: 'var(--text-secondary)', textAlign: 'center', lineHeight: 1.5 }}>
                 當量子粒子在<span style={{ color: '#f59e0b', fontWeight: 700 }}>中心完美區域</span>時<br />
                 按下坍縮！獲得 <b>×3</b> 獎勵
               </div>
@@ -293,7 +293,7 @@ export default function QuantumLab({ perSecond, onEarn, quantumCount, onCollapse
                   +{earned.toLocaleString()}
                 </div>
               )}
-              <div style={{ fontSize: 12, color: '#94a3b8', marginTop: 8 }}>
+              <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 8 }}>
                 量子場重置中... {cooldown}s
               </div>
             </div>

@@ -81,7 +81,7 @@ export default function UpgradeRow({ upgrades, reads, onBuy, onBuyAll, compact =
           ⚡ 升級
           <span style={{
             fontFamily: "'JetBrains Mono',monospace", fontSize: 12,
-            color: '#94a3b8', fontWeight: 500,
+            color: 'var(--text-muted)', fontWeight: 500,
           }}>{doneCount}/{upgrades.length}</span>
           <div style={{ flex: 1 }} />
           {activeItems.some(u => u.state === 'buy') && onBuyAll && (
@@ -103,7 +103,7 @@ export default function UpgradeRow({ upgrades, reads, onBuy, onBuyAll, compact =
         {activeItems.length > 0 && (
           <div style={{
             padding: '3px 10px 6px',
-            fontSize: 11, color: '#94a3b8', fontStyle: 'italic',
+            fontSize: 11, color: 'var(--text-muted)', fontStyle: 'italic',
             letterSpacing: 0.2, lineHeight: 1.4,
           }}>
             {UPGRADE_TIPS[doneCount % UPGRADE_TIPS.length]}
@@ -136,15 +136,15 @@ export default function UpgradeRow({ upgrades, reads, onBuy, onBuyAll, compact =
                 <span style={{ fontSize: 16, lineHeight: 1, flexShrink: 0 }}>{u.emoji}</span>
                 <div style={{ flex: 1, minWidth: 0, overflow: 'hidden' }}>
                   <div style={{
-                    fontSize: 13, fontWeight: 700, color: '#1e293b',
+                    fontSize: 13, fontWeight: 700, color: 'var(--text)',
                     whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
                   }}>{u.name}</div>
                   <div style={{
-                    fontSize: 11, color: canBuy ? '#6366f1' : '#94a3b8', fontWeight: 600,
+                    fontSize: 11, color: canBuy ? '#6366f1' : 'var(--text-muted)', fontWeight: 600,
                   }}>{getEffectLabel(u)}</div>
                   {getFlavor(u) && (
                     <div style={{
-                      fontSize: 10, color: '#94a3b8', fontWeight: 500,
+                      fontSize: 10, color: 'var(--text-muted)', fontWeight: 500,
                       whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
                       fontStyle: 'italic', marginTop: 1,
                     }}>{getFlavor(u)}</div>
@@ -152,7 +152,7 @@ export default function UpgradeRow({ upgrades, reads, onBuy, onBuyAll, compact =
                 </div>
                 <span style={{
                   fontSize: 12, fontWeight: 700,
-                  color: canBuy ? '#b45309' : '#cbd5e1',
+                  color: canBuy ? 'var(--amber-text)' : 'var(--text-disabled)',
                   fontFamily: "'JetBrains Mono',monospace",
                   flexShrink: 0,
                 }}>{fmt(u.cost)}</span>
@@ -164,7 +164,7 @@ export default function UpgradeRow({ upgrades, reads, onBuy, onBuyAll, compact =
         {doneCount > 0 && (
           <div style={{
             marginTop: 4, padding: '4px 10px',
-            fontSize: 12, color: '#94a3b8', opacity: 0.6,
+            fontSize: 12, color: 'var(--text-muted)', opacity: 0.6,
           }}>
             ✓ {doneCount}/{upgrades.length}
           </div>
@@ -177,12 +177,12 @@ export default function UpgradeRow({ upgrades, reads, onBuy, onBuyAll, compact =
   return (
     <div style={{ padding: '10px 12px 8px', flexShrink: 0 }}>
       <div style={{
-        fontSize: 11, fontWeight: 600, color: '#94a3b8',
+        fontSize: 11, fontWeight: 600, color: 'var(--text-muted)',
         marginBottom: 8, letterSpacing: 0.5, textTransform: 'uppercase',
         display: 'flex', alignItems: 'center', gap: 6,
       }}>
         升級
-        <span style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 10, color: '#94a3b8' }}>
+        <span style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 10, color: 'var(--text-muted)' }}>
           {doneCount}/{upgrades.length}
         </span>
       </div>
@@ -199,7 +199,7 @@ export default function UpgradeRow({ upgrades, reads, onBuy, onBuyAll, compact =
                 display: 'flex', alignItems: 'center', gap: 6,
                 padding: '4px 8px', borderRadius: 8,
                 background: '#f8fafc', opacity: 0.5,
-                fontSize: 11, color: '#94a3b8',
+                fontSize: 11, color: 'var(--text-muted)',
               }}>
                 <CheckIcon size={10} color="#059669" />
                 <span>{u.emoji}</span>
@@ -225,10 +225,10 @@ export default function UpgradeRow({ upgrades, reads, onBuy, onBuyAll, compact =
               <span style={{ fontSize: 22, lineHeight: 1, flexShrink: 0 }}>{u.emoji}</span>
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                  <span style={{ fontSize: 14, fontWeight: 700, color: '#1e293b' }}>{u.name}</span>
-                  <span style={{ fontSize: 14, fontWeight: 800, fontFamily: "'JetBrains Mono',monospace", color: canBuy ? '#b45309' : '#cbd5e1' }}>{fmt(u.cost)}</span>
+                  <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--text)' }}>{u.name}</span>
+                  <span style={{ fontSize: 14, fontWeight: 800, fontFamily: "'JetBrains Mono',monospace", color: canBuy ? 'var(--amber-text)' : 'var(--text-disabled)' }}>{fmt(u.cost)}</span>
                 </div>
-                <div style={{ fontSize: 12, color: canBuy ? '#6366f1' : '#94a3b8', marginTop: 2, fontWeight: 600 }}>{u.desc}</div>
+                <div style={{ fontSize: 12, color: canBuy ? '#6366f1' : 'var(--text-muted)', marginTop: 2, fontWeight: 600 }}>{u.desc}</div>
                 {isWait && buildingName && (
                   <div style={{ fontSize: 10, color: '#f59e0b', marginTop: 3, fontFamily: "'JetBrains Mono',monospace" }}>
                     還差 {fmt(u.cost - reads)} · 需 {buildingName} ×{u.req.count}
