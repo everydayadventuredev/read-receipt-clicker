@@ -1,197 +1,411 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1440" height="900" viewBox="0 0 1440 900">
-  <style>
-    text { font-family: 'Inter', 'Helvetica', sans-serif; }
-    .label { font-size: 14px; font-weight: 700; fill: #1e293b; }
-    .sublabel { font-size: 11px; fill: #64748b; }
-    .dim { font-size: 10px; fill: #94a3b8; font-family: 'JetBrains Mono', monospace; }
-    .score { font-size: 12px; font-weight: 800; fill: #6366f1; }
-    .block { stroke-width: 1.5; rx: 8; ry: 8; }
-  </style>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 900" width="1440" height="900" font-family="Arial, Helvetica, sans-serif">
+  <defs>
+    <style>
+      .section-label { font-size: 14px; font-weight: 700; fill: #1e293b; }
+      .detail-label { font-size: 11px; fill: #64748b; }
+      .dim-label { font-size: 10px; fill: #94a3b8; font-family: monospace; }
+      .note-label { font-size: 9px; fill: #b45309; font-style: italic; }
+      .priority-badge { font-size: 10px; font-weight: 700; fill: #fff; }
+      .column-title { font-size: 13px; font-weight: 800; fill: #1e293b; letter-spacing: 0.5px; }
+      .block-fill { fill: #f0f0f0; stroke: #999; stroke-width: 1; stroke-dasharray: 6,3; }
+      .header-fill { fill: #e8eaf6; stroke: #7986cb; stroke-width: 1.5; }
+      .ticker-fill { fill: #fef3c7; stroke: #d97706; stroke-width: 1; }
+    </style>
+  </defs>
 
-  <!-- Background -->
-  <rect width="1440" height="900" fill="#f8fafc"/>
+  <!-- Canvas background -->
+  <rect width="1440" height="900" fill="#ffffff" />
 
-  <!-- ═══ HEADER ═══ 40px -->
-  <rect x="0" y="0" width="1440" height="40" fill="#fff" stroke="#e2e8f0" class="block"/>
-  <text x="20" y="25" class="label">HEADER</text>
-  <text x="100" y="25" class="sublabel">Logo + 成就Badges + ✦商店 + 重生</text>
-  <text x="1380" y="25" class="dim" text-anchor="end">h=40</text>
+  <!-- ===================================================================== -->
+  <!-- HEADER — full width, h=48, position: relative, flexShrink: 0         -->
+  <!-- ===================================================================== -->
+  <rect x="0" y="0" width="1440" height="48" class="header-fill" rx="0" />
 
-  <!-- ═══ TICKER ═══ 32px -->
-  <rect x="0" y="42" width="1440" height="32" fill="#fffbeb" stroke="#fbbf24" stroke-opacity="0.3" class="block"/>
-  <text x="20" y="63" class="label">TICKER</text>
-  <text x="100" y="63" class="sublabel">新聞跑馬燈 · 優先級 1.8</text>
-  <text x="1380" y="63" class="dim" text-anchor="end">h=32</text>
-  <text x="1300" y="63" class="score">1.8</text>
+  <!-- Priority badge: Prestige bar 3.2 -->
+  <rect x="6" y="4" width="50" height="16" rx="8" fill="#6366f1" />
+  <text x="31" y="15" text-anchor="middle" class="priority-badge">P 3.2</text>
 
-  <!-- ═══ MAIN LAYOUT ═══ starts at y=76, height=824 -->
-  <!-- 3 columns: LEFT 25% | MIDDLE 45% | RIGHT 30% -->
+  <text x="62" y="16" class="section-label">HEADER</text>
+  <text x="62" y="32" class="dim-label">h: 48px fixed | flexShrink: 0 | bg: rgba(255,255,255,.8) + backdrop-filter: blur(20px)</text>
+  <text x="62" y="42" class="dim-label">padding: 10px 16px | display: flex | alignItems: center | gap: 10</text>
 
-  <!-- LEFT COLUMN — 25% = 360px -->
-  <rect x="2" y="78" width="356" height="820" fill="#fff" stroke="#e2e8f0" class="block"/>
-  <text x="12" y="96" class="dim">LEFT 25% (360px)</text>
+  <!-- Header internal: Logo -->
+  <rect x="16" y="8" width="76" height="32" fill="none" stroke="#999" stroke-width="0.5" stroke-dasharray="3,2" rx="3" />
+  <text x="54" y="20" text-anchor="middle" font-size="9" fill="#64748b">Logo 28x28</text>
+  <text x="54" y="32" text-anchor="middle" font-size="8" fill="#94a3b8">+ "已讀" label</text>
 
-  <!-- Counter -->
-  <rect x="12" y="102" width="336" height="120" fill="#eef2ff" stroke="#6366f1" stroke-opacity="0.3" class="block"/>
-  <text x="180" y="150" class="label" text-anchor="middle" font-size="28">54.06M</text>
-  <text x="180" y="175" class="sublabel" text-anchor="middle">計數器 · 優先級 4.5</text>
-  <text x="180" y="195" class="dim" text-anchor="middle">✓ 2.12M/秒</text>
-  <text x="330" y="118" class="score">4.5</text>
+  <!-- Header internal: Prestige progress -->
+  <rect x="100" y="12" width="200" height="24" fill="none" stroke="#999" stroke-width="0.5" stroke-dasharray="3,2" rx="3" />
+  <text x="200" y="22" text-anchor="middle" font-size="9" fill="#64748b">Prestige Progress (flex:1, maxW:200)</text>
+  <text x="200" y="32" text-anchor="middle" font-size="8" fill="#94a3b8">h:4 bar + achievement count</text>
 
-  <!-- Stats compact -->
-  <rect x="12" y="226" width="336" height="20" fill="#f8fafc" stroke="#e2e8f0" class="block"/>
-  <text x="180" y="240" class="dim" text-anchor="middle">生涯 229M · 大師 49 · 升級 0/108</text>
+  <!-- Header internal: Right buttons -->
+  <rect x="1220" y="8" width="210" height="32" fill="none" stroke="#999" stroke-width="0.5" stroke-dasharray="3,2" rx="3" />
+  <text x="1325" y="20" text-anchor="middle" font-size="9" fill="#64748b">✦Shop | Prestige Btn | Mute</text>
+  <text x="1325" y="32" text-anchor="middle" font-size="8" fill="#94a3b8">flexShrink:0 | gap:6</text>
 
-  <!-- Guilt -->
-  <rect x="12" y="250" width="336" height="50" fill="#fef2f2" stroke="#ef4444" stroke-opacity="0.15" class="block"/>
-  <text x="22" y="272" class="label">罪惡感</text>
-  <text x="22" y="288" class="sublabel">優先級 3.8</text>
-  <text x="330" y="272" class="score">3.8</text>
+  <!-- Header bottom progress bar -->
+  <rect x="0" y="45" width="1440" height="3" fill="#c5cae9" stroke="none" />
+  <text x="1434" y="44" text-anchor="end" font-size="8" fill="#94a3b8">progress h:3</text>
 
-  <!-- Click/Chat Area -->
-  <rect x="12" y="304" width="336" height="590" fill="#ecfdf5" stroke="#10b981" stroke-opacity="0.2" class="block"/>
-  <text x="22" y="330" class="label">聊天/點擊區</text>
-  <text x="22" y="348" class="sublabel">優先級 4.2 — 主要互動區域</text>
-  <text x="330" y="330" class="score">4.2</text>
-  <!-- Chat elements -->
-  <rect x="22" y="360" width="316" height="36" fill="#d1fae5" stroke="#10b981" stroke-opacity="0.2" rx="4" ry="4"/>
-  <text x="32" y="383" class="sublabel">已讀收件匣 (在線)</text>
-  <rect x="22" y="750" width="150" height="40" fill="#f1f5f9" stroke="#e2e8f0" rx="8" ry="8"/>
-  <text x="35" y="775" class="sublabel">訊息泡泡</text>
-  <rect x="22" y="850" width="316" height="32" fill="#f1f5f9" stroke="#e2e8f0" rx="8" ry="8"/>
-  <text x="32" y="871" class="sublabel">輸入框</text>
-  <!-- Empty space indicator -->
-  <rect x="80" y="500" width="200" height="180" fill="none" stroke="#ef4444" stroke-dasharray="6 4" stroke-opacity="0.4" rx="8" ry="8"/>
-  <text x="180" y="585" class="dim" text-anchor="middle" fill="#ef4444" font-size="12">大量空白</text>
-  <text x="180" y="605" class="dim" text-anchor="middle" fill="#ef4444" font-size="10">可利用空間</text>
+  <!-- ===================================================================== -->
+  <!-- TICKER — full width, below header, h ~28px                           -->
+  <!-- ===================================================================== -->
+  <rect x="0" y="48" width="1440" height="28" class="ticker-fill" rx="0" />
+  <rect x="6" y="52" width="50" height="16" rx="8" fill="#cbd5e1" />
+  <text x="31" y="63" text-anchor="middle" class="priority-badge">P 1.8</text>
+  <text x="62" y="64" class="section-label">TICKER</text>
+  <text x="160" y="64" class="dim-label">h: ~28px | single-line news/event with fade | Ticker.jsx</text>
 
-  <!-- MIDDLE COLUMN — 45% = 648px -->
-  <rect x="362" y="78" width="644" height="820" fill="#fff" stroke="#e2e8f0" class="block"/>
-  <text x="372" y="96" class="dim">MIDDLE 45% (648px)</text>
+  <!-- ===================================================================== -->
+  <!-- MAIN LAYOUT — flex row (>=768px), y=76, remaining height=824         -->
+  <!-- div.game-layout: flex:1, overflow:hidden, minHeight:0                -->
+  <!-- ===================================================================== -->
 
-  <!-- Mini-game Tab Bar -->
-  <rect x="372" y="102" width="624" height="32" fill="#f8fafc" stroke="#e2e8f0" class="block"/>
-  <text x="382" y="123" class="sublabel">📈 Feed 操盤手 (tab)</text>
+  <!-- Column width annotations with lines -->
+  <line x1="0" y1="82" x2="360" y2="82" stroke="#4338ca" stroke-width="1.5" />
+  <line x1="360" y1="82" x2="360" y2="86" stroke="#4338ca" stroke-width="1" />
+  <text x="180" y="92" text-anchor="middle" font-size="11" font-weight="700" fill="#4338ca">LEFT 25% = 360px</text>
 
-  <!-- Stock Market Header -->
-  <rect x="372" y="138" width="624" height="30" fill="#eef2ff" stroke="#6366f1" stroke-opacity="0.1" class="block"/>
-  <text x="382" y="158" class="label" font-size="12">Feed 操盤手</text>
-  <text x="950" y="158" class="dim">總市值 0</text>
+  <line x1="360" y1="82" x2="1008" y2="82" stroke="#b45309" stroke-width="1.5" />
+  <line x1="1008" y1="82" x2="1008" y2="86" stroke="#b45309" stroke-width="1" />
+  <text x="684" y="92" text-anchor="middle" font-size="11" font-weight="700" fill="#b45309">MIDDLE 45% = 648px</text>
 
-  <!-- Stock Grid 2×3 -->
-  <rect x="372" y="172" width="305" height="100" fill="#fff" stroke="#e2e8f0" class="block"/>
-  <text x="380" y="192" class="sublabel">😂 迷因 99</text>
-  <text x="380" y="210" class="dim">sparkline + 買入/賣出</text>
-  <rect x="681" y="172" width="305" height="100" fill="#fff" stroke="#e2e8f0" class="block"/>
-  <text x="689" y="192" class="sublabel">🐱 貓貓 44</text>
+  <line x1="1008" y1="82" x2="1440" y2="82" stroke="#059669" stroke-width="1.5" />
+  <text x="1224" y="92" text-anchor="middle" font-size="11" font-weight="700" fill="#059669">RIGHT 30% = 432px</text>
 
-  <rect x="372" y="276" width="305" height="100" fill="#fff" stroke="#e2e8f0" class="block"/>
-  <text x="380" y="296" class="sublabel">📰 新聞 228</text>
-  <rect x="681" y="276" width="305" height="100" fill="#fff" stroke="#e2e8f0" class="block"/>
-  <text x="689" y="296" class="sublabel">💬 八卦 10</text>
+  <!-- Column divider lines -->
+  <line x1="360" y1="96" x2="360" y2="900" stroke="#e2e8f0" stroke-width="1" stroke-dasharray="4,2" />
+  <text x="362" y="895" font-size="8" fill="#94a3b8">border-right: 1px solid #e2e8f0</text>
+  <line x1="1008" y1="96" x2="1008" y2="900" stroke="#e2e8f0" stroke-width="1" stroke-dasharray="4,2" />
 
-  <rect x="372" y="380" width="305" height="100" fill="#fff" stroke="#e2e8f0" class="block"/>
-  <text x="380" y="400" class="sublabel">🍜 美食 195</text>
-  <rect x="681" y="380" width="305" height="100" fill="#fff" stroke="#e2e8f0" class="block"/>
-  <text x="689" y="400" class="sublabel">📚 知識 33</text>
+  <!-- ===================================================================== -->
+  <!-- LEFT COLUMN — .section-hero                                           -->
+  <!-- w=360, flexDirection:column, alignItems:center, overflow:hidden       -->
+  <!-- padding: 16px 14px 12px                                               -->
+  <!-- ===================================================================== -->
+  <rect x="2" y="98" width="356" height="800" fill="none" stroke="#4338ca" stroke-width="1.5" stroke-dasharray="8,4" rx="4" />
+  <text x="10" y="112" class="column-title" fill="#4338ca">LEFT — .section-hero</text>
+  <text x="10" y="124" class="dim-label">flex-direction: column | align-items: center | overflow: hidden</text>
+  <text x="10" y="134" class="dim-label">padding: 16px 14px 12px | flex-shrink: 0</text>
 
-  <!-- Mini-game label -->
-  <text x="684" y="510" class="label" text-anchor="middle">Mini-Game 區</text>
-  <text x="684" y="528" class="sublabel" text-anchor="middle">優先級 4.0</text>
-  <text x="950" y="510" class="score">4.0</text>
+  <!-- L1: COUNTER — hero number, clickable -->
+  <rect x="16" y="142" width="328" height="96" class="block-fill" rx="4" />
+  <rect x="22" y="146" width="50" height="16" rx="8" fill="#ef4444" />
+  <text x="47" y="157" text-anchor="middle" class="priority-badge">P 4.5</text>
+  <text x="78" y="157" class="section-label">COUNTER</text>
+  <text x="22" y="172" class="detail-label">fontSize: 80 | fontWeight: 900 | Space Grotesk mono</text>
+  <text x="22" y="184" class="detail-label">Clickable &lt;button&gt; — onClick = handleClick</text>
+  <text x="22" y="196" class="detail-label">Color tiers: #1e293b / #4f46e5 (1M) / #b45309 (1B) / #7c3aed (1T)</text>
+  <text x="22" y="208" class="dim-label">padding: 8px 16px | borderRadius: 12 | pop animation on click</text>
+  <text x="22" y="220" class="note-label">PRIMARY CLICK TARGET — tapping number = game click</text>
 
-  <!-- Empty space below stock grid -->
-  <rect x="400" y="540" width="570" height="320" fill="none" stroke="#ef4444" stroke-dasharray="6 4" stroke-opacity="0.4" rx="8" ry="8"/>
-  <text x="684" y="690" class="dim" text-anchor="middle" fill="#ef4444" font-size="14">中欄下方大量空白</text>
-  <text x="684" y="715" class="dim" text-anchor="middle" fill="#ef4444" font-size="11">未來 mini-game / 互動內容</text>
+  <!-- L2: CPS subtitle -->
+  <rect x="16" y="244" width="328" height="34" class="block-fill" rx="4" />
+  <rect x="22" y="248" width="50" height="16" rx="8" fill="#94a3b8" />
+  <text x="47" y="259" text-anchor="middle" class="priority-badge">P 2.8</text>
+  <text x="78" y="259" class="section-label">CPS</text>
+  <text x="22" y="272" class="dim-label">fontSize: 18 (22 at 1M+) | "{fmt}/秒" | JetBrains Mono | CheckIcon 13px</text>
 
-  <!-- Footer -->
-  <rect x="372" y="870" width="624" height="24" fill="#f8fafc" stroke="#e2e8f0" class="block"/>
-  <text x="684" y="886" class="dim" text-anchor="middle">低買高賣 · 賣出 = 按當前價格換回已讀</text>
+  <!-- L3: Stats row -->
+  <rect x="16" y="284" width="328" height="24" class="block-fill" rx="4" />
+  <rect x="22" y="286" width="50" height="16" rx="8" fill="#94a3b8" />
+  <text x="47" y="297" text-anchor="middle" class="priority-badge">P 2.8</text>
+  <text x="78" y="297" class="section-label">STATS</text>
+  <text x="200" y="297" class="dim-label">fontSize:13 | "生涯 · 大師 · 升級" | conditional (allTime>0)</text>
 
-  <!-- RIGHT COLUMN — 30% = 432px -->
-  <rect x="1010" y="78" width="428" height="820" fill="#fff" stroke="#e2e8f0" class="block"/>
-  <text x="1020" y="96" class="dim">RIGHT 30% (432px)</text>
+  <!-- L4: GUILT INDICATOR -->
+  <rect x="16" y="314" width="328" height="108" class="block-fill" rx="4" />
+  <rect x="22" y="318" width="50" height="16" rx="8" fill="#f97316" />
+  <text x="47" y="329" text-anchor="middle" class="priority-badge">P 3.8</text>
+  <text x="78" y="329" class="section-label">GUILT INDICATOR</text>
+  <text x="22" y="344" class="detail-label">width: 100% | padding: 8px 10px | borderRadius: 10 | marginBottom: 10</text>
+  <text x="22" y="356" class="detail-label">States: dormant(&lt;50) | low | medium | high | coldMaster</text>
+  <text x="22" y="368" class="detail-label">Progress bar: h:4, color gradient per state</text>
+  <text x="22" y="380" class="detail-label">Relief buttons: flex-wrap: wrap, gap: 4, borderRadius: 8 each</text>
+  <text x="22" y="392" class="dim-label">bg changes with guilt level | shakes at high level</text>
+  <text x="22" y="404" class="note-label">Height varies: ~24px dormant, ~108px active with relief buttons</text>
 
-  <!-- Upgrades Section -->
-  <rect x="1020" y="102" width="408" height="240" fill="#f5f3ff" stroke="#6366f1" stroke-opacity="0.15" class="block"/>
-  <text x="1030" y="122" class="label">升級區</text>
-  <text x="1030" y="138" class="sublabel">優先級 3.5 · maxHeight 35%</text>
-  <text x="1410" y="122" class="score">3.5</text>
-  <!-- Upgrade items -->
-  <rect x="1030" y="148" width="388" height="36" fill="#fff" stroke="#e2e8f0" rx="6" ry="6"/>
-  <text x="1040" y="170" class="sublabel">👆 指尖覺醒 · 點擊+1 · 100</text>
-  <rect x="1030" y="188" width="388" height="36" fill="#fff" stroke="#e2e8f0" rx="6" ry="6"/>
-  <text x="1040" y="210" class="sublabel">✌️ 雙重已讀 · 點擊+3 · 1,000</text>
-  <rect x="1030" y="228" width="388" height="36" fill="#fff" stroke="#e2e8f0" rx="6" ry="6"/>
-  <text x="1040" y="250" class="sublabel">⚡ 已讀連擊 · 點擊+10 · 10,000</text>
-  <rect x="1030" y="268" width="388" height="36" fill="#fff" stroke="#e2e8f0" rx="6" ry="6"/>
-  <text x="1040" y="290" class="sublabel">🌪️ 已讀風暴 · 點擊+50 · 100,000</text>
-  <rect x="1030" y="308" width="388" height="28" fill="#fff" stroke="#e2e8f0" rx="6" ry="6"/>
-  <text x="1040" y="326" class="sublabel">📈 效率已讀術 · 點擊+1%產能 · 5,000</text>
+  <!-- L5: CLICK AREA — fills remaining -->
+  <rect x="16" y="428" width="328" height="464" class="block-fill" rx="4" />
+  <rect x="22" y="432" width="50" height="16" rx="8" fill="#ef4444" />
+  <text x="47" y="443" text-anchor="middle" class="priority-badge">P 4.2</text>
+  <text x="78" y="443" class="section-label">CLICK AREA</text>
+  <text x="22" y="458" class="detail-label">width: 100% | flex: 1 (fills ALL remaining vertical space)</text>
+  <text x="22" y="470" class="detail-label">justifyContent: center | ClickArea.jsx component</text>
+  <text x="22" y="482" class="detail-label">Props: message, isRead, recentMessages, guilt, guiltLevel</text>
+  <text x="22" y="494" class="detail-label">Contains: chat bubble UI, message display, click interaction</text>
+  <text x="22" y="506" class="note-label">GROWS to fill remaining space — primary interaction zone</text>
+
+  <!-- Visual: chat bubble sketch -->
+  <rect x="40" y="520" width="280" height="180" fill="none" stroke="#94a3b8" stroke-width="0.5" stroke-dasharray="3,2" rx="8" />
+  <text x="180" y="600" text-anchor="middle" font-size="20" fill="#cbd5e1">Chat Bubble</text>
+  <text x="180" y="620" text-anchor="middle" font-size="10" fill="#cbd5e1">Message + Read Receipt</text>
+
+  <!-- Flow arrows for left column -->
+  <path d="M180,238 L180,244" stroke="#94a3b8" stroke-width="1" fill="none" marker-end="url(#arr)" />
+  <path d="M180,278 L180,284" stroke="#94a3b8" stroke-width="1" fill="none" />
+  <path d="M180,308 L180,314" stroke="#94a3b8" stroke-width="1" fill="none" />
+  <path d="M180,422 L180,428" stroke="#94a3b8" stroke-width="1" fill="none" />
+
+  <!-- ===================================================================== -->
+  <!-- MIDDLE COLUMN — .section-middle                                       -->
+  <!-- w=648, flex:1, flexDirection:column, overflow:hidden, minHeight:0     -->
+  <!-- ===================================================================== -->
+  <rect x="362" y="98" width="644" height="800" fill="none" stroke="#b45309" stroke-width="1.5" stroke-dasharray="8,4" rx="4" />
+  <text x="370" y="112" class="column-title" fill="#b45309">MIDDLE — .section-middle</text>
+  <text x="370" y="124" class="dim-label">flex: 1 | flex-direction: column | overflow: hidden | min-height: 0</text>
+  <text x="370" y="134" class="dim-label">border-right: 1px solid #e2e8f0</text>
+
+  <!-- M1: Tab Bar -->
+  <rect x="376" y="142" width="616" height="36" class="block-fill" rx="4" />
+  <text x="382" y="158" class="section-label">TAB BAR</text>
+  <text x="382" y="172" class="dim-label">Mini-game selector: Garden | Merge | Stock (from minigames.js registry)</text>
+
+  <!-- Tab mockups -->
+  <rect x="392" y="148" width="80" height="24" fill="#e8f5e9" stroke="#4caf50" stroke-width="0.5" rx="4" />
+  <text x="432" y="164" text-anchor="middle" font-size="10" fill="#2e7d32">Garden</text>
+  <rect x="480" y="148" width="80" height="24" fill="#fff3e0" stroke="#ff9800" stroke-width="0.5" rx="4" />
+  <text x="520" y="164" text-anchor="middle" font-size="10" fill="#e65100">Merge</text>
+  <rect x="568" y="148" width="80" height="24" fill="#e3f2fd" stroke="#2196f3" stroke-width="0.5" rx="4" />
+  <text x="608" y="164" text-anchor="middle" font-size="10" fill="#1565c0">Stock</text>
+
+  <!-- M2: MINI-GAME CONTENT AREA — fills entire column -->
+  <rect x="376" y="184" width="616" height="706" class="block-fill" rx="4" />
+  <rect x="382" y="188" width="50" height="16" rx="8" fill="#ef4444" />
+  <text x="407" y="199" text-anchor="middle" class="priority-badge">P 4.0</text>
+  <text x="438" y="199" class="section-label">MINI-GAME CONTENT</text>
+  <text x="382" y="214" class="detail-label">MiniGamePanel.jsx — renders active mini-game, fills column</text>
+  <text x="382" y="226" class="detail-label">One game visible at a time, switched via tab bar</text>
+
+  <!-- Sub-game wireframes -->
+  <!-- Garden -->
+  <rect x="392" y="240" width="186" height="130" fill="#e8f5e9" stroke="#4caf50" stroke-width="0.5" stroke-dasharray="4,2" rx="4" />
+  <text x="398" y="256" font-size="11" font-weight="700" fill="#2e7d32">GARDEN (Garden.jsx)</text>
+  <text x="398" y="270" class="dim-label">5x5 plot grid</text>
+  <text x="398" y="282" class="dim-label">Seed selector bar</text>
+  <text x="398" y="294" class="dim-label">Growth timers per plot</text>
+  <text x="398" y="306" class="dim-label">Harvest buttons</text>
+  <text x="398" y="318" class="dim-label">Global buff display</text>
+  <text x="398" y="340" class="note-label">Unlock: Flower Shop building</text>
+  <text x="398" y="352" class="note-label">GardenBanner from SectionBanners.jsx</text>
+
+  <!-- Merge -->
+  <rect x="590" y="240" width="186" height="130" fill="#fff3e0" stroke="#ff9800" stroke-width="0.5" stroke-dasharray="4,2" rx="4" />
+  <text x="596" y="256" font-size="11" font-weight="700" fill="#e65100">MERGE (MergeGame.jsx)</text>
+  <text x="596" y="270" class="dim-label">4x4 grid (expandable)</text>
+  <text x="596" y="282" class="dim-label">Drag-merge interaction</text>
+  <text x="596" y="294" class="dim-label">Gift level tiers</text>
+  <text x="596" y="306" class="dim-label">Buff multiplier display</text>
+  <text x="596" y="318" class="dim-label">Grid expansion button</text>
+  <text x="596" y="340" class="note-label">Unlock: Gift Shop building</text>
+  <text x="596" y="352" class="note-label">MergeBanner from SectionBanners.jsx</text>
+
+  <!-- Stock Market -->
+  <rect x="788" y="240" width="186" height="130" fill="#e3f2fd" stroke="#2196f3" stroke-width="0.5" stroke-dasharray="4,2" rx="4" />
+  <text x="794" y="256" font-size="11" font-weight="700" fill="#1565c0">STOCK (StockMarket.jsx)</text>
+  <text x="794" y="270" class="dim-label">6 stock tickers</text>
+  <text x="794" y="282" class="dim-label">Buy/Sell per stock</text>
+  <text x="794" y="294" class="dim-label">Sparkline price chart</text>
+  <text x="794" y="306" class="dim-label">Portfolio summary</text>
+  <text x="794" y="318" class="dim-label">Buy All / Sell All</text>
+  <text x="794" y="340" class="note-label">Unlock: Trading Desk building</text>
+  <text x="794" y="352" class="note-label">StockBanner from SectionBanners.jsx</text>
+
+  <!-- Empty content area indicator -->
+  <rect x="420" y="400" width="540" height="260" fill="none" stroke="#94a3b8" stroke-width="0.5" stroke-dasharray="4,3" rx="6" />
+  <text x="690" y="520" text-anchor="middle" font-size="16" fill="#cbd5e1">Active Mini-Game Content</text>
+  <text x="690" y="540" text-anchor="middle" font-size="11" fill="#cbd5e1">Fills remaining space in column</text>
+
+  <!-- Buff bar note (floating) -->
+  <rect x="376" y="860" width="616" height="28" fill="#fef9c3" stroke="#ca8a04" stroke-width="0.5" stroke-dasharray="4,2" rx="4" />
+  <text x="382" y="878" font-size="10" font-weight="700" fill="#b45309">BUFF BAR (Combo Multiplier)</text>
+  <text x="580" y="878" class="dim-label">position: fixed | top: 56 | centered | z: 200 | conditional</text>
+  <text x="382" y="888" class="note-label">FLOATING — not in flow. Shows active boosts: fire/garden/merge/cold master</text>
+
+  <!-- ===================================================================== -->
+  <!-- RIGHT COLUMN — .section-store                                         -->
+  <!-- w=432, flexDirection:column, overflow:hidden, minHeight:0             -->
+  <!-- ===================================================================== -->
+  <rect x="1010" y="98" width="428" height="800" fill="none" stroke="#059669" stroke-width="1.5" stroke-dasharray="8,4" rx="4" />
+  <text x="1018" y="112" class="column-title" fill="#059669">RIGHT — .section-store</text>
+  <text x="1018" y="124" class="dim-label">flex-direction: column | overflow: hidden | min-height: 0</text>
+
+  <!-- R1: UPGRADES — maxHeight 25% -->
+  <rect x="1024" y="142" width="400" height="196" class="block-fill" rx="4" />
+  <rect x="1030" y="146" width="50" height="16" rx="8" fill="#3b82f6" />
+  <text x="1055" y="157" text-anchor="middle" class="priority-badge">P 3.5</text>
+  <text x="1088" y="157" class="section-label">UPGRADES</text>
+
+  <text x="1030" y="172" class="detail-label">maxHeight: 25% (~196px at 824px column) | overflowY: auto</text>
+  <text x="1030" y="184" class="detail-label">flexShrink: 0 | background: rgba(99,102,241,.02)</text>
+  <text x="1030" y="196" class="detail-label">Component: UpgradeRow.jsx (compact=true)</text>
+  <text x="1030" y="208" class="detail-label">States per upgrade: buy | wait | done | hidden</text>
+  <text x="1030" y="220" class="detail-label">"Buy All" button + individual upgrade pill-cards</text>
+  <text x="1030" y="232" class="dim-label">New upgrade animation: si .4s ease-out</text>
+  <text x="1030" y="244" class="note-label">SCROLLABLE when content exceeds maxHeight: 25%</text>
+
+  <!-- Upgrade mockup items -->
+  <rect x="1038" y="250" width="120" height="22" fill="#e8eaf6" stroke="#9fa8da" stroke-width="0.5" rx="4" />
+  <text x="1098" y="264" text-anchor="middle" font-size="8" fill="#5c6bc0">upgrade pill</text>
+  <rect x="1166" y="250" width="120" height="22" fill="#e8eaf6" stroke="#9fa8da" stroke-width="0.5" rx="4" />
+  <text x="1226" y="264" text-anchor="middle" font-size="8" fill="#5c6bc0">upgrade pill</text>
+  <rect x="1294" y="250" width="120" height="22" fill="#e8eaf6" stroke="#9fa8da" stroke-width="0.5" rx="4" />
+  <text x="1354" y="264" text-anchor="middle" font-size="8" fill="#5c6bc0">upgrade pill</text>
+
+  <!-- Overflow scroll indicator -->
+  <rect x="1420" y="160" width="6" height="60" fill="#e2e8f0" rx="3" />
+  <rect x="1420" y="160" width="6" height="20" fill="rgba(99,102,241,.15)" rx="3" />
+  <text x="1418" y="240" text-anchor="end" font-size="7" fill="#94a3b8">scrollbar 3px</text>
 
   <!-- Separator -->
-  <line x1="1020" y1="345" x2="1428" y2="345" stroke="#6366f1" stroke-opacity="0.3" stroke-width="2"/>
+  <line x1="1024" y1="340" x2="1424" y2="340" stroke="#e2e8f0" stroke-width="2" />
+  <text x="1224" y="354" text-anchor="middle" class="dim-label">borderBottom: 2px solid #e2e8f0</text>
 
-  <!-- Buildings Header -->
-  <rect x="1020" y="348" width="408" height="28" fill="#f8fafc" stroke="#e2e8f0" class="block"/>
-  <text x="1030" y="367" class="label" font-size="12">已讀大師</text>
-  <text x="1410" y="367" class="dim" text-anchor="end">×1 ×10 ×100</text>
+  <!-- R2: BUILDINGS — fills remaining -->
+  <rect x="1024" y="362" width="400" height="530" class="block-fill" rx="4" />
+  <rect x="1030" y="366" width="50" height="16" rx="8" fill="#f97316" />
+  <text x="1055" y="377" text-anchor="middle" class="priority-badge">P 3.9</text>
+  <text x="1088" y="377" class="section-label">BUILDINGS (BuildingList.jsx)</text>
 
-  <!-- Buildings — showing all 14 -->
-  <rect x="1020" y="380" width="408" height="518" fill="#fff" stroke="#e2e8f0" class="block"/>
-  <text x="1030" y="398" class="label" font-size="12">建築列表</text>
-  <text x="1030" y="414" class="sublabel">優先級 3.9</text>
-  <text x="1410" y="398" class="score">3.9</text>
+  <text x="1030" y="394" class="detail-label">flex: 1 (fills remaining space after upgrades)</text>
+  <text x="1030" y="406" class="detail-label">overflowY: auto | singleColumn mode</text>
+  <text x="1030" y="418" class="detail-label">Buy-N toggle: x1 | x10 | x100 | MAX (top of list)</text>
 
-  <!-- Building items (compact) -->
-  <g transform="translate(1030, 420)">
-    <rect width="398" height="34" fill="#fef2f2" stroke="#f43f5e" stroke-opacity="0.15" rx="6" ry="6"/>
-    <text x="50" y="20" class="sublabel" font-size="12" font-weight="700">前任</text>
-    <text x="50" y="32" class="dim">185 18/s</text>
-    <text x="380" y="22" class="score" text-anchor="end" fill="#f43f5e">18</text>
-  </g>
-  <g transform="translate(1030, 458)">
-    <rect width="398" height="34" fill="#fffbeb" stroke="#f59e0b" stroke-opacity="0.15" rx="6" ry="6"/>
-    <text x="50" y="20" class="sublabel" font-size="12" font-weight="700">爸媽</text>
-    <text x="380" y="22" class="score" text-anchor="end" fill="#f59e0b">12</text>
-  </g>
-  <g transform="translate(1030, 496)">
-    <rect width="398" height="34" fill="#ecfdf5" stroke="#10b981" stroke-opacity="0.15" rx="6" ry="6"/>
-    <text x="50" y="20" class="sublabel" font-size="12" font-weight="700">忙朋友</text>
-    <text x="380" y="22" class="score" text-anchor="end" fill="#10b981">9</text>
-  </g>
-  <g transform="translate(1030, 534)">
-    <rect width="398" height="34" fill="#eef2ff" stroke="#6366f1" stroke-opacity="0.15" rx="6" ry="6"/>
-    <text x="50" y="20" class="sublabel" font-size="12" font-weight="700">公司HR</text>
-    <text x="380" y="22" class="score" text-anchor="end" fill="#6366f1">18</text>
-  </g>
-  <g transform="translate(1030, 572)">
-    <rect width="398" height="28" fill="#f8fafc" stroke="#e2e8f0" rx="6" ry="6"/>
-    <text x="10" y="19" class="sublabel" font-size="11">外送客服 · 政府承辦 · 情報機構 · 社群演算法</text>
-  </g>
-  <g transform="translate(1030, 604)">
-    <rect width="398" height="28" fill="#f8fafc" stroke="#e2e8f0" rx="6" ry="6"/>
-    <text x="10" y="19" class="sublabel" font-size="11">AI客服 · 外星通訊 · 時間迴圈(NEW)</text>
-  </g>
-  <g transform="translate(1030, 636)">
-    <rect width="398" height="20" fill="#f1f5f9" stroke="#e2e8f0" rx="4" ry="4" opacity="0.5"/>
-    <text x="10" y="15" class="dim">🔒 量子已讀</text>
-  </g>
-  <g transform="translate(1030, 660)">
-    <rect width="398" height="20" fill="#f1f5f9" stroke="#e2e8f0" rx="4" ry="4" opacity="0.5"/>
-    <text x="10" y="15" class="dim">🔒 虛空已讀</text>
-  </g>
-  <g transform="translate(1030, 684)">
-    <rect width="398" height="20" fill="#f1f5f9" stroke="#e2e8f0" rx="4" ry="4" opacity="0.5"/>
-    <text x="10" y="15" class="dim">🔒 神之已讀</text>
-  </g>
+  <!-- Building bar mockups -->
+  <rect x="1038" y="430" width="378" height="48" fill="#fef2f2" stroke="#f43f5e" stroke-width="0.5" rx="4" />
+  <rect x="1044" y="434" width="140" height="16" fill="none" stroke="#94a3b8" stroke-width="0.3" rx="2" />
+  <text x="1050" y="446" font-size="9" fill="#64748b">Info: name, cost, rate</text>
+  <rect x="1220" y="434" width="190" height="36" fill="#fce7f3" stroke="none" rx="3" />
+  <text x="1315" y="456" text-anchor="middle" font-size="9" fill="#be185d">emoji crowd area</text>
+  <text x="1044" y="474" font-size="8" fill="#94a3b8">BuildingBar (unowned): h=48</text>
 
-  <!-- Problem indicator: scrolls off screen -->
-  <rect x="1015" y="710" width="418" height="40" fill="none" stroke="#ef4444" stroke-dasharray="6 4" stroke-opacity="0.5" rx="8" ry="8"/>
-  <text x="1224" y="735" class="dim" text-anchor="middle" fill="#ef4444" font-size="11">⚠️ 部分建築需滾動</text>
+  <rect x="1038" y="486" width="378" height="72" fill="#e8f5e9" stroke="#4caf50" stroke-width="0.5" rx="4" />
+  <rect x="1044" y="490" width="140" height="16" fill="none" stroke="#94a3b8" stroke-width="0.3" rx="2" />
+  <text x="1050" y="502" font-size="9" fill="#64748b">Info: name, cost, rate</text>
+  <rect x="1220" y="490" width="190" height="60" fill="#d1fae5" stroke="none" rx="3" />
+  <text x="1315" y="524" text-anchor="middle" font-size="9" fill="#166534">emoji crowd area</text>
+  <text x="1044" y="554" font-size="8" fill="#94a3b8">BuildingBar (owned): h=72</text>
 
-  <!-- Priority Legend -->
-  <rect x="20" y="860" width="330" height="30" fill="#f1f5f9" stroke="#e2e8f0" rx="6" ry="6"/>
-  <text x="30" y="880" class="dim" font-size="9">優先級: 計數器4.5 > 點擊4.2 > MiniGame4.0 > 建築3.9 > 罪惡3.8 > 升級3.5 > 轉世3.2 > 統計2.8 > 成就2.5 > Ticker1.8</text>
+  <!-- More buildings indicator -->
+  <rect x="1038" y="568" width="378" height="24" fill="#f1f5f9" stroke="#e2e8f0" stroke-width="0.5" rx="3" />
+  <text x="1227" y="584" text-anchor="middle" font-size="9" fill="#94a3b8">... more buildings (14 total) ...</text>
+
+  <rect x="1038" y="598" width="378" height="24" fill="#f1f5f9" stroke="#e2e8f0" stroke-width="0.5" rx="3" opacity="0.6" />
+  <text x="1050" y="614" font-size="9" fill="#94a3b8">Locked buildings: opacity 0.5</text>
+
+  <text x="1030" y="644" class="dim-label">Each bar: borderRadius:6 | border color from building.color</text>
+  <text x="1030" y="656" class="dim-label">opacity: 0.5 when unaffordable | animation: si .4s on new</text>
+  <text x="1030" y="668" class="note-label">SCROLLABLE — buildings list can exceed viewport</text>
+
+  <!-- Building scrollbar -->
+  <rect x="1420" y="370" width="6" height="300" fill="#e2e8f0" rx="3" />
+  <rect x="1420" y="370" width="6" height="80" fill="rgba(99,102,241,.15)" rx="3" />
+
+  <!-- ===================================================================== -->
+  <!-- FLOATING / OVERLAY ELEMENTS — not in normal flow                     -->
+  <!-- ===================================================================== -->
+  <rect x="1024" y="700" width="400" height="188" fill="#fff" stroke="#e2e8f0" stroke-width="1" rx="6" />
+  <text x="1034" y="718" font-size="12" font-weight="700" fill="#1e293b">FLOATING OVERLAYS (position: fixed)</text>
+  <line x1="1030" y1="722" x2="1418" y2="722" stroke="#e2e8f0" stroke-width="0.5" />
+
+  <rect x="1034" y="730" width="10" height="10" fill="#fef3c7" stroke="#d97706" stroke-width="0.5" rx="2" />
+  <text x="1050" y="740" class="dim-label">Toast: top:16, centered, z:300, auto-dismiss 3s</text>
+
+  <rect x="1034" y="748" width="10" height="10" fill="#ede9fe" stroke="#7c3aed" stroke-width="0.5" rx="2" />
+  <text x="1050" y="758" class="dim-label">Golden Cookie: random pos, z:150, GoldenCookie.jsx</text>
+
+  <rect x="1034" y="766" width="10" height="10" fill="#fce7f3" stroke="#ec4899" stroke-width="0.5" rx="2" />
+  <text x="1050" y="776" class="dim-label">Float texts: +N at click pos, z:200, .85s fade-up</text>
+
+  <rect x="1034" y="784" width="10" height="10" fill="#e0f2fe" stroke="#0284c7" stroke-width="0.5" rx="2" />
+  <text x="1050" y="794" class="dim-label">Offline Banner: top:65, z:200, conditional</text>
+
+  <rect x="1034" y="802" width="10" height="10" fill="#f0fdf4" stroke="#16a34a" stroke-width="0.5" rx="2" />
+  <text x="1050" y="812" class="dim-label">Prestige Shop Modal: z:400, centered, blur(4px) bg</text>
+
+  <rect x="1034" y="820" width="10" height="10" fill="#fef9c3" stroke="#ca8a04" stroke-width="0.5" rx="2" />
+  <text x="1050" y="830" class="dim-label">Combo/Buff Bar: top:56, centered, z:200, conditional</text>
+
+  <rect x="1034" y="838" width="10" height="10" fill="#fee2e2" stroke="#ef4444" stroke-width="0.5" rx="2" />
+  <text x="1050" y="848" class="dim-label">ReadStorm: fullscreen overlay, modal mini-game</text>
+
+  <rect x="1034" y="856" width="10" height="10" fill="#f1f5f9" stroke="#64748b" stroke-width="0.5" rx="2" />
+  <text x="1050" y="866" class="dim-label">Ambient: fixed bg, floating checkmarks, dot grid, z:0</text>
+
+  <!-- ===================================================================== -->
+  <!-- PRIORITY LEGEND                                                       -->
+  <!-- ===================================================================== -->
+  <rect x="376" y="700" width="170" height="188" fill="#fff" stroke="#e2e8f0" stroke-width="1" rx="6" />
+  <text x="386" y="718" font-size="12" font-weight="700" fill="#1e293b">PRIORITY SCORES</text>
+  <line x1="382" y1="722" x2="540" y2="722" stroke="#e2e8f0" stroke-width="0.5" />
+
+  <rect x="386" y="730" width="8" height="8" rx="4" fill="#ef4444" />
+  <text x="400" y="738" class="dim-label">4.5 Counter</text>
+
+  <rect x="386" y="744" width="8" height="8" rx="4" fill="#ef4444" />
+  <text x="400" y="752" class="dim-label">4.2 Click Area</text>
+
+  <rect x="386" y="758" width="8" height="8" rx="4" fill="#ef4444" />
+  <text x="400" y="766" class="dim-label">4.0 Mini-game</text>
+
+  <rect x="386" y="772" width="8" height="8" rx="4" fill="#f97316" />
+  <text x="400" y="780" class="dim-label">3.9 Buildings</text>
+
+  <rect x="386" y="786" width="8" height="8" rx="4" fill="#f97316" />
+  <text x="400" y="794" class="dim-label">3.8 Guilt</text>
+
+  <rect x="386" y="800" width="8" height="8" rx="4" fill="#3b82f6" />
+  <text x="400" y="808" class="dim-label">3.5 Upgrades</text>
+
+  <rect x="386" y="814" width="8" height="8" rx="4" fill="#6366f1" />
+  <text x="400" y="822" class="dim-label">3.2 Prestige Bar</text>
+
+  <rect x="386" y="828" width="8" height="8" rx="4" fill="#94a3b8" />
+  <text x="400" y="836" class="dim-label">2.8 Stats</text>
+
+  <rect x="386" y="842" width="8" height="8" rx="4" fill="#94a3b8" />
+  <text x="400" y="850" class="dim-label">2.5 Achievements</text>
+
+  <rect x="386" y="856" width="8" height="8" rx="4" fill="#cbd5e1" />
+  <text x="400" y="864" class="dim-label">1.8 Ticker</text>
+
+  <text x="386" y="882" font-size="8" fill="#94a3b8">Red=critical | Orange=high</text>
+  <text x="386" y="892" font-size="8" fill="#94a3b8">Blue=medium | Gray=low</text>
+
+  <!-- ===================================================================== -->
+  <!-- SCROLL/OVERFLOW NOTES                                                 -->
+  <!-- ===================================================================== -->
+  <rect x="556" y="700" width="180" height="122" fill="#fff" stroke="#e2e8f0" stroke-width="1" rx="6" />
+  <text x="566" y="718" font-size="12" font-weight="700" fill="#1e293b">SCROLL BEHAVIOR</text>
+  <line x1="562" y1="722" x2="730" y2="722" stroke="#e2e8f0" stroke-width="0.5" />
+  <text x="566" y="736" class="dim-label">Root: overflow hidden</text>
+  <text x="566" y="750" class="dim-label">Left col: overflow hidden</text>
+  <text x="566" y="764" class="dim-label">Middle: overflow hidden</text>
+  <text x="566" y="778" class="dim-label">Upgrades: overflowY auto</text>
+  <text x="566" y="792" class="dim-label">Buildings: overflowY auto</text>
+  <text x="566" y="808" class="note-label">Scrollbar: width 3px, indigo thumb</text>
+  <text x="566" y="818" class="note-label">rgba(99,102,241,.15) on transparent</text>
+
+  <!-- ===================================================================== -->
+  <!-- RESPONSIVE BREAKPOINT NOTE                                            -->
+  <!-- ===================================================================== -->
+  <rect x="748" y="700" width="200" height="68" fill="#fff" stroke="#e2e8f0" stroke-width="1" rx="6" />
+  <text x="758" y="718" font-size="12" font-weight="700" fill="#1e293b">RESPONSIVE</text>
+  <line x1="754" y1="722" x2="942" y2="722" stroke="#e2e8f0" stroke-width="0.5" />
+  <text x="758" y="738" class="dim-label">&lt;768px: stacked (flex-direction: column)</text>
+  <text x="758" y="752" class="dim-label">&gt;=768px: 25%/45%/30% row via .game-layout</text>
+  <text x="758" y="764" class="note-label">@media(min-width:768px) sets widths + borders</text>
+
+  <!-- CSS Class reference -->
+  <rect x="748" y="778" width="200" height="68" fill="#fff" stroke="#e2e8f0" stroke-width="1" rx="6" />
+  <text x="758" y="796" font-size="12" font-weight="700" fill="#1e293b">CSS CLASSES</text>
+  <line x1="754" y1="800" x2="942" y2="800" stroke="#e2e8f0" stroke-width="0.5" />
+  <text x="758" y="814" class="dim-label">.game-layout — main 3-col container</text>
+  <text x="758" y="828" class="dim-label">.section-hero — left column</text>
+  <text x="758" y="842" class="dim-label">.section-middle — center column</text>
+
+  <rect x="748" y="850" width="200" height="18" fill="#fff" stroke="#e2e8f0" stroke-width="1" rx="4" />
+  <text x="758" y="863" class="dim-label">.section-store — right column</text>
+
 </svg>

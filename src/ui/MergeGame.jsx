@@ -197,7 +197,7 @@ function MergeBuffBar({ activeBuffs }) {
 /**
  * MergeGame — App Store icon grid style.
  */
-export default function MergeGame({ mergeState, parCount, reads, onPlace, placeCost, onMerge, onMove, onExpand }) {
+export default function MergeGame({ mergeState, parCount, reads, onPlace, placeCost, onMerge, onMove, onExpand, onCollapse }) {
   const [selected, setSelected] = useState(null);
   const [lastEvent, setLastEvent] = useState(null);
   const eventTimer = useRef(null);
@@ -276,6 +276,12 @@ export default function MergeGame({ mergeState, parCount, reads, onPlace, placeC
         backdropFilter: 'blur(10px)',
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          {onCollapse && (
+            <button onClick={onCollapse} style={{
+              background: 'none', border: 'none', cursor: 'pointer',
+              fontSize: 13, color: '#94a3b8', padding: '2px 4px', lineHeight: 1,
+            }} title="收合">▲</button>
+          )}
           <div style={{
             width: 28, height: 28, borderRadius: 8,
             background: 'linear-gradient(135deg, #f59e0b, #d97706)',

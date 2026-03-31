@@ -62,7 +62,7 @@ export default function ClickArea({ message, isRead, isFirstClick, popAnim, rece
         transition: 'background .5s',
         flex: 1,
       }}>
-        {/* Chat body — messages flow from TOP down */}
+        {/* Chat body — messages grow from BOTTOM up */}
         <div style={{
           padding: '8px 10px',
           flex: 1, overflowY: 'auto',
@@ -73,36 +73,8 @@ export default function ClickArea({ message, isRead, isFirstClick, popAnim, rece
           backgroundSize: '20px 20px',
           transition: 'background .5s ease',
         }}>
-          {/* Old messages — read, stacking from top */}
-          {recentMessages.slice(0, 6).reverse().map((m, i, arr) => {
-            const age = arr.length - i;
-            return (
-              <div key={i} style={{
-                display: 'flex', alignItems: 'flex-start', gap: 6,
-                opacity: Math.max(0.3, 0.8 - age * 0.1),
-              }}>
-                <Avatar size={22} />
-                <div style={{ flex: 1 }}>
-                  <div style={{
-                    maxWidth: '85%',
-                    background: '#fff',
-                    border: '1px solid #e2e8f0',
-                    borderRadius: '4px 12px 12px 12px',
-                    padding: '6px 10px',
-                    fontSize: 13, color: '#64748b', lineHeight: 1.4,
-                  }}>
-                    {m}
-                  </div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 2, marginTop: 2 }}>
-                    <CheckIcon size={8} color="#6366f1" />
-                    <span style={{ fontSize: 9, color: '#94a3b8' }}>
-                      {now.getHours()}:{String(Math.max(0, now.getMinutes() - age)).padStart(2, '0')}
-                    </span>
-                  </div>
-                </div>
-              </div>
-            );
-          })}
+          {/* Spacer at TOP — pushes everything to the bottom */}
+          <div style={{ flex: 1 }} />
 
           {/* First click hint */}
           {isFirstClick && !isRead && (
@@ -116,7 +88,38 @@ export default function ClickArea({ message, isRead, isFirstClick, popAnim, rece
             </div>
           )}
 
-          {/* Current message — THE CTA, bigger and more prominent */}
+          {/* Old messages — oldest at top, newest just above CTA */}
+          {recentMessages.slice(0, 10).reverse().map((m, i, arr) => {
+            const age = arr.length - i;
+            return (
+              <div key={i} style={{
+                display: 'flex', alignItems: 'flex-start', gap: 6,
+                opacity: Math.max(0.22, 0.9 - age * 0.08),
+              }}>
+                <Avatar size={20} />
+                <div style={{ flex: 1 }}>
+                  <div style={{
+                    maxWidth: '82%',
+                    background: '#fff',
+                    border: '1px solid #e2e8f0',
+                    borderRadius: '4px 12px 12px 12px',
+                    padding: '5px 10px',
+                    fontSize: 12, color: '#64748b', lineHeight: 1.4,
+                  }}>
+                    {m}
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 2, marginTop: 2 }}>
+                    <CheckIcon size={7} color="#6366f1" />
+                    <span style={{ fontSize: 9, color: '#94a3b8' }}>
+                      {now.getHours()}:{String(Math.max(0, now.getMinutes() - age)).padStart(2, '0')}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+
+          {/* Current message — THE CTA, always at bottom */}
           <div
             onClick={onClick}
             style={{ cursor: 'pointer', WebkitTapHighlightColor: 'transparent', userSelect: 'none' }}
@@ -164,9 +167,6 @@ export default function ClickArea({ message, isRead, isFirstClick, popAnim, rece
               </div>
             </div>
           </div>
-
-          {/* Spacer to push content up when few messages */}
-          <div style={{ flex: 1 }} />
         </div>
 
         {/* Input bar (decorative) */}

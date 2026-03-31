@@ -108,18 +108,28 @@ export function tickMarket(state) {
 
 /**
  * Get the price scale multiplier based on production.
- * Makes stock prices relevant throughout the game.
+ * Uses exponential scaling so stocks stay expensive relative to income
+ * at every stage of the game.
+ *
+ * Formula: 10^((log10(prodPerSec) - 2) × 0.9)
+ * At 100/s   → ×1      (base prices)
+ * At 10K/s   → ×630
+ * At 1M/s    → ×400K
+ * At 1T/s    → ×10^9
+ * At 10^42/s → ×10^36  (late game, 1 share ≈ a few seconds of production)
  */
 export function getPriceScale(prodPerSec) {
-  if (prodPerSec <= 100) return 1;
-  return Math.max(1, Math.floor(Math.log10(prodPerSec + 1)));
+  if (prodPerSec <= 0) return 1;
+  const logPs = Math.log10(prodPerSec + 1);
+  if (logPs <= 2) return 1; // ≤ 100/s: base prices
+  return Math.pow(10, (logPs - 2) * 0.9);
 }
 
 /**
  * Get the actual price of a channel (base price × scale).
  */
 export function getScaledPrice(state, channelId, prodPerSec = 0) {
-  const base = state.prices[channelId];
+  const base = state?.prices?.[channelId];
   if (base == null) return 0;
   return Math.round(base * getPriceScale(prodPerSec));
 }

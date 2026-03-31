@@ -4,35 +4,14 @@ const MESSAGES = [
   "你在嗎", "已讀", "回覆一下", "急！急！急！", "在嗎在嗎在嗎",
   "help", "老闆找你", "明天截止", "求回覆", "看到請回",
   "重要通知", "會議改期", "薪資單", "系統通知", "前任來電",
+  "不要裝死", "趕快回", "!!!!", "在幹嘛", "你是不是死了",
 ];
 
 const STORM_DURATION = 10;
+const SPAWN_INTERVAL = 700; // ms between new bubbles
 
 function randomBetween(a, b) {
   return Math.random() * (b - a) + a;
-}
-
-function spawnBubbles(perSecond) {
-  const count = Math.floor(randomBetween(8, 13));
-  const value = Math.max(1, Math.floor(perSecond * 2));
-  const used = new Set();
-  const bubbles = [];
-  for (let i = 0; i < count; i++) {
-    let idx;
-    do { idx = Math.floor(Math.random() * MESSAGES.length); } while (used.has(idx) && used.size < MESSAGES.length);
-    used.add(idx);
-    bubbles.push({
-      id: i,
-      msg: MESSAGES[idx],
-      value,
-      x: randomBetween(8, 78),
-      y: randomBetween(15, 75),
-      delay: randomBetween(0, 0.6),
-      dur: randomBetween(2.5, 4),
-      popped: false,
-    });
-  }
-  return bubbles;
 }
 
 export default function ReadStorm({ active, onComplete, perSecond, onPerfect }) {
@@ -45,16 +24,35 @@ export default function ReadStorm({ active, onComplete, perSecond, onPerfect }) 
   const floatId = useRef(0);
   const earnedRef = useRef(0);
   const perfectRef = useRef(false);
+  const bubbleIdRef = useRef(0);
+  const spawnTimerRef = useRef(null);
 
-  // Start storm when active becomes true
+  // Spawn a single bubble at a random position
+  const spawnOne = useCallback(() => {
+    const id = ++bubbleIdRef.current;
+    const value = Math.max(1, Math.floor(perSecond * 2));
+    const msg = MESSAGES[Math.floor(Math.random() * MESSAGES.length)];
+    const bubble = {
+      id,
+      msg,
+      value,
+      x: randomBetween(5, 80),
+      y: randomBetween(12, 78),
+      popped: false,
+      spawnedAt: Date.now(),
+    };
+    setBubbles(prev => [...prev, bubble]);
+  }, [perSecond]);
+
+  // Start storm
   useEffect(() => {
     if (active && phase === "idle") {
-      const b = spawnBubbles(perSecond);
-      setBubbles(b);
+      setBubbles([]);
       setTimeLeft(STORM_DURATION);
       setEarned(0);
       earnedRef.current = 0;
       perfectRef.current = false;
+      bubbleIdRef.current = 0;
       setPerfect(false);
       setFloats([]);
       setPhase("storm");
@@ -64,24 +62,51 @@ export default function ReadStorm({ active, onComplete, perSecond, onPerfect }) 
     }
   }, [active]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  // Staggered bubble spawning — one every SPAWN_INTERVAL ms
+  useEffect(() => {
+    if (phase !== "storm") {
+      clearInterval(spawnTimerRef.current);
+      return;
+    }
+    // Spawn first bubble immediately
+    spawnOne();
+    spawnTimerRef.current = setInterval(spawnOne, SPAWN_INTERVAL);
+    return () => clearInterval(spawnTimerRef.current);
+  }, [phase]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Auto-expire old unpopped bubbles after 4s (they float away)
+  useEffect(() => {
+    if (phase !== "storm") return;
+    const iv = setInterval(() => {
+      const now = Date.now();
+      setBubbles(prev => prev.filter(b => b.popped || (now - b.spawnedAt) < 4000));
+    }, 500);
+    return () => clearInterval(iv);
+  }, [phase]);
+
   // Countdown timer
   useEffect(() => {
     if (phase !== "storm") return;
     if (timeLeft <= 0) {
+      clearInterval(spawnTimerRef.current);
       setPhase("ending");
       return;
     }
-    const t = setTimeout(() => setTimeLeft((p) => Math.max(0, p - 1)), 1000);
+    const t = setTimeout(() => setTimeLeft(p => Math.max(0, p - 1)), 1000);
     return () => clearTimeout(t);
   }, [phase, timeLeft]);
 
-  // Check perfect clear (all bubbles popped while storm is active)
+  // Check if all current bubbles are popped (perfect = pop all visible bubbles before time runs out)
+  // For staggered mode, perfect = earned >= threshold
   useEffect(() => {
-    if (phase === "storm" && bubbles.length > 0 && bubbles.every((b) => b.popped)) {
+    if (phase !== "storm") return;
+    const totalSpawned = bubbleIdRef.current;
+    const totalPopped = bubbles.filter(b => b.popped).length;
+    // Perfect if player has popped at least 12 bubbles
+    if (totalPopped >= 12 && totalSpawned >= 12) {
       perfectRef.current = true;
       setPerfect(true);
       if (onPerfect) onPerfect();
-      setPhase("ending");
     }
   }, [bubbles, phase, onPerfect]);
 
@@ -99,34 +124,43 @@ export default function ReadStorm({ active, onComplete, perSecond, onPerfect }) 
   }, [phase, onComplete]);
 
   const popBubble = useCallback((id) => {
-    setBubbles((prev) => {
-      const b = prev.find((x) => x.id === id);
+    setBubbles(prev => {
+      const b = prev.find(x => x.id === id);
       if (!b || b.popped) return prev;
       earnedRef.current += b.value;
-      setEarned((e) => e + b.value);
+      setEarned(e => e + b.value);
       const fid = ++floatId.current;
-      setFloats((f) => [...f, { id: fid, x: b.x, y: b.y, value: b.value }]);
-      setTimeout(() => setFloats((f) => f.filter((x) => x.id !== fid)), 900);
-      return prev.map((x) => (x.id === id ? { ...x, popped: true } : x));
+      setFloats(f => [...f, { id: fid, x: b.x, y: b.y, value: b.value }]);
+      setTimeout(() => setFloats(f => f.filter(x => x.id !== fid)), 900);
+      return prev.map(x => (x.id === id ? { ...x, popped: true } : x));
     });
   }, []);
 
   if (phase === "idle") return null;
 
   const fading = phase === "ending";
+  const activeBubbles = bubbles.filter(b => !b.popped);
 
   return (
     <>
       <style>{`
-        @keyframes rs-wobble {
-          0%, 100% { transform: translate(0, 0) rotate(0deg); }
-          25% { transform: translate(6px, -10px) rotate(2deg); }
-          50% { transform: translate(-4px, 6px) rotate(-1.5deg); }
-          75% { transform: translate(8px, 4px) rotate(1deg); }
+        @keyframes rs-float-in {
+          0% { transform: translateY(30px) scale(0.3); opacity: 0; }
+          60% { transform: translateY(-5px) scale(1.05); opacity: 1; }
+          100% { transform: translateY(0) scale(1); opacity: 1; }
+        }
+        @keyframes rs-idle-bob {
+          0%, 100% { transform: translateY(0) rotate(0deg); }
+          25% { transform: translateY(-6px) rotate(1.5deg); }
+          75% { transform: translateY(4px) rotate(-1deg); }
+        }
+        @keyframes rs-expire {
+          0% { transform: translateY(0) scale(1); opacity: 0.6; }
+          100% { transform: translateY(-40px) scale(0.5); opacity: 0; }
         }
         @keyframes rs-pop {
           0% { transform: scale(1); opacity: 1; }
-          50% { transform: scale(1.5); opacity: 0.5; }
+          50% { transform: scale(1.4); opacity: 0.5; }
           100% { transform: scale(1.5); opacity: 0; }
         }
         @keyframes rs-float-up {
@@ -136,11 +170,6 @@ export default function ReadStorm({ active, onComplete, perSecond, onPerfect }) 
         @keyframes rs-fade-out {
           0% { opacity: 1; }
           100% { opacity: 0; }
-        }
-        @keyframes rs-entrance {
-          0% { transform: scale(0); opacity: 0; }
-          60% { transform: scale(1.1); opacity: 1; }
-          100% { transform: scale(1); opacity: 1; }
         }
         @keyframes rs-toast {
           0% { transform: translate(-50%, -50%) scale(0); opacity: 0; }
@@ -183,81 +212,77 @@ export default function ReadStorm({ active, onComplete, perSecond, onPerfect }) 
             animation: timeLeft <= 3 && phase === "storm" ? "rs-timer-pulse 0.5s ease-in-out infinite" : undefined,
           }}
         >
-          <span
-            style={{
-              fontFamily: "'Space Grotesk', sans-serif",
-              fontWeight: 700,
-              fontSize: 18,
-              color: "#6366f1",
-            }}
-          >
+          <span style={{
+            fontFamily: "'Space Grotesk', sans-serif",
+            fontWeight: 700, fontSize: 18, color: "#6366f1",
+          }}>
             已讀風暴！
           </span>
-          <span
-            style={{
-              fontFamily: "'JetBrains Mono', monospace",
-              fontWeight: 700,
-              fontSize: 22,
-              color: timeLeft <= 3 ? "#ef4444" : "#4f46e5",
-              minWidth: 32,
-              textAlign: "center",
-            }}
-          >
+          <span style={{
+            fontFamily: "'JetBrains Mono', monospace",
+            fontWeight: 700, fontSize: 22,
+            color: timeLeft <= 3 ? "#ef4444" : "#4f46e5",
+            minWidth: 32, textAlign: "center",
+          }}>
             {timeLeft}s
+          </span>
+          <span style={{
+            fontFamily: "'JetBrains Mono', monospace",
+            fontWeight: 600, fontSize: 13, color: "#10b981",
+          }}>
+            +{earned}
           </span>
         </div>
 
-        {/* Bubbles */}
-        {bubbles.map((b) => (
-          <div
-            key={b.id}
-            onClick={() => !b.popped && popBubble(b.id)}
-            style={{
-              position: "absolute",
-              left: `${b.x}%`,
-              top: `${b.y}%`,
-              cursor: b.popped ? "default" : "pointer",
-              animation: b.popped
-                ? "rs-pop 300ms forwards"
-                : fading
-                  ? "rs-fade-out 600ms forwards"
-                  : `rs-entrance 400ms ${b.delay}s both, rs-wobble ${b.dur}s ${b.delay + 0.4}s ease-in-out infinite`,
-              pointerEvents: b.popped || fading ? "none" : "auto",
-              userSelect: "none",
-              zIndex: 10000,
-            }}
-          >
+        {/* Bubbles — each floats in individually */}
+        {bubbles.map(b => {
+          const age = Date.now() - b.spawnedAt;
+          const expiring = !b.popped && age > 3200; // start fading at 3.2s
+          return (
             <div
+              key={b.id}
+              onClick={() => !b.popped && !fading && popBubble(b.id)}
               style={{
+                position: "absolute",
+                left: `${b.x}%`,
+                top: `${b.y}%`,
+                cursor: b.popped ? "default" : "pointer",
+                animation: b.popped
+                  ? "rs-pop 300ms forwards"
+                  : `rs-float-in 0.4s ease-out both, rs-idle-bob ${2.5 + (b.id % 3) * 0.5}s 0.4s ease-in-out infinite`,
+                opacity: expiring ? 0.4 : 1,
+                transition: 'opacity 0.3s',
+                pointerEvents: b.popped || fading ? "none" : "auto",
+                userSelect: "none",
+                zIndex: 10000,
+              }}
+            >
+              <div style={{
                 background: "#fff",
-                borderRadius: 14,
-                padding: "10px 16px",
-                boxShadow: "0 2px 12px rgba(0,0,0,.08)",
-                border: "1px solid #e2e8f0",
+                borderRadius: 16,
+                padding: "10px 18px",
+                boxShadow: "0 4px 16px rgba(99,102,241,.12)",
+                border: "1.5px solid rgba(99,102,241,.15)",
                 display: "flex",
                 flexDirection: "column",
                 alignItems: "center",
-                gap: 4,
-                minWidth: 60,
-              }}
-            >
-              <span style={{ fontSize: 15, whiteSpace: "nowrap" }}>{b.msg}</span>
-              <span
-                style={{
+                gap: 3,
+                minWidth: 64,
+              }}>
+                <span style={{ fontSize: 15, whiteSpace: "nowrap", fontWeight: 600 }}>{b.msg}</span>
+                <span style={{
                   fontFamily: "'JetBrains Mono', monospace",
-                  fontSize: 12,
-                  fontWeight: 600,
-                  color: "#b45309",
-                }}
-              >
-                +{b.value}
-              </span>
+                  fontSize: 12, fontWeight: 700, color: "#b45309",
+                }}>
+                  +{b.value}
+                </span>
+              </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
 
-        {/* Float texts */}
-        {floats.map((f) => (
+        {/* Float texts on pop */}
+        {floats.map(f => (
           <div
             key={f.id}
             style={{
@@ -267,9 +292,7 @@ export default function ReadStorm({ active, onComplete, perSecond, onPerfect }) 
               pointerEvents: "none",
               animation: "rs-float-up 800ms forwards",
               fontFamily: "'JetBrains Mono', monospace",
-              fontWeight: 700,
-              fontSize: 18,
-              color: "#4f46e5",
+              fontWeight: 700, fontSize: 20, color: "#4f46e5",
               zIndex: 10002,
               textShadow: "0 1px 4px rgba(99,102,241,.3)",
             }}
@@ -280,46 +303,29 @@ export default function ReadStorm({ active, onComplete, perSecond, onPerfect }) 
 
         {/* Perfect bonus toast */}
         {perfect && phase === "ending" && (
-          <div
-            style={{
-              position: "fixed",
-              top: "50%",
-              left: "50%",
-              transform: "translate(-50%, -50%)",
-              zIndex: 10003,
-              animation: "rs-toast 2s forwards",
-              textAlign: "center",
-              pointerEvents: "none",
-            }}
-          >
-            <div
-              style={{
-                background: "linear-gradient(135deg, #fbbf24, #f59e0b)",
-                borderRadius: 20,
-                padding: "20px 40px",
-                boxShadow: "0 8px 40px rgba(245,158,11,.35)",
-              }}
-            >
-              <div
-                style={{
-                  fontFamily: "'Space Grotesk', sans-serif",
-                  fontWeight: 800,
-                  fontSize: 32,
-                  color: "#fff",
-                  textShadow: "0 2px 8px rgba(0,0,0,.15)",
-                }}
-              >
+          <div style={{
+            position: "fixed", top: "50%", left: "50%",
+            transform: "translate(-50%, -50%)",
+            zIndex: 10003,
+            animation: "rs-toast 2s forwards",
+            textAlign: "center", pointerEvents: "none",
+          }}>
+            <div style={{
+              background: "linear-gradient(135deg, #fbbf24, #f59e0b)",
+              borderRadius: 20, padding: "20px 40px",
+              boxShadow: "0 8px 40px rgba(245,158,11,.35)",
+            }}>
+              <div style={{
+                fontFamily: "'Space Grotesk', sans-serif",
+                fontWeight: 800, fontSize: 32, color: "#fff",
+                textShadow: "0 2px 8px rgba(0,0,0,.15)",
+              }}>
                 完美已讀！
               </div>
-              <div
-                style={{
-                  fontFamily: "'JetBrains Mono', monospace",
-                  fontWeight: 700,
-                  fontSize: 20,
-                  color: "#fff",
-                  marginTop: 6,
-                }}
-              >
+              <div style={{
+                fontFamily: "'JetBrains Mono', monospace",
+                fontWeight: 700, fontSize: 20, color: "#fff", marginTop: 6,
+              }}>
                 ×3 Bonus! +{earnedRef.current * 2}
               </div>
             </div>

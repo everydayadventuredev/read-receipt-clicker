@@ -34,11 +34,9 @@ function BuildingBar({ b, count, cost, prodRate, canAfford, buyN, isNew, onBuy, 
       }}
     >
       {/* Dynamic pixel art banner background */}
-      {hasAny && (
-        <div style={{ position: 'absolute', inset: 0, zIndex: 0 }}>
-          <BuildingBanner buildingId={b.id} count={count} />
-        </div>
-      )}
+      <div style={{ position: 'absolute', inset: 0, zIndex: 0, opacity: hasAny ? 1 : 0.18 }}>
+        <BuildingBanner buildingId={b.id} count={hasAny ? count : 1} />
+      </div>
 
       {/* Left info area */}
       <div style={{

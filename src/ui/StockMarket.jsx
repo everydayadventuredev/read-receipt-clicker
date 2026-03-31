@@ -127,7 +127,7 @@ function ChannelCard({ channel, price, prevPrice, history, holdings, costBasis, 
 /**
  * StockMarket — Feed 操盤手 compact 2×3 grid layout.
  */
-export default function StockMarket({ marketState, algoCount, reads, prodPerSec, onBuy, onSell, onBuyAll, onSellAll }) {
+export default function StockMarket({ marketState, algoCount, reads, prodPerSec, onBuy, onSell, onBuyAll, onSellAll, onCollapse }) {
   const portfolioValue = getPortfolioValue(marketState, prodPerSec);
   const totalCost = getTotalCostBasis(marketState);
   const priceScale = getPriceScale(prodPerSec);
@@ -146,6 +146,12 @@ export default function StockMarket({ marketState, algoCount, reads, prodPerSec,
         flexShrink: 0,
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+          {onCollapse && (
+            <button onClick={onCollapse} style={{
+              background: 'none', border: 'none', cursor: 'pointer',
+              fontSize: 13, color: '#94a3b8', padding: '2px 4px', lineHeight: 1,
+            }} title="收合">▲</button>
+          )}
           <span style={{ fontSize: 18 }}>📈</span>
           <span style={{ fontSize: 16, fontWeight: 800, color: '#1e293b' }}>Feed 操盤手</span>
         </div>

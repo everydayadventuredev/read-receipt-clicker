@@ -14,7 +14,7 @@ function r(x, y, w, h, fill, o) {
 function BannerEx({ count }) {
   const units = Math.min(count, 30);
   return (
-    <svg viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="xMidYMid slice" style={{ width: '100%', height: '100%', display: 'block' }}>
+    <svg viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="xMinYMid slice" style={{ width: '100%', height: '100%', display: 'block' }}>
       <rect width={W} height={H} fill="#1a1a2e" />
       <rect y={52} width={W} height={20} fill="#16213e" />
       {/* Rain */}
@@ -23,7 +23,7 @@ function BannerEx({ count }) {
       ))}
       {/* Each unit = phone screen */}
       {Array.from({ length: units }, (_, i) => {
-        const x = 12 + (i * (W - 24)) / Math.max(units, 1);
+        const x = 175 + (i * (W - 235)) / Math.max(units, 1);
         return (
           <g key={i}>
             <rect x={x} y={20} width={14} height={22} rx={2} fill="#2d3436" />
@@ -46,14 +46,14 @@ function BannerEx({ count }) {
 function BannerPar({ count }) {
   const units = Math.min(count, 25);
   return (
-    <svg viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="xMidYMid slice" style={{ width: '100%', height: '100%', display: 'block' }}>
+    <svg viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="xMinYMid slice" style={{ width: '100%', height: '100%', display: 'block' }}>
       <rect width={W} height={H} fill="#ffeaa7" />
       <rect y={50} width={W} height={22} fill="#81c784" />
       {/* Sun */}
       <rect x={720} y={4} width={20} height={20} rx={4} fill="#fdcb6e" />
       {/* Each unit = house */}
       {Array.from({ length: units }, (_, i) => {
-        const x = 8 + (i * (W - 40)) / Math.max(units, 1);
+        const x = 175 + (i * (W - 235)) / Math.max(units, 1);
         const hue = (i * 40 + 10) % 360;
         const roofColor = `hsl(${hue}, 60%, 50%)`;
         const wallColor = `hsl(${hue}, 50%, 65%)`;
@@ -80,12 +80,12 @@ function BannerPar({ count }) {
 function BannerBsy({ count }) {
   const units = Math.min(count, 25);
   return (
-    <svg viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="xMidYMid slice" style={{ width: '100%', height: '100%', display: 'block' }}>
+    <svg viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="xMinYMid slice" style={{ width: '100%', height: '100%', display: 'block' }}>
       <rect width={W} height={H} fill="#e8f5e9" />
       <rect y={54} width={W} height={18} fill="#a5d6a7" />
       {/* Each unit = running figure */}
       {Array.from({ length: units }, (_, i) => {
-        const x = 15 + (i * (W - 30)) / Math.max(units, 1);
+        const x = 175 + (i * (W - 235)) / Math.max(units, 1);
         const y = 28 + (i % 3) * 6;
         const shade = `hsl(${160 + i * 8}, 60%, ${40 + (i % 3) * 10}%)`;
         return (
@@ -108,12 +108,12 @@ function BannerBsy({ count }) {
 function BannerHr({ count }) {
   const units = Math.min(count, 25);
   return (
-    <svg viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="xMidYMid slice" style={{ width: '100%', height: '100%', display: 'block' }}>
+    <svg viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="xMinYMid slice" style={{ width: '100%', height: '100%', display: 'block' }}>
       <rect width={W} height={H} fill="#eceff1" />
       <rect y={58} width={W} height={14} fill="#90a4ae" />
       {/* Each unit = cubicle */}
       {Array.from({ length: units }, (_, i) => {
-        const x = 6 + (i * (W - 20)) / Math.max(units, 1);
+        const x = 175 + (i * (W - 235)) / Math.max(units, 1);
         return (
           <g key={i}>
             <rect x={x} y={18} width={2} height={40} fill="#b0bec5" />
@@ -133,7 +133,7 @@ function BannerHr({ count }) {
 function BannerDel({ count }) {
   const units = Math.min(count, 20);
   return (
-    <svg viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="xMidYMid slice" style={{ width: '100%', height: '100%', display: 'block' }}>
+    <svg viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="xMinYMid slice" style={{ width: '100%', height: '100%', display: 'block' }}>
       <rect width={W} height={H} fill="#80deea" />
       <rect y={44} width={W} height={28} fill="#78909c" />
       {/* Road markings */}
@@ -142,7 +142,7 @@ function BannerDel({ count }) {
       ))}
       {/* Each unit = scooter */}
       {Array.from({ length: units }, (_, i) => {
-        const x = 20 + (i * (W - 50)) / Math.max(units, 1);
+        const x = 175 + (i * (W - 235)) / Math.max(units, 1);
         return (
           <g key={i}>
             <rect x={x} y={48} width={8} height={8} fill="#37474f" />
@@ -163,12 +163,12 @@ function BannerDel({ count }) {
 function BannerGov({ count }) {
   const units = Math.min(count, 15);
   return (
-    <svg viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="xMidYMid slice" style={{ width: '100%', height: '100%', display: 'block' }}>
+    <svg viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="xMinYMid slice" style={{ width: '100%', height: '100%', display: 'block' }}>
       <rect width={W} height={H} fill="#e0e0e0" />
       <rect y={58} width={W} height={14} fill="#9e9e9e" />
       {/* Each unit = government building */}
       {Array.from({ length: units }, (_, i) => {
-        const x = 10 + (i * (W - 60)) / Math.max(units, 1);
+        const x = 175 + (i * (W - 235)) / Math.max(units, 1);
         return (
           <g key={i}>
             <rect x={x + 8} y={10} width={34} height={5} fill="#bdbdbd" />
@@ -191,7 +191,7 @@ function BannerGov({ count }) {
 function BannerInt({ count }) {
   const units = Math.min(count, 20);
   return (
-    <svg viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="xMidYMid slice" style={{ width: '100%', height: '100%', display: 'block' }}>
+    <svg viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="xMinYMid slice" style={{ width: '100%', height: '100%', display: 'block' }}>
       <rect width={W} height={H} fill="#0a0a0a" />
       {/* Matrix rain */}
       {Array.from({ length: 60 }, (_, i) => (
@@ -201,7 +201,7 @@ function BannerInt({ count }) {
       ))}
       {/* Each unit = surveillance camera */}
       {Array.from({ length: units }, (_, i) => {
-        const x = 15 + (i * (W - 30)) / Math.max(units, 1);
+        const x = 175 + (i * (W - 235)) / Math.max(units, 1);
         const top = i % 2 === 0;
         const y = top ? 0 : 44;
         return (
@@ -221,7 +221,7 @@ function BannerInt({ count }) {
 function BannerAlgo({ count }) {
   const units = Math.min(count, 20);
   return (
-    <svg viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="xMidYMid slice" style={{ width: '100%', height: '100%', display: 'block' }}>
+    <svg viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="xMinYMid slice" style={{ width: '100%', height: '100%', display: 'block' }}>
       <rect width={W} height={H} fill="#1a237e" />
       {/* Network grid lines */}
       {Array.from({ length: 10 }, (_, i) => (
@@ -229,7 +229,7 @@ function BannerAlgo({ count }) {
       ))}
       {/* Each unit = phone */}
       {Array.from({ length: units }, (_, i) => {
-        const x = 15 + (i * (W - 40)) / Math.max(units, 1);
+        const x = 175 + (i * (W - 235)) / Math.max(units, 1);
         return (
           <g key={i}>
             <rect x={x} y={10} width={18} height={40} rx={2} fill="#263238" />
@@ -255,7 +255,7 @@ function BannerAlgo({ count }) {
 function BannerAi({ count }) {
   const units = Math.min(count, 18);
   return (
-    <svg viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="xMidYMid slice" style={{ width: '100%', height: '100%', display: 'block' }}>
+    <svg viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="xMinYMid slice" style={{ width: '100%', height: '100%', display: 'block' }}>
       <rect width={W} height={H} fill="#1b2631" />
       {/* Circuit traces */}
       {Array.from({ length: 12 }, (_, i) => (
@@ -266,7 +266,7 @@ function BannerAi({ count }) {
       ))}
       {/* Each unit = robot */}
       {Array.from({ length: units }, (_, i) => {
-        const x = 20 + (i * (W - 50)) / Math.max(units, 1);
+        const x = 175 + (i * (W - 235)) / Math.max(units, 1);
         return (
           <g key={i}>
             <rect x={x + 4} y={4} width={3} height={6} fill="#78909c" />
@@ -289,7 +289,7 @@ function BannerAi({ count }) {
 function BannerAlien({ count }) {
   const units = Math.min(count, 15);
   return (
-    <svg viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="xMidYMid slice" style={{ width: '100%', height: '100%', display: 'block' }}>
+    <svg viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="xMinYMid slice" style={{ width: '100%', height: '100%', display: 'block' }}>
       <rect width={W} height={H} fill="#0d1b2a" />
       {/* Stars */}
       {Array.from({ length: 50 }, (_, i) => (
@@ -300,7 +300,7 @@ function BannerAlien({ count }) {
       <rect y={56} width={W} height={16} fill="#1b2838" />
       {/* Each unit = satellite dish */}
       {Array.from({ length: units }, (_, i) => {
-        const x = 20 + (i * (W - 50)) / Math.max(units, 1);
+        const x = 175 + (i * (W - 235)) / Math.max(units, 1);
         return (
           <g key={i}>
             <rect x={x} y={28} width={24} height={3} fill="#cfd8dc" />
@@ -331,7 +331,7 @@ function BannerAlien({ count }) {
 function BannerTime({ count }) {
   const units = Math.min(count, 15);
   return (
-    <svg viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="xMidYMid slice" style={{ width: '100%', height: '100%', display: 'block' }}>
+    <svg viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="xMinYMid slice" style={{ width: '100%', height: '100%', display: 'block' }}>
       <rect width={W} height={H} fill="#1a0a2e" />
       {/* Spiral background */}
       {Array.from({ length: 24 }, (_, i) => {
@@ -342,7 +342,7 @@ function BannerTime({ count }) {
       })}
       {/* Each unit = clock */}
       {Array.from({ length: units }, (_, i) => {
-        const x = 20 + (i * (W - 50)) / Math.max(units, 1);
+        const x = 175 + (i * (W - 235)) / Math.max(units, 1);
         const size = 16 + (i % 3) * 4;
         const y = 20 + (i % 2) * 10;
         return (
@@ -362,7 +362,7 @@ function BannerTime({ count }) {
 function BannerQuantum({ count }) {
   const units = Math.min(count, 15);
   return (
-    <svg viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="xMidYMid slice" style={{ width: '100%', height: '100%', display: 'block' }}>
+    <svg viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="xMinYMid slice" style={{ width: '100%', height: '100%', display: 'block' }}>
       <rect width={W} height={H} fill="#004d40" />
       {/* Wave function background */}
       {Array.from({ length: W / 3 }, (_, i) => {
@@ -372,7 +372,7 @@ function BannerQuantum({ count }) {
       })}
       {/* Each unit = atom */}
       {Array.from({ length: units }, (_, i) => {
-        const cx = 30 + (i * (W - 60)) / Math.max(units, 1);
+        const cx = 175 + (i * (W - 235)) / Math.max(units, 1);
         const cy = 30 + (i % 3) * 6;
         return (
           <g key={i}>
@@ -393,11 +393,11 @@ function BannerQuantum({ count }) {
 function BannerVoid({ count }) {
   const units = Math.min(count, 12);
   return (
-    <svg viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="xMidYMid slice" style={{ width: '100%', height: '100%', display: 'block' }}>
+    <svg viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="xMinYMid slice" style={{ width: '100%', height: '100%', display: 'block' }}>
       <rect width={W} height={H} fill="#050510" />
       {/* Each unit = void portal */}
       {Array.from({ length: units }, (_, i) => {
-        const cx = 40 + (i * (W - 80)) / Math.max(units, 1);
+        const cx = 175 + (i * (W - 235)) / Math.max(units, 1);
         const cy = 36;
         return (
           <g key={i}>
@@ -425,7 +425,7 @@ function BannerVoid({ count }) {
 function BannerGod({ count }) {
   const units = Math.min(count, 12);
   return (
-    <svg viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="xMidYMid slice" style={{ width: '100%', height: '100%', display: 'block' }}>
+    <svg viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="xMinYMid slice" style={{ width: '100%', height: '100%', display: 'block' }}>
       <rect width={W} height={H} fill="#1a1520" />
       {/* Light rays from center */}
       {Array.from({ length: 16 }, (_, i) => {
@@ -443,7 +443,7 @@ function BannerGod({ count }) {
       ))}
       {/* Each unit = divine eye/halo */}
       {Array.from({ length: units }, (_, i) => {
-        const x = 30 + (i * (W - 60)) / Math.max(units, 1);
+        const x = 175 + (i * (W - 235)) / Math.max(units, 1);
         return (
           <g key={i}>
             <rect x={x} y={20} width={20} height={20} rx={10} fill="#fdd835" opacity={0.2} />

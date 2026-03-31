@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { FLOWERS, SERIES, RARITY, GROWTH_TIME, WILT_TIME, getFieldCount, getFlowerById } from '../game/garden.js';
 import GameIcon, { getFlowerIcon, UI_ICON_MAP } from './GameIcon.jsx';
 
@@ -13,7 +13,44 @@ function fmtTime(ms) {
 }
 
 /**
- * Widget-style plot cell — iOS widget aesthetic.
+ * Inline SVG soil/field background for each plot cell.
+ */
+function FieldBg({ state }) {
+  // state: 'empty' | 'growing' | 'mature' | 'wilted' | 'locked'
+  const soilColor = state === 'wilted' ? '#9e9e9e' : '#8B6C42';
+  const grassColor = state === 'locked' ? '#c8c8c8' : '#7ec87e';
+  const rowOpacity = state === 'locked' ? 0.15 : state === 'wilted' ? 0.25 : 0.5;
+  return (
+    <svg viewBox="0 0 120 100" preserveAspectRatio="xMidYMid slice"
+      style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', pointerEvents: 'none', zIndex: 0 }}>
+      {/* Grass base */}
+      <rect width={120} height={100} fill={grassColor} opacity={state === 'locked' ? 0.06 : 0.12} />
+      {/* Soil rows */}
+      {Array.from({ length: 4 }, (_, i) => (
+        <g key={i}>
+          <rect x={8} y={18 + i * 22} width={104} height={6} rx={3} fill={soilColor} opacity={rowOpacity * 0.6} />
+          <rect x={8} y={21 + i * 22} width={104} height={3} rx={1.5} fill={soilColor} opacity={rowOpacity * 0.3} />
+        </g>
+      ))}
+      {/* Growing sprouts */}
+      {(state === 'growing' || state === 'mature') && Array.from({ length: 5 }, (_, i) => (
+        <g key={`sp${i}`}>
+          <rect x={18 + i * 22} y={state === 'mature' ? 10 : 14} width={2} height={state === 'mature' ? 12 : 8}
+            fill="#22c55e" opacity={0.4} />
+          {state === 'mature' && (
+            <circle cx={19 + i * 22} cy={8} r={4} fill="#ec4899" opacity={0.35} />
+          )}
+        </g>
+      ))}
+      {/* Fence posts on edges */}
+      <rect x={0} y={0} width={2} height={100} fill="#A67C00" opacity={rowOpacity * 0.3} />
+      <rect x={118} y={0} width={2} height={100} fill="#A67C00" opacity={rowOpacity * 0.3} />
+    </svg>
+  );
+}
+
+/**
+ * Farm-style plot cell — each cell looks like a patch of farmland.
  */
 function PlotCell({ slot, index, fieldCount, seeds, onPlant, onHarvest, onClear }) {
   const [now, setNow] = useState(Date.now());
@@ -26,12 +63,12 @@ function PlotCell({ slot, index, fieldCount, seeds, onPlant, onHarvest, onClear 
 
   const isLocked = index >= fieldCount;
   const cellBase = {
-    borderRadius: 16,
+    borderRadius: 12,
     display: 'flex', flexDirection: 'column',
     alignItems: 'center', justifyContent: 'center',
     transition: 'all .2s',
     position: 'relative', overflow: 'hidden',
-    aspectRatio: '1',
+    minHeight: 90,
   };
 
   // Locked
@@ -39,11 +76,11 @@ function PlotCell({ slot, index, fieldCount, seeds, onPlant, onHarvest, onClear 
     return (
       <div style={{
         ...cellBase,
-        background: 'rgba(148,163,184,.04)',
-        border: '1px solid rgba(148,163,184,.08)',
-        opacity: 0.3,
+        background: 'rgba(148,163,184,.03)',
+        border: '1.5px dashed rgba(148,163,184,.18)',
       }}>
-        <span style={{ fontSize: 16, opacity: 0.5 }}>🔒</span>
+        <FieldBg state="locked" />
+        <span style={{ fontSize: 12, color: '#cbd5e1', opacity: 0.5, zIndex: 1 }}>🔒</span>
       </div>
     );
   }
@@ -57,16 +94,17 @@ function PlotCell({ slot, index, fieldCount, seeds, onPlant, onHarvest, onClear 
         style={{
           ...cellBase,
           background: canPlant
-            ? 'linear-gradient(135deg, rgba(34,197,94,.06), rgba(34,197,94,.02))'
-            : 'rgba(148,163,184,.03)',
-          border: canPlant ? '1.5px dashed rgba(34,197,94,.3)' : '1px dashed rgba(148,163,184,.12)',
+            ? 'linear-gradient(180deg, #f0fdf4, #dcfce7)'
+            : '#fafafa',
+          border: canPlant ? '2px dashed #86efac' : '1.5px dashed #d4d4d4',
           cursor: canPlant ? 'pointer' : 'default',
         }}
       >
-        {canPlant && <>
-          <span style={{ fontSize: 24, opacity: 0.6 }}>🌱</span>
-          <span style={{ fontSize: 10, color: '#22c55e', fontWeight: 600, marginTop: 2 }}>播種</span>
-        </>}
+        <FieldBg state="empty" />
+        {canPlant && <div style={{ zIndex: 1, textAlign: 'center' }}>
+          <span style={{ fontSize: 24, opacity: 0.7 }}>🌱</span>
+          <div style={{ fontSize: 10, color: '#22c55e', fontWeight: 700, marginTop: 2 }}>播種</div>
+        </div>}
       </button>
     );
   }
@@ -79,16 +117,19 @@ function PlotCell({ slot, index, fieldCount, seeds, onPlant, onHarvest, onClear 
         onClick={() => onClear(index)}
         style={{
           ...cellBase,
-          background: 'rgba(148,163,184,.05)',
-          border: '1px solid rgba(148,163,184,.1)',
-          cursor: 'pointer', filter: 'grayscale(0.8)', opacity: 0.5,
+          background: 'linear-gradient(180deg, #f5f5f4, #e7e5e4)',
+          border: '1.5px solid #d6d3d1',
+          cursor: 'pointer',
         }}
       >
-        {flower && getFlowerIcon(flower.id)
-          ? <GameIcon src={getFlowerIcon(flower.id)} size={32} color="#94a3b8" style={{ filter: 'grayscale(1)' }} />
-          : <span style={{ fontSize: 32 }}>{flower?.emoji ?? '🍂'}</span>
-        }
-        <span style={{ fontSize: 10, color: '#94a3b8', marginTop: 2 }}>枯萎了</span>
+        <FieldBg state="wilted" />
+        <div style={{ zIndex: 1, textAlign: 'center', filter: 'grayscale(0.6)', opacity: 0.6 }}>
+          {flower && getFlowerIcon(flower.id)
+            ? <GameIcon src={getFlowerIcon(flower.id)} size={32} color="#94a3b8" />
+            : <span style={{ fontSize: 32 }}>{flower?.emoji ?? '🍂'}</span>
+          }
+          <div style={{ fontSize: 10, color: '#94a3b8', marginTop: 2 }}>枯萎了</div>
+        </div>
       </button>
     );
   }
@@ -100,18 +141,21 @@ function PlotCell({ slot, index, fieldCount, seeds, onPlant, onHarvest, onClear 
     return (
       <div style={{
         ...cellBase,
-        background: 'linear-gradient(180deg, rgba(34,197,94,.08), rgba(34,197,94,.02))',
-        border: '1px solid rgba(34,197,94,.15)',
+        background: `linear-gradient(180deg, #ecfdf5 ${100 - progress}%, #bbf7d0 100%)`,
+        border: '1.5px solid #86efac',
       }}>
-        <GameIcon src={UI_ICON_MAP.seed} size={28} color="#22c55e" style={{ animation: 'breathe 3s ease-in-out infinite' }} />
-        <span style={{
-          fontSize: 11, color: '#22c55e', fontWeight: 700,
-          fontFamily: "'JetBrains Mono',monospace", marginTop: 3,
-        }}>
-          {fmtTime(remaining)}
-        </span>
-        {/* Circular progress ring */}
-        <svg style={{ position: 'absolute', inset: 4, opacity: 0.2 }} viewBox="0 0 100 100">
+        <FieldBg state="growing" />
+        <div style={{ zIndex: 1, textAlign: 'center' }}>
+          <GameIcon src={UI_ICON_MAP.seed} size={28} color="#22c55e" style={{ animation: 'breathe 3s ease-in-out infinite' }} />
+          <div style={{
+            fontSize: 12, color: '#16a34a', fontWeight: 800,
+            fontFamily: "'JetBrains Mono',monospace", marginTop: 3,
+          }}>
+            {fmtTime(remaining)}
+          </div>
+        </div>
+        {/* Progress ring */}
+        <svg style={{ position: 'absolute', inset: 4, opacity: 0.15, zIndex: 0 }} viewBox="0 0 100 100">
           <circle cx="50" cy="50" r="46" fill="none" stroke="#22c55e" strokeWidth="2"
             strokeDasharray={`${progress * 2.89} 289`}
             strokeLinecap="round" transform="rotate(-90 50 50)" />
@@ -131,33 +175,36 @@ function PlotCell({ slot, index, fieldCount, seeds, onPlant, onHarvest, onClear 
       onClick={() => onHarvest(index)}
       style={{
         ...cellBase,
-        background: `linear-gradient(135deg, ${rarity.color}12, ${rarity.color}06)`,
-        border: `2px solid ${rarity.color}40`,
+        background: `linear-gradient(135deg, ${rarity.color}20, ${rarity.color}10)`,
+        border: `2px solid ${rarity.color}50`,
         cursor: 'pointer',
         animation: 'glowPulse 2s ease-in-out infinite',
         boxShadow: `0 4px 20px ${rarity.color}15`,
       }}
     >
-      {flower && getFlowerIcon(flower.id)
-        ? <GameIcon src={getFlowerIcon(flower.id)} size={40} color={rarity.color} />
-        : <span style={{ fontSize: 40 }}>{flower?.emoji ?? '🌸'}</span>
-      }
-      <span style={{
-        fontSize: 11, fontWeight: 800, color: rarity.color,
-        letterSpacing: 0.5, marginTop: 2,
-      }}>
-        {rarity.label}
-      </span>
-      <span style={{
-        fontSize: 10, color: urgency ? '#ef4444' : '#94a3b8',
-        fontFamily: "'JetBrains Mono',monospace",
-        fontWeight: urgency ? 700 : 400,
-      }}>
-        {fmtTime(wiltRemaining)}
-      </span>
+      <FieldBg state="mature" />
+      <div style={{ zIndex: 1, textAlign: 'center' }}>
+        {flower && getFlowerIcon(flower.id)
+          ? <GameIcon src={getFlowerIcon(flower.id)} size={40} color={rarity.color} />
+          : <span style={{ fontSize: 40 }}>{flower?.emoji ?? '🌸'}</span>
+        }
+        <div style={{
+          fontSize: 11, fontWeight: 800, color: rarity.color,
+          letterSpacing: 0.5, marginTop: 2,
+        }}>
+          {rarity.label}
+        </div>
+        <div style={{
+          fontSize: 10, color: urgency ? '#ef4444' : '#78716c',
+          fontFamily: "'JetBrains Mono',monospace",
+          fontWeight: urgency ? 700 : 500,
+        }}>
+          {fmtTime(wiltRemaining)}
+        </div>
+      </div>
       {/* Rarity glow dot */}
       <div style={{
-        position: 'absolute', top: 6, right: 6,
+        position: 'absolute', top: 6, right: 6, zIndex: 1,
         width: 8, height: 8, borderRadius: '50%',
         background: rarity.color, opacity: 0.6,
         boxShadow: `0 0 6px ${rarity.color}`,
@@ -294,8 +341,30 @@ function BuffBar({ activeBuffs }) {
 /**
  * Garden — iOS Widget style main component.
  */
-export default function Garden({ gardenState, exCount, onPlant, onHarvest, onClearWilted }) {
+export default function Garden({ gardenState, exCount, onPlant, onHarvest, onClearWilted, onCollapse }) {
   const [showCollection, setShowCollection] = useState(false);
+  const [newFlowerFlash, setNewFlowerFlash] = useState(null); // { name, emoji, color, label }
+  const prevCollectionSizeRef = useRef(0);
+
+  // Detect new flower discoveries — must be before early return
+  const collectionIds = gardenState ? Object.keys(gardenState.collection) : [];
+  useEffect(() => {
+    if (!gardenState) return;
+    const ids = Object.keys(gardenState.collection);
+    if (ids.length > prevCollectionSizeRef.current && ids.length > 0) {
+      const newestId = ids[ids.length - 1];
+      const flower = getFlowerById(newestId);
+      if (flower) {
+        const rarity = RARITY[flower.rarity ?? 'common'];
+        setNewFlowerFlash({ name: flower.name, emoji: flower.emoji, color: rarity.color, label: rarity.label });
+        const t = setTimeout(() => setNewFlowerFlash(null), 3000);
+        prevCollectionSizeRef.current = ids.length;
+        return () => clearTimeout(t);
+      }
+    }
+    prevCollectionSizeRef.current = ids.length;
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [collectionIds.length]);
 
   if (!gardenState) return null;
 
@@ -318,6 +387,13 @@ export default function Garden({ gardenState, exCount, onPlant, onHarvest, onCle
         backdropFilter: 'blur(10px)',
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          {onCollapse && (
+            <button onClick={onCollapse} style={{
+              background: 'none', border: 'none', cursor: 'pointer',
+              fontSize: 13, color: '#94a3b8', padding: '2px 4px',
+              lineHeight: 1,
+            }} title="收合">▲</button>
+          )}
           <div style={{
             width: 28, height: 28, borderRadius: 8,
             background: 'linear-gradient(135deg, #22c55e, #16a34a)',
@@ -346,15 +422,20 @@ export default function Garden({ gardenState, exCount, onPlant, onHarvest, onCle
           </div>
           <button
             onClick={() => setShowCollection(!showCollection)}
+            title={showCollection ? '返回花田' : '查看花圃圖鑑'}
             style={{
-              padding: '4px 10px', fontSize: 12, fontWeight: 700,
-              background: showCollection ? 'rgba(99,102,241,.1)' : 'rgba(148,163,184,.06)',
-              border: showCollection ? '1.5px solid rgba(99,102,241,.25)' : '1px solid rgba(148,163,184,.12)',
+              padding: '4px 12px', fontSize: 12, fontWeight: 700,
+              background: showCollection ? 'rgba(99,102,241,.12)' : 'rgba(148,163,184,.08)',
+              border: showCollection ? '1.5px solid rgba(99,102,241,.3)' : '1.5px solid rgba(148,163,184,.2)',
               borderRadius: 10, cursor: 'pointer',
               color: showCollection ? '#6366f1' : '#64748b',
+              display: 'flex', alignItems: 'center', gap: 4,
+              boxShadow: showCollection ? '0 0 0 2px rgba(99,102,241,.1)' : 'none',
+              transition: 'all .15s',
             }}
           >
-            📖 {Object.keys(collection).length}/{FLOWERS.length}
+            📖 <span>{Object.keys(collection).length}/{FLOWERS.length}</span>
+            <span style={{ fontSize: 9, opacity: 0.6 }}>{showCollection ? '▲' : '▼'}</span>
           </button>
         </div>
       </div>
@@ -363,42 +444,80 @@ export default function Garden({ gardenState, exCount, onPlant, onHarvest, onCle
       {showCollection ? (
         <CollectionView collection={collection} completedSeries={completedSeries} />
       ) : (
-        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0 }}>
-          {/* 4×4 Widget Grid */}
+        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0, position: 'relative' }}>
+          {/* New flower discovery flash */}
+          {newFlowerFlash && (
+            <div style={{
+              position: 'absolute', top: 10, left: '50%', transform: 'translateX(-50%)',
+              zIndex: 50, pointerEvents: 'none',
+              background: `linear-gradient(135deg, ${newFlowerFlash.color}18, ${newFlowerFlash.color}0a)`,
+              border: `1.5px solid ${newFlowerFlash.color}50`,
+              borderRadius: 14, padding: '8px 18px',
+              display: 'flex', alignItems: 'center', gap: 8,
+              boxShadow: `0 4px 24px ${newFlowerFlash.color}25`,
+              animation: 'si .3s ease-out',
+              backdropFilter: 'blur(8px)',
+            }}>
+              <span style={{ fontSize: 28 }}>{newFlowerFlash.emoji}</span>
+              <div>
+                <div style={{ fontSize: 12, fontWeight: 800, color: newFlowerFlash.color }}>
+                  新發現！
+                </div>
+                <div style={{ fontSize: 11, fontWeight: 700, color: '#1e293b' }}>
+                  {newFlowerFlash.name}
+                  <span style={{
+                    marginLeft: 5, fontSize: 10, fontWeight: 600,
+                    color: newFlowerFlash.color,
+                  }}>{newFlowerFlash.label}</span>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Inspirational quote — shown when no active buffs / top of grid */}
           <div style={{
-            padding: 10,
-            display: 'grid',
-            gridTemplateColumns: `repeat(${Math.min(4, fieldCount)}, 1fr)`,
-            gridAutoRows: 'minmax(80px, 110px)',
-            gap: 6,
-            alignContent: 'start',
+            padding: '8px 16px 4px', flexShrink: 0,
+            textAlign: 'center',
           }}>
-            {slots.slice(0, fieldCount).map((slot, i) => (
-              <PlotCell
-                key={i}
-                slot={slot}
-                index={i}
-                fieldCount={fieldCount}
-                seeds={seeds}
-                onPlant={onPlant}
-                onHarvest={onHarvest}
-                onClear={onClearWilted}
-              />
-            ))}
+            <span style={{
+              fontSize: 12, color: '#94a3b8',
+              fontStyle: 'italic', letterSpacing: 0.4,
+              lineHeight: 1.6,
+            }}>
+              「每次想點開對話的時候，就種一棵樹吧。」
+            </span>
           </div>
+
+          {/* Grid — always display full rows with locked cells filling gaps */}
+          {(() => {
+            const cols = Math.min(4, fieldCount);
+            const displayCount = Math.ceil(fieldCount / cols) * cols;
+            return (
+              <div style={{
+                padding: '4px 10px 10px',
+                display: 'grid',
+                gridTemplateColumns: `repeat(${cols}, 1fr)`,
+                gridAutoRows: 'minmax(90px, 120px)',
+                gap: 6,
+              }}>
+                {slots.slice(0, displayCount).map((slot, i) => (
+                  <PlotCell
+                    key={i}
+                    slot={slot}
+                    index={i}
+                    fieldCount={fieldCount}
+                    seeds={seeds}
+                    onPlant={onPlant}
+                    onHarvest={onHarvest}
+                    onClear={onClearWilted}
+                  />
+                ))}
+              </div>
+            );
+          })()}
 
           {/* Active buffs */}
           <BuffBar activeBuffs={activeBuffs ?? []} />
-
-          {/* Footer — widget style */}
-          <div style={{
-            padding: '6px 14px', flexShrink: 0,
-            borderTop: '1px solid rgba(148,163,184,.08)',
-            fontSize: 11, color: '#94a3b8', textAlign: 'center',
-            fontStyle: 'italic', letterSpacing: 0.3,
-          }}>
-            「每次想點開對話的時候，就種一棵樹吧。」
-          </div>
         </div>
       )}
     </div>

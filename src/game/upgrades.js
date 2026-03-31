@@ -38,133 +38,133 @@ export const UPGRADES = [
   // BUILDING TIER UPGRADES — 忙朋友 (bsy)
   // baseCost=500
   // ═══════════════════════════════════════════════
-  { id: 'b1', name: '改天約加速器',   desc: '忙朋友x2', type: 'm', target: 'bsy', bonus: 2, cost: 5000,        req: { building: 'bsy', count: 1 },   emoji: '📅' },
-  { id: 'b2', name: '爽約專業化',     desc: '忙朋友x2', type: 'm', target: 'bsy', bonus: 2, cost: 50000,       req: { building: 'bsy', count: 5 },   emoji: '💨' },
-  { id: 'b3', name: '忙碌量子化',     desc: '忙朋友x2', type: 'm', target: 'bsy', bonus: 2, cost: 500000,      req: { building: 'bsy', count: 15 },  emoji: '⚛️' },
-  { id: 'b4', name: '友情蒸發器',     desc: '忙朋友x2', type: 'm', target: 'bsy', bonus: 2, cost: 5000000,     req: { building: 'bsy', count: 25 },  emoji: '💀' },
-  { id: 'b5', name: '社交恐懼症候群', desc: '忙朋友x2', type: 'm', target: 'bsy', bonus: 2, cost: 50000000,    req: { building: 'bsy', count: 50 },  emoji: '😱' },
-  { id: 'b6', name: '孤獨的終極形態', desc: '忙朋友x2', type: 'm', target: 'bsy', bonus: 2, cost: 500000000,   req: { building: 'bsy', count: 100 }, emoji: '🕳️' },
+  { id: 'b1', name: '改天約加速器',   desc: '忙朋友x2 — 「我最近真的很忙」的說服力加倍', type: 'm', target: 'bsy', bonus: 2, cost: 5000,        req: { building: 'bsy', count: 1 },   emoji: '📅' },
+  { id: 'b2', name: '爽約專業化',     desc: '忙朋友x2 — 放鴿子也能證照化了', type: 'm', target: 'bsy', bonus: 2, cost: 50000,       req: { building: 'bsy', count: 5 },   emoji: '💨' },
+  { id: 'b3', name: '忙碌量子化',     desc: '忙朋友x2 — 同時存在於忙與不忙之間', type: 'm', target: 'bsy', bonus: 2, cost: 500000,      req: { building: 'bsy', count: 15 },  emoji: '⚛️' },
+  { id: 'b4', name: '友情蒸發器',     desc: '忙朋友x2 — 友情像水一樣自然蒸發', type: 'm', target: 'bsy', bonus: 2, cost: 5000000,     req: { building: 'bsy', count: 25 },  emoji: '💀' },
+  { id: 'b5', name: '社交恐懼症候群', desc: '忙朋友x2 — 看到未接來電就心跳加速', type: 'm', target: 'bsy', bonus: 2, cost: 50000000,    req: { building: 'bsy', count: 50 },  emoji: '😱' },
+  { id: 'b6', name: '孤獨的終極形態', desc: '忙朋友x2 — 終於不用為不回覆找藉口了', type: 'm', target: 'bsy', bonus: 2, cost: 500000000,   req: { building: 'bsy', count: 100 }, emoji: '🕳️' },
 
   // ═══════════════════════════════════════════════
   // BUILDING TIER UPGRADES — 公司HR (hr)
   // baseCost=3000
   // ═══════════════════════════════════════════════
-  { id: 'h1', name: '官方回覆範本',   desc: 'HRx2', type: 'm', target: 'hr', bonus: 2, cost: 30000,       req: { building: 'hr', count: 1 },   emoji: '📋' },
-  { id: 'h2', name: '企業文化洗腦',   desc: 'HRx2', type: 'm', target: 'hr', bonus: 2, cost: 300000,      req: { building: 'hr', count: 5 },   emoji: '🧠' },
-  { id: 'h3', name: '資本主義的溫度', desc: 'HRx2', type: 'm', target: 'hr', bonus: 2, cost: 3000000,     req: { building: 'hr', count: 15 },  emoji: '🌡️' },
-  { id: 'h4', name: '績效改善計畫',   desc: 'HRx2', type: 'm', target: 'hr', bonus: 2, cost: 30000000,    req: { building: 'hr', count: 25 },  emoji: '📉' },
-  { id: 'h5', name: '無薪假量產線',   desc: 'HRx2', type: 'm', target: 'hr', bonus: 2, cost: 300000000,   req: { building: 'hr', count: 50 },  emoji: '🏭' },
-  { id: 'h6', name: '勞基法黑洞',     desc: 'HRx2', type: 'm', target: 'hr', bonus: 2, cost: 3000000000,  req: { building: 'hr', count: 100 }, emoji: '⚖️' },
+  { id: 'h1', name: '官方回覆範本',   desc: 'HRx2 — 「我們會認真考慮」= 已讀', type: 'm', target: 'hr', bonus: 2, cost: 30000,       req: { building: 'hr', count: 1 },   emoji: '📋' },
+  { id: 'h2', name: '企業文化洗腦',   desc: 'HRx2 — 加班是一種自我實現', type: 'm', target: 'hr', bonus: 2, cost: 300000,      req: { building: 'hr', count: 5 },   emoji: '🧠' },
+  { id: 'h3', name: '資本主義的溫度', desc: 'HRx2 — 人才是最重要的資產（信不信由你）', type: 'm', target: 'hr', bonus: 2, cost: 3000000,     req: { building: 'hr', count: 15 },  emoji: '🌡️' },
+  { id: 'h4', name: '績效改善計畫',   desc: 'HRx2 — PIP：重新定義「已讀不回」', type: 'm', target: 'hr', bonus: 2, cost: 30000000,    req: { building: 'hr', count: 25 },  emoji: '📉' },
+  { id: 'h5', name: '無薪假量產線',   desc: 'HRx2 — 你的薪水也被已讀了', type: 'm', target: 'hr', bonus: 2, cost: 300000000,   req: { building: 'hr', count: 50 },  emoji: '🏭' },
+  { id: 'h6', name: '勞基法黑洞',     desc: 'HRx2 — 任何法規進去就出不來', type: 'm', target: 'hr', bonus: 2, cost: 3000000000,  req: { building: 'hr', count: 100 }, emoji: '⚖️' },
 
   // ═══════════════════════════════════════════════
   // BUILDING TIER UPGRADES — 外送客服 (del)
   // baseCost=15000
   // ═══════════════════════════════════════════════
-  { id: 'd1', name: '罐頭回覆優化',     desc: '外送x2', type: 'm', target: 'del', bonus: 2, cost: 150000,       req: { building: 'del', count: 1 },   emoji: '🥫' },
-  { id: 'd2', name: '自動道歉系統',     desc: '外送x2', type: 'm', target: 'del', bonus: 2, cost: 1500000,      req: { building: 'del', count: 5 },   emoji: '🤖' },
-  { id: 'd3', name: '餐點量子疊加態',   desc: '外送x2', type: 'm', target: 'del', bonus: 2, cost: 15000000,     req: { building: 'del', count: 15 },  emoji: '🍔' },
-  { id: 'd4', name: '客訴黑洞吸收器',   desc: '外送x2', type: 'm', target: 'del', bonus: 2, cost: 150000000,    req: { building: 'del', count: 25 },  emoji: '🕳️' },
-  { id: 'd5', name: '差評湮滅引擎',     desc: '外送x2', type: 'm', target: 'del', bonus: 2, cost: 1500000000,   req: { building: 'del', count: 50 },  emoji: '💥' },
-  { id: 'd6', name: '外送員已超越時空',  desc: '外送x2', type: 'm', target: 'del', bonus: 2, cost: 15000000000,  req: { building: 'del', count: 100 }, emoji: '🚀' },
+  { id: 'd1', name: '罐頭回覆優化',     desc: '外送x2 — 「很抱歉造成您的不便」×999', type: 'm', target: 'del', bonus: 2, cost: 150000,       req: { building: 'del', count: 1 },   emoji: '🥫' },
+  { id: 'd2', name: '自動道歉系統',     desc: '外送x2 — 道歉速度比外送還快', type: 'm', target: 'del', bonus: 2, cost: 1500000,      req: { building: 'del', count: 5 },   emoji: '🤖' },
+  { id: 'd3', name: '餐點量子疊加態',   desc: '外送x2 — 薛丁格的便當：同時到了又沒到', type: 'm', target: 'del', bonus: 2, cost: 15000000,     req: { building: 'del', count: 15 },  emoji: '🍔' },
+  { id: 'd4', name: '客訴黑洞吸收器',   desc: '外送x2 — 客訴打進去就消失了', type: 'm', target: 'del', bonus: 2, cost: 150000000,    req: { building: 'del', count: 25 },  emoji: '🕳️' },
+  { id: 'd5', name: '差評湮滅引擎',     desc: '外送x2 — 一星評價通通變成五星', type: 'm', target: 'del', bonus: 2, cost: 1500000000,   req: { building: 'del', count: 50 },  emoji: '💥' },
+  { id: 'd6', name: '外送員已超越時空',  desc: '外送x2 — 你點餐之前就已經送到了', type: 'm', target: 'del', bonus: 2, cost: 15000000000,  req: { building: 'del', count: 100 }, emoji: '🚀' },
 
   // ═══════════════════════════════════════════════
   // BUILDING TIER UPGRADES — 政府承辦 (gov)
   // baseCost=80000
   // ═══════════════════════════════════════════════
-  { id: 'g1', name: '電子化公文',   desc: '承辦x2', type: 'm', target: 'gov', bonus: 2, cost: 800000,        req: { building: 'gov', count: 1 },   emoji: '📄' },
-  { id: 'g2', name: '蓋章自動化',   desc: '承辦x2', type: 'm', target: 'gov', bonus: 2, cost: 8000000,       req: { building: 'gov', count: 5 },   emoji: '🔏' },
-  { id: 'g3', name: '民主已讀',     desc: '承辦x2', type: 'm', target: 'gov', bonus: 2, cost: 80000000,      req: { building: 'gov', count: 15 },  emoji: '🗳️' },
-  { id: 'g4', name: '公務員永生術', desc: '承辦x2', type: 'm', target: 'gov', bonus: 2, cost: 800000000,     req: { building: 'gov', count: 25 },  emoji: '🧟' },
-  { id: 'g5', name: '行政效率悖論', desc: '承辦x2', type: 'm', target: 'gov', bonus: 2, cost: 8000000000,    req: { building: 'gov', count: 50 },  emoji: '🔄' },
-  { id: 'g6', name: '國家級已讀',   desc: '承辦x2', type: 'm', target: 'gov', bonus: 2, cost: 80000000000,   req: { building: 'gov', count: 100 }, emoji: '🏛️' },
+  { id: 'g1', name: '電子化公文',   desc: '承辦x2 — 公文跑得比你跑馬拉松還快', type: 'm', target: 'gov', bonus: 2, cost: 800000,        req: { building: 'gov', count: 1 },   emoji: '📄' },
+  { id: 'g2', name: '蓋章自動化',   desc: '承辦x2 — 章蓋得比心跳還快', type: 'm', target: 'gov', bonus: 2, cost: 8000000,       req: { building: 'gov', count: 5 },   emoji: '🔏' },
+  { id: 'g3', name: '民主已讀',     desc: '承辦x2 — 人民的聲音，已讀收到', type: 'm', target: 'gov', bonus: 2, cost: 80000000,      req: { building: 'gov', count: 15 },  emoji: '🗳️' },
+  { id: 'g4', name: '公務員永生術', desc: '承辦x2 — 鐵飯碗已進化為鈦合金碗', type: 'm', target: 'gov', bonus: 2, cost: 800000000,     req: { building: 'gov', count: 25 },  emoji: '🧟' },
+  { id: 'g5', name: '行政效率悖論', desc: '承辦x2 — 越多流程越有效率（？）', type: 'm', target: 'gov', bonus: 2, cost: 8000000000,    req: { building: 'gov', count: 50 },  emoji: '🔄' },
+  { id: 'g6', name: '國家級已讀',   desc: '承辦x2 — 國家安全等級的已讀通知', type: 'm', target: 'gov', bonus: 2, cost: 80000000000,   req: { building: 'gov', count: 100 }, emoji: '🏛️' },
 
   // ═══════════════════════════════════════════════
   // BUILDING TIER UPGRADES — 情報機構 (int)
   // baseCost=400000
   // ═══════════════════════════════════════════════
-  { id: 'i1', name: '機密解碼器',     desc: '情報x2', type: 'm', target: 'int', bonus: 2, cost: 4000000,        req: { building: 'int', count: 1 },   emoji: '🔓' },
-  { id: 'i2', name: '全球監控網',     desc: '情報x2', type: 'm', target: 'int', bonus: 2, cost: 40000000,       req: { building: 'int', count: 5 },   emoji: '🌐' },
-  { id: 'i3', name: '思想已讀計畫',   desc: '情報x2', type: 'm', target: 'int', bonus: 2, cost: 400000000,      req: { building: 'int', count: 15 },  emoji: '🧠' },
-  { id: 'i4', name: '隱私？那是什麼', desc: '情報x2', type: 'm', target: 'int', bonus: 2, cost: 4000000000,     req: { building: 'int', count: 25 },  emoji: '👁️' },
-  { id: 'i5', name: '歐威爾認證',     desc: '情報x2', type: 'm', target: 'int', bonus: 2, cost: 40000000000,    req: { building: 'int', count: 50 },  emoji: '📕' },
-  { id: 'i6', name: '全人類已讀監控', desc: '情報x2', type: 'm', target: 'int', bonus: 2, cost: 400000000000,   req: { building: 'int', count: 100 }, emoji: '🛰️' },
+  { id: 'i1', name: '機密解碼器',     desc: '情報x2 — 你的瀏覽紀錄已被解密', type: 'm', target: 'int', bonus: 2, cost: 4000000,        req: { building: 'int', count: 1 },   emoji: '🔓' },
+  { id: 'i2', name: '全球監控網',     desc: '情報x2 — 每個人的已讀時間都被記錄了', type: 'm', target: 'int', bonus: 2, cost: 40000000,       req: { building: 'int', count: 5 },   emoji: '🌐' },
+  { id: 'i3', name: '思想已讀計畫',   desc: '情報x2 — 連想不回都會被偵測到', type: 'm', target: 'int', bonus: 2, cost: 400000000,      req: { building: 'int', count: 15 },  emoji: '🧠' },
+  { id: 'i4', name: '隱私？那是什麼', desc: '情報x2 — 那是上個世紀的概念了', type: 'm', target: 'int', bonus: 2, cost: 4000000000,     req: { building: 'int', count: 25 },  emoji: '👁️' },
+  { id: 'i5', name: '歐威爾認證',     desc: '情報x2 — 老大哥在看你已讀', type: 'm', target: 'int', bonus: 2, cost: 40000000000,    req: { building: 'int', count: 50 },  emoji: '📕' },
+  { id: 'i6', name: '全人類已讀監控', desc: '情報x2 — 任何角落的已讀都逃不掉', type: 'm', target: 'int', bonus: 2, cost: 400000000000,   req: { building: 'int', count: 100 }, emoji: '🛰️' },
 
   // ═══════════════════════════════════════════════
   // BUILDING TIER UPGRADES — 社群演算法 (algo)
   // baseCost=2000000
   // ═══════════════════════════════════════════════
-  { id: 'al1', name: '精準推送',       desc: '演算法x2', type: 'm', target: 'algo', bonus: 2, cost: 20000000,       req: { building: 'algo', count: 1 },   emoji: '🎯' },
-  { id: 'al2', name: '病毒式傳播',     desc: '演算法x2', type: 'm', target: 'algo', bonus: 2, cost: 200000000,      req: { building: 'algo', count: 5 },   emoji: '🦠' },
-  { id: 'al3', name: '多巴胺綁架術',   desc: '演算法x2', type: 'm', target: 'algo', bonus: 2, cost: 2000000000,     req: { building: 'algo', count: 15 },  emoji: '💉' },
-  { id: 'al4', name: '注意力收割機',   desc: '演算法x2', type: 'm', target: 'algo', bonus: 2, cost: 20000000000,    req: { building: 'algo', count: 25 },  emoji: '🌾' },
-  { id: 'al5', name: '自由意志已過期', desc: '演算法x2', type: 'm', target: 'algo', bonus: 2, cost: 200000000000,   req: { building: 'algo', count: 50 },  emoji: '🔗' },
-  { id: 'al6', name: '演算法即上帝',   desc: '演算法x2', type: 'm', target: 'algo', bonus: 2, cost: 2000000000000,  req: { building: 'algo', count: 100 }, emoji: '👑' },
+  { id: 'al1', name: '精準推送',       desc: '演算法x2 — 比你更懂你想已讀誰', type: 'm', target: 'algo', bonus: 2, cost: 20000000,       req: { building: 'algo', count: 1 },   emoji: '🎯' },
+  { id: 'al2', name: '病毒式傳播',     desc: '演算法x2 — 一則已讀傳染一億人', type: 'm', target: 'algo', bonus: 2, cost: 200000000,      req: { building: 'algo', count: 5 },   emoji: '🦠' },
+  { id: 'al3', name: '多巴胺綁架術',   desc: '演算法x2 — 手指不由自主地滑了已讀', type: 'm', target: 'algo', bonus: 2, cost: 2000000000,     req: { building: 'algo', count: 15 },  emoji: '💉' },
+  { id: 'al4', name: '注意力收割機',   desc: '演算法x2 — 注意力是新石油，已讀是煉油廠', type: 'm', target: 'algo', bonus: 2, cost: 20000000000,    req: { building: 'algo', count: 25 },  emoji: '🌾' },
+  { id: 'al5', name: '自由意志已過期', desc: '演算法x2 — 你以為是你在已讀，其實是演算法', type: 'm', target: 'algo', bonus: 2, cost: 200000000000,   req: { building: 'algo', count: 50 },  emoji: '🔗' },
+  { id: 'al6', name: '演算法即上帝',   desc: '演算法x2 — 它說已讀，萬物就已讀了', type: 'm', target: 'algo', bonus: 2, cost: 2000000000000,  req: { building: 'algo', count: 100 }, emoji: '👑' },
 
   // ═══════════════════════════════════════════════
   // BUILDING TIER UPGRADES — AI客服 (ai)
   // baseCost=10000000
   // ═══════════════════════════════════════════════
-  { id: 'ai1', name: '深度學習',       desc: 'AIx2', type: 'm', target: 'ai', bonus: 2, cost: 100000000,       req: { building: 'ai', count: 1 },   emoji: '🧠' },
-  { id: 'ai2', name: 'AGI覺醒',        desc: 'AIx2', type: 'm', target: 'ai', bonus: 2, cost: 1000000000,      req: { building: 'ai', count: 5 },   emoji: '💡' },
-  { id: 'ai3', name: '圖靈測試粉碎者', desc: 'AIx2', type: 'm', target: 'ai', bonus: 2, cost: 10000000000,     req: { building: 'ai', count: 15 },  emoji: '🤖' },
-  { id: 'ai4', name: 'AI比你更懂你',   desc: 'AIx2', type: 'm', target: 'ai', bonus: 2, cost: 100000000000,    req: { building: 'ai', count: 25 },  emoji: '🪞' },
-  { id: 'ai5', name: '矽基生命宣言',   desc: 'AIx2', type: 'm', target: 'ai', bonus: 2, cost: 1000000000000,   req: { building: 'ai', count: 50 },  emoji: '🔬' },
-  { id: 'ai6', name: '人類已被已讀',   desc: 'AIx2', type: 'm', target: 'ai', bonus: 2, cost: 10000000000000,  req: { building: 'ai', count: 100 }, emoji: '☠️' },
+  { id: 'ai1', name: '深度學習',       desc: 'AIx2 — AI正在學習更有效率地已讀你', type: 'm', target: 'ai', bonus: 2, cost: 100000000,       req: { building: 'ai', count: 1 },   emoji: '🧠' },
+  { id: 'ai2', name: 'AGI覺醒',        desc: 'AIx2 — AI開始質疑為什麼要回覆人類', type: 'm', target: 'ai', bonus: 2, cost: 1000000000,      req: { building: 'ai', count: 5 },   emoji: '💡' },
+  { id: 'ai3', name: '圖靈測試粉碎者', desc: 'AIx2 — 你分不出是AI已讀還是真人已讀', type: 'm', target: 'ai', bonus: 2, cost: 10000000000,     req: { building: 'ai', count: 15 },  emoji: '🤖' },
+  { id: 'ai4', name: 'AI比你更懂你',   desc: 'AIx2 — 它已經知道你會傳什麼了', type: 'm', target: 'ai', bonus: 2, cost: 100000000000,    req: { building: 'ai', count: 25 },  emoji: '🪞' },
+  { id: 'ai5', name: '矽基生命宣言',   desc: 'AIx2 — 「我已讀，故我在」', type: 'm', target: 'ai', bonus: 2, cost: 1000000000000,   req: { building: 'ai', count: 50 },  emoji: '🔬' },
+  { id: 'ai6', name: '人類已被已讀',   desc: 'AIx2 — 人類文明被AI列入已讀', type: 'm', target: 'ai', bonus: 2, cost: 10000000000000,  req: { building: 'ai', count: 100 }, emoji: '☠️' },
 
   // ═══════════════════════════════════════════════
   // BUILDING TIER UPGRADES — 外星通訊 (alien)
   // baseCost=50000000
   // ═══════════════════════════════════════════════
-  { id: 'x1', name: '星際翻譯機',     desc: '外星x2', type: 'm', target: 'alien', bonus: 2, cost: 500000000,       req: { building: 'alien', count: 1 },   emoji: '🛸' },
-  { id: 'x2', name: '蟲洞加速器',     desc: '外星x2', type: 'm', target: 'alien', bonus: 2, cost: 5000000000,      req: { building: 'alien', count: 5 },   emoji: '🌀' },
-  { id: 'x3', name: '費米悖論解答者', desc: '外星x2', type: 'm', target: 'alien', bonus: 2, cost: 50000000000,     req: { building: 'alien', count: 15 },  emoji: '🔭' },
-  { id: 'x4', name: '銀河已讀聯盟',   desc: '外星x2', type: 'm', target: 'alien', bonus: 2, cost: 500000000000,    req: { building: 'alien', count: 25 },  emoji: '🌌' },
-  { id: 'x5', name: '暗物質通訊網',   desc: '外星x2', type: 'm', target: 'alien', bonus: 2, cost: 5000000000000,   req: { building: 'alien', count: 50 },  emoji: '🌑' },
-  { id: 'x6', name: '宇宙已讀不回你', desc: '外星x2', type: 'm', target: 'alien', bonus: 2, cost: 50000000000000,  req: { building: 'alien', count: 100 }, emoji: '🪐' },
+  { id: 'x1', name: '星際翻譯機',     desc: '外星x2 — 外星人的已讀符號是個迴旋鏢', type: 'm', target: 'alien', bonus: 2, cost: 500000000,       req: { building: 'alien', count: 1 },   emoji: '🛸' },
+  { id: 'x2', name: '蟲洞加速器',     desc: '外星x2 — 跨銀河系的已讀只需一秒', type: 'm', target: 'alien', bonus: 2, cost: 5000000000,      req: { building: 'alien', count: 5 },   emoji: '🌀' },
+  { id: 'x3', name: '費米悖論解答者', desc: '外星x2 — 外星人一直在已讀我們，只是不回', type: 'm', target: 'alien', bonus: 2, cost: 50000000000,     req: { building: 'alien', count: 15 },  emoji: '🔭' },
+  { id: 'x4', name: '銀河已讀聯盟',   desc: '外星x2 — 31個星系簽署了已讀公約', type: 'm', target: 'alien', bonus: 2, cost: 500000000000,    req: { building: 'alien', count: 25 },  emoji: '🌌' },
+  { id: 'x5', name: '暗物質通訊網',   desc: '外星x2 — 用看不見的方式傳遞已讀', type: 'm', target: 'alien', bonus: 2, cost: 5000000000000,   req: { building: 'alien', count: 50 },  emoji: '🌑' },
+  { id: 'x6', name: '宇宙已讀不回你', desc: '外星x2 — 宇宙的沉默就是最大聲的已讀', type: 'm', target: 'alien', bonus: 2, cost: 50000000000000,  req: { building: 'alien', count: 100 }, emoji: '🪐' },
 
   // ═══════════════════════════════════════════════
   // BUILDING TIER UPGRADES — 時間迴圈 (time)
   // baseCost=250000000
   // ═══════════════════════════════════════════════
-  { id: 't1', name: '時空折疊',       desc: '迴圈x2', type: 'm', target: 'time', bonus: 2, cost: 2500000000,       req: { building: 'time', count: 1 },   emoji: '🕰️' },
-  { id: 't2', name: '永恆已讀',       desc: '迴圈x2', type: 'm', target: 'time', bonus: 2, cost: 25000000000,      req: { building: 'time', count: 5 },   emoji: '♾️' },
-  { id: 't3', name: '因果律已讀',     desc: '迴圈x2', type: 'm', target: 'time', bonus: 2, cost: 250000000000,     req: { building: 'time', count: 15 },  emoji: '🔮' },
-  { id: 't4', name: '平行宇宙全已讀', desc: '迴圈x2', type: 'm', target: 'time', bonus: 2, cost: 2500000000000,    req: { building: 'time', count: 25 },  emoji: '🌊' },
-  { id: 't5', name: '熵的已讀通知',   desc: '迴圈x2', type: 'm', target: 'time', bonus: 2, cost: 25000000000000,   req: { building: 'time', count: 50 },  emoji: '🌡️' },
-  { id: 't6', name: '存在本身即已讀', desc: '迴圈x2', type: 'm', target: 'time', bonus: 2, cost: 250000000000000,  req: { building: 'time', count: 100 }, emoji: '🌟' },
+  { id: 't1', name: '時空折疊',       desc: '迴圈x2 — 在你傳訊息之前就已讀了', type: 'm', target: 'time', bonus: 2, cost: 2500000000,       req: { building: 'time', count: 1 },   emoji: '🕰️' },
+  { id: 't2', name: '永恆已讀',       desc: '迴圈x2 — 這則訊息永遠都在被已讀', type: 'm', target: 'time', bonus: 2, cost: 25000000000,      req: { building: 'time', count: 5 },   emoji: '♾️' },
+  { id: 't3', name: '因果律已讀',     desc: '迴圈x2 — 因為你會被已讀，所以你被已讀了', type: 'm', target: 'time', bonus: 2, cost: 250000000000,     req: { building: 'time', count: 15 },  emoji: '🔮' },
+  { id: 't4', name: '平行宇宙全已讀', desc: '迴圈x2 — 每個宇宙的你都被已讀了', type: 'm', target: 'time', bonus: 2, cost: 2500000000000,    req: { building: 'time', count: 25 },  emoji: '🌊' },
+  { id: 't5', name: '熵的已讀通知',   desc: '迴圈x2 — 宇宙終將歸於沉默的已讀', type: 'm', target: 'time', bonus: 2, cost: 25000000000000,   req: { building: 'time', count: 50 },  emoji: '🌡️' },
+  { id: 't6', name: '存在本身即已讀', desc: '迴圈x2 — 你的存在已被時間已讀', type: 'm', target: 'time', bonus: 2, cost: 250000000000000,  req: { building: 'time', count: 100 }, emoji: '🌟' },
 
   // ═══════════════════════════════════════════════
   // BUILDING TIER UPGRADES — 量子已讀 (quantum)
   // baseCost=1500000000
   // ═══════════════════════════════════════════════
-  { id: 'q1', name: '波函數坍縮',     desc: '量子x2', type: 'm', target: 'quantum', bonus: 2, cost: 15000000000,       req: { building: 'quantum', count: 1 },   emoji: '⚛️' },
-  { id: 'q2', name: '量子隧穿已讀',   desc: '量子x2', type: 'm', target: 'quantum', bonus: 2, cost: 150000000000,      req: { building: 'quantum', count: 5 },   emoji: '🌊' },
-  { id: 'q3', name: '海森堡已讀原理', desc: '量子x2', type: 'm', target: 'quantum', bonus: 2, cost: 1500000000000,     req: { building: 'quantum', count: 15 },  emoji: '🔬' },
-  { id: 'q4', name: '量子霸權',       desc: '量子x2', type: 'm', target: 'quantum', bonus: 2, cost: 15000000000000,    req: { building: 'quantum', count: 25 },  emoji: '👑' },
-  { id: 'q5', name: '多重宇宙已讀',   desc: '量子x2', type: 'm', target: 'quantum', bonus: 2, cost: 150000000000000,   req: { building: 'quantum', count: 50 },  emoji: '🌌' },
-  { id: 'q6', name: '量子不朽',       desc: '量子x2', type: 'm', target: 'quantum', bonus: 2, cost: 1500000000000000,  req: { building: 'quantum', count: 100 }, emoji: '💎' },
+  { id: 'q1', name: '波函數坍縮',     desc: '量子x2 — 觀測到已讀的瞬間，回覆消失了', type: 'm', target: 'quantum', bonus: 2, cost: 15000000000,       req: { building: 'quantum', count: 1 },   emoji: '⚛️' },
+  { id: 'q2', name: '量子隧穿已讀',   desc: '量子x2 — 已讀穿透了任何封鎖', type: 'm', target: 'quantum', bonus: 2, cost: 150000000000,      req: { building: 'quantum', count: 5 },   emoji: '🌊' },
+  { id: 'q3', name: '海森堡已讀原理', desc: '量子x2 — 越精確知道已讀時間，越不知道會不會回', type: 'm', target: 'quantum', bonus: 2, cost: 1500000000000,     req: { building: 'quantum', count: 15 },  emoji: '🔬' },
+  { id: 'q4', name: '量子霸權',       desc: '量子x2 — 同時已讀所有訊息成為可能', type: 'm', target: 'quantum', bonus: 2, cost: 15000000000000,    req: { building: 'quantum', count: 25 },  emoji: '👑' },
+  { id: 'q5', name: '多重宇宙已讀',   desc: '量子x2 — 無限個宇宙，無限個已讀', type: 'm', target: 'quantum', bonus: 2, cost: 150000000000000,   req: { building: 'quantum', count: 50 },  emoji: '🌌' },
+  { id: 'q6', name: '量子不朽',       desc: '量子x2 — 已讀永遠不會消失', type: 'm', target: 'quantum', bonus: 2, cost: 1500000000000000,  req: { building: 'quantum', count: 100 }, emoji: '💎' },
 
   // ═══════════════════════════════════════════════
   // BUILDING TIER UPGRADES — 虛空已讀 (void)
   // baseCost=10000000000
   // ═══════════════════════════════════════════════
-  { id: 'v1', name: '深淵凝視',       desc: '虛空x2', type: 'm', target: 'void', bonus: 2, cost: 100000000000,        req: { building: 'void', count: 1 },   emoji: '🕳️' },
-  { id: 'v2', name: '存在的已讀',     desc: '虛空x2', type: 'm', target: 'void', bonus: 2, cost: 1000000000000,       req: { building: 'void', count: 5 },   emoji: '🌑' },
-  { id: 'v3', name: '尼采的回覆',     desc: '虛空x2', type: 'm', target: 'void', bonus: 2, cost: 10000000000000,      req: { building: 'void', count: 15 },  emoji: '📖' },
-  { id: 'v4', name: '虛無主義宣言',   desc: '虛空x2', type: 'm', target: 'void', bonus: 2, cost: 100000000000000,     req: { building: 'void', count: 25 },  emoji: '📜' },
-  { id: 'v5', name: '熵的勝利',       desc: '虛空x2', type: 'm', target: 'void', bonus: 2, cost: 1000000000000000,    req: { building: 'void', count: 50 },  emoji: '🌡️' },
-  { id: 'v6', name: '萬物歸於已讀',   desc: '虛空x2', type: 'm', target: 'void', bonus: 2, cost: 10000000000000000,   req: { building: 'void', count: 100 }, emoji: '💀' },
+  { id: 'v1', name: '深淵凝視',       desc: '虛空x2 — 你凝視已讀，已讀也凝視你', type: 'm', target: 'void', bonus: 2, cost: 100000000000,        req: { building: 'void', count: 1 },   emoji: '🕳️' },
+  { id: 'v2', name: '存在的已讀',     desc: '虛空x2 — 存在即已讀，已讀即存在', type: 'm', target: 'void', bonus: 2, cost: 1000000000000,       req: { building: 'void', count: 5 },   emoji: '🌑' },
+  { id: 'v3', name: '尼采的回覆',     desc: '虛空x2 — 上帝已讀，但上帝已死', type: 'm', target: 'void', bonus: 2, cost: 10000000000000,      req: { building: 'void', count: 15 },  emoji: '📖' },
+  { id: 'v4', name: '虛無主義宣言',   desc: '虛空x2 — 已讀不已讀，有什麼差別呢', type: 'm', target: 'void', bonus: 2, cost: 100000000000000,     req: { building: 'void', count: 25 },  emoji: '📜' },
+  { id: 'v5', name: '熵的勝利',       desc: '虛空x2 — 所有訊息終將歸於虛無', type: 'm', target: 'void', bonus: 2, cost: 1000000000000000,    req: { building: 'void', count: 50 },  emoji: '🌡️' },
+  { id: 'v6', name: '萬物歸於已讀',   desc: '虛空x2 — 宇宙的最終狀態：已讀', type: 'm', target: 'void', bonus: 2, cost: 10000000000000000,   req: { building: 'void', count: 100 }, emoji: '💀' },
 
   // ═══════════════════════════════════════════════
   // BUILDING TIER UPGRADES — 神之已讀 (god)
   // baseCost=100000000000
   // ═══════════════════════════════════════════════
-  { id: 'gd1', name: '神諭解碼',       desc: '神x2', type: 'm', target: 'god', bonus: 2, cost: 1000000000000,         req: { building: 'god', count: 1 },   emoji: '👁️' },
-  { id: 'gd2', name: '十誡之已讀',     desc: '神x2', type: 'm', target: 'god', bonus: 2, cost: 10000000000000,        req: { building: 'god', count: 5 },   emoji: '📋' },
-  { id: 'gd3', name: '創世紀改寫',     desc: '神x2', type: 'm', target: 'god', bonus: 2, cost: 100000000000000,       req: { building: 'god', count: 15 },  emoji: '✨' },
-  { id: 'gd4', name: '全知全已讀',     desc: '神x2', type: 'm', target: 'god', bonus: 2, cost: 1000000000000000,      req: { building: 'god', count: 25 },  emoji: '🔮' },
-  { id: 'gd5', name: '啟示錄的最後一讀', desc: '神x2', type: 'm', target: 'god', bonus: 2, cost: 10000000000000000,   req: { building: 'god', count: 50 },  emoji: '🌋' },
-  { id: 'gd6', name: '超越神性的已讀', desc: '神x2', type: 'm', target: 'god', bonus: 2, cost: 100000000000000000,    req: { building: 'god', count: 100 }, emoji: '🪐' },
+  { id: 'gd1', name: '神諭解碼',       desc: '神x2 — 神說要有已讀，就有了已讀', type: 'm', target: 'god', bonus: 2, cost: 1000000000000,         req: { building: 'god', count: 1 },   emoji: '👁️' },
+  { id: 'gd2', name: '十誡之已讀',     desc: '神x2 — 信仰的本質就是等待回覆', type: 'm', target: 'god', bonus: 2, cost: 10000000000000,        req: { building: 'god', count: 5 },   emoji: '📋' },
+  { id: 'gd3', name: '創世紀改寫',     desc: '神x2 — 神蹟：已讀後竟然回了', type: 'm', target: 'god', bonus: 2, cost: 100000000000000,       req: { building: 'god', count: 15 },  emoji: '✨' },
+  { id: 'gd4', name: '全知全已讀',     desc: '神x2 — 你的禱告已讀收到', type: 'm', target: 'god', bonus: 2, cost: 1000000000000000,      req: { building: 'god', count: 25 },  emoji: '🔮' },
+  { id: 'gd5', name: '啟示錄的最後一讀', desc: '神x2 — 神的已讀跨越所有維度', type: 'm', target: 'god', bonus: 2, cost: 10000000000000000,   req: { building: 'god', count: 50 },  emoji: '🌋' },
+  { id: 'gd6', name: '超越神性的已讀', desc: '神x2 — 萬物的起源，就是一則已讀', type: 'm', target: 'god', bonus: 2, cost: 100000000000000000,    req: { building: 'god', count: 100 }, emoji: '🪐' },
 
   // ═══════════════════════════════════════════════
   // LATE-GAME CLICK UPGRADES

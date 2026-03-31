@@ -3,6 +3,34 @@ import { BUILDINGS } from '../game/buildings.js';
 import { fmt } from '../utils/format.js';
 import CheckIcon from './CheckIcon.jsx';
 
+const UPGRADE_TIPS = [
+  '已讀是一門藝術，升級是修行。',
+  '投資效率，永遠不虧。',
+  '有時候不回覆，比回覆更有力量。',
+  '每一次升級，都是對社交焦慮的勝利。',
+  '「我手機壞了」——進階版藉口需要升級。',
+  '已讀之道，在於精進。',
+  '速度決定一切：越快已讀，越顯冷漠。',
+  '省下的表情符號，都是你的資產。',
+];
+
+function getEffectLabel(u) {
+  if (u.type === 'm' && u.target) {
+    const b = BUILDINGS.find(b => b.id === u.target);
+    return `${b?.name ?? u.target} ×${u.bonus}`;
+  }
+  if (u.type === 'g') return `全局產能 ×${u.bonus}`;
+  if (u.type === 'ck') return `點擊 +${u.bonus}`;
+  if (u.type === 'cp') return `點擊 +${(u.bonus * 100).toFixed(0)}% CPS`;
+  return u.desc;
+}
+
+/** Extract flavor text after — separator in desc */
+function getFlavor(u) {
+  if (!u.desc || !u.desc.includes('—')) return null;
+  return u.desc.split('—')[1].trim();
+}
+
 export default function UpgradeRow({ upgrades, reads, onBuy, onBuyAll, compact = false }) {
   const doneCount = upgrades.filter(u => u.state === 'done').length;
   const seenRef = useRef(new Set());
@@ -71,6 +99,17 @@ export default function UpgradeRow({ upgrades, reads, onBuy, onBuyAll, compact =
           )}
         </div>
 
+        {/* Rotating flavor tip */}
+        {activeItems.length > 0 && (
+          <div style={{
+            padding: '3px 10px 6px',
+            fontSize: 11, color: '#94a3b8', fontStyle: 'italic',
+            letterSpacing: 0.2, lineHeight: 1.4,
+          }}>
+            {UPGRADE_TIPS[doneCount % UPGRADE_TIPS.length]}
+          </div>
+        )}
+
         <div style={{
           display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)',
           gap: 4,
@@ -102,7 +141,14 @@ export default function UpgradeRow({ upgrades, reads, onBuy, onBuyAll, compact =
                   }}>{u.name}</div>
                   <div style={{
                     fontSize: 11, color: canBuy ? '#6366f1' : '#94a3b8', fontWeight: 600,
-                  }}>{u.desc}</div>
+                  }}>{getEffectLabel(u)}</div>
+                  {getFlavor(u) && (
+                    <div style={{
+                      fontSize: 10, color: '#94a3b8', fontWeight: 500,
+                      whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
+                      fontStyle: 'italic', marginTop: 1,
+                    }}>{getFlavor(u)}</div>
+                  )}
                 </div>
                 <span style={{
                   fontSize: 12, fontWeight: 700,
