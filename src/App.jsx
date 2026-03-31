@@ -1405,22 +1405,23 @@ export default function App() {
             {prestigeCount > 0 && (
               <button onClick={() => setShowPrestigeShop(true)} style={{
                 background: 'rgba(99,102,241,.08)', border: '1px solid rgba(99,102,241,.2)',
-                borderRadius: 6, padding: '3px 8px', color: '#4f46e5',
-                fontSize: 10, fontWeight: 700, cursor: 'pointer',
-                fontFamily: "'JetBrains Mono',monospace",
+                borderRadius: 6, padding: '6px 10px', color: '#4f46e5',
+                fontSize: 11, fontWeight: 700, cursor: 'pointer',
+                fontFamily: "'JetBrains Mono',monospace", minHeight: 32,
               }}>✦商店</button>
             )}
             {prestigeEarned >= 1 && (
               <button onClick={handlePrestige} style={{
                 background: 'linear-gradient(135deg, #6366f1, #4338ca)',
                 color: '#fff', border: 'none', borderRadius: 6,
-                padding: '3px 10px', fontSize: 10, fontWeight: 700,
-                cursor: 'pointer', boxShadow: '0 2px 8px rgba(99,102,241,.3)',
+                padding: '6px 10px', fontSize: 11, fontWeight: 700,
+                cursor: 'pointer', boxShadow: '0 2px 8px rgba(99,102,241,.3)', minHeight: 32,
               }}>重生 +✦{prestigeEarned}</button>
             )}
             <button onClick={() => { const m = toggleMute(); setMutedUI(m); }} style={{
               background: '#f1f5f9', border: '1px solid #e2e8f0',
-              borderRadius: 6, padding: '3px 8px', color: '#64748b', fontSize: 12,
+              borderRadius: 6, padding: '8px 12px', color: '#64748b', fontSize: 14,
+              minWidth: 44, minHeight: 44, cursor: 'pointer',
             }}>{mutedUI ? '🔇' : '🔊'}</button>
           </div>
 

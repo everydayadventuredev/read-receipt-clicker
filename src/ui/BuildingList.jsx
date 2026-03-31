@@ -141,7 +141,7 @@ export default function BuildingList({ buildings, owned, reads, allTime, unlocke
               key={n}
               onClick={() => setBuyN(n)}
               style={{
-                fontSize: 12, padding: '4px 10px', borderRadius: 6, border: 'none',
+                fontSize: 12, padding: '10px 12px', borderRadius: 6, border: 'none', minHeight: 44,
                 background: buyN === n ? 'linear-gradient(135deg, #6366f1, #4338ca)' : 'transparent',
                 color: buyN === n ? '#fff' : '#94a3b8',
                 fontWeight: 700, fontFamily: "'JetBrains Mono',monospace",
