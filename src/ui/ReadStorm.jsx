@@ -110,14 +110,15 @@ export default function ReadStorm({ active, onComplete, perSecond, onPerfect }) 
     }
   }, [bubbles, phase, onPerfect]);
 
-  // Ending phase: wait then call onComplete
+  // Ending phase: wait then call onComplete with pop ratio
   useEffect(() => {
     if (phase !== "ending") return;
     const delay = perfectRef.current ? 2200 : 1200;
     const t = setTimeout(() => {
-      const bonus = perfectRef.current ? earnedRef.current * 2 : 0;
-      const total = earnedRef.current + bonus;
-      onComplete(total);
+      const totalSpawned = bubbleIdRef.current;
+      const totalPopped = bubbles.filter(b => b.popped).length;
+      const popRatio = totalSpawned > 0 ? totalPopped / totalSpawned : 0;
+      onComplete(popRatio);
       setPhase("idle");
     }, delay);
     return () => clearTimeout(t);

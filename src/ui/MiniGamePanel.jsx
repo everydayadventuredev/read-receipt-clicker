@@ -3,19 +3,15 @@ import { MINIGAME_REGISTRY, getUnlockedMinigames } from '../game/minigames.js';
 import StockMarket from './StockMarket.jsx';
 import Garden from './Garden.jsx';
 import MergeGame from './MergeGame.jsx';
-import TypeSprint from './TypeSprint.jsx';
-import HackerTerminal from './HackerTerminal.jsx';
-import CosmicPostOffice from './CosmicPostOffice.jsx';
 import QuantumLab from './QuantumLab.jsx';
-import { GardenBanner, StockBanner, MergeBanner, TypeSprintBanner, HackerBanner, CosmicBanner, QuantumBanner } from './SectionBanners.jsx';
+import { GardenBanner, StockBanner, MergeBanner, QuantumBanner } from './SectionBanners.jsx';
 
 /**
  * MiniGamePanel — horizontal collapsible accordion layout.
  * Each mini-game is a section with a header bar that toggles open/close.
  */
 const BUILDING_NAMES = {
-  ex: '前任', par: '忙朋友', algo: '社群演算法',
-  inf: '網紅', hkr: '駭客', alien: '外星通訊', quantum: '量子已讀',
+  ex: '前任', par: '忙朋友', algo: '社群演算法', quantum: '量子已讀',
 };
 
 // Mini-game section summaries shown when collapsed
@@ -48,9 +44,6 @@ const SECTION_THEMES = {
   ex:      { bg: 'linear-gradient(90deg, rgba(34,197,94,.06), rgba(34,197,94,.02))',   accent: '#22c55e' },
   par:     { bg: 'linear-gradient(90deg, rgba(249,115,22,.06), rgba(249,115,22,.02))',  accent: '#f97316' },
   algo:    { bg: 'linear-gradient(90deg, rgba(99,102,241,.06), rgba(99,102,241,.02))',  accent: '#6366f1' },
-  inf:     { bg: 'linear-gradient(90deg, rgba(249,115,22,.06), rgba(249,115,22,.02))',  accent: '#f97316' },
-  hkr:     { bg: 'linear-gradient(90deg, rgba(34,197,94,.08), rgba(34,197,94,.02))',    accent: '#22c55e' },
-  alien:   { bg: 'linear-gradient(90deg, rgba(168,85,247,.06), rgba(168,85,247,.02))',  accent: '#a855f7' },
   quantum: { bg: 'linear-gradient(90deg, rgba(34,211,238,.06), rgba(34,211,238,.02))',  accent: '#22d3ee' },
 };
 
@@ -133,6 +126,18 @@ export default function MiniGamePanel({
   onExpandGrid,
   // New mini-game callbacks
   onMiniGameEarn,
+  // Futures props
+  onInvestFutures,
+  onCollectFuture,
+  // Buff system props
+  buffState,
+  onStartStorm,
+  onStormComplete,
+  onStormPerfect,
+  stormActive,
+  onQuantumResonance,
+  onGardenHarvestChoice,
+  onSendGift,
 }) {
   const unlocked = getUnlockedMinigames(owned);
   const allEntries = MINIGAME_REGISTRY;
@@ -189,11 +194,59 @@ export default function MiniGamePanel({
     algo: SECTION_SUMMARY.algo(marketState, prodPerSec),
   };
 
+  // Storm cooldown state
+  const stormCooldownEnd = buffState?.stormCooldownEnd ?? 0;
+  const stormOnCooldown = stormCooldownEnd > Date.now();
+
+  // Force re-render for cooldown countdown
+  const [, forceUpdate] = React.useState(0);
+  React.useEffect(() => {
+    if (!stormOnCooldown) return;
+    const iv = setInterval(() => forceUpdate(n => n + 1), 1000);
+    return () => clearInterval(iv);
+  }, [stormOnCooldown]);
+
+  const stormCooldownSecs = stormOnCooldown ? Math.max(0, Math.ceil((stormCooldownEnd - Date.now()) / 1000)) : 0;
+
   return (
     <div style={{
       flex: 1, display: 'flex', flexDirection: 'column',
       minHeight: 0, overflowY: 'auto',
     }}>
+      {/* Storm trigger bar */}
+      {unlocked.length > 0 && (
+        <div style={{
+          padding: '8px 14px', flexShrink: 0,
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+          background: 'linear-gradient(90deg, rgba(99,102,241,.04), rgba(99,102,241,.02))',
+          borderBottom: '1px solid rgba(99,102,241,.1)',
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+            <span style={{ fontSize: 16 }}>🌪️</span>
+            <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-secondary)' }}>已讀風暴</span>
+          </div>
+          {stormActive ? (
+            <span style={{ fontSize: 12, fontWeight: 700, color: '#6366f1', animation: 'pulse 1s infinite' }}>進行中...</span>
+          ) : stormOnCooldown ? (
+            <span style={{
+              fontSize: 12, fontWeight: 700, color: 'var(--text-muted)',
+              fontFamily: "'JetBrains Mono',monospace",
+            }}>
+              {Math.floor(stormCooldownSecs / 60)}:{String(stormCooldownSecs % 60).padStart(2, '0')}
+            </span>
+          ) : (
+            <button onClick={onStartStorm} style={{
+              padding: '4px 14px', fontSize: 12, fontWeight: 700,
+              background: 'linear-gradient(135deg, #6366f1, #4f46e5)',
+              color: '#fff', border: 'none', borderRadius: 10,
+              cursor: 'pointer', boxShadow: '0 2px 8px rgba(99,102,241,.3)',
+            }}>
+              啟動 ▶
+            </button>
+          )}
+        </div>
+      )}
+
       {allEntries.map(mg => {
         const isUnlocked = (owned[mg.buildingId] ?? 0) >= mg.unlockCount;
         const isOpen = activeMiniGame === mg.buildingId && isUnlocked;
@@ -233,9 +286,6 @@ export default function MiniGamePanel({
                 {mg.buildingId === 'ex' && <GardenBanner />}
                 {mg.buildingId === 'algo' && <StockBanner />}
                 {mg.buildingId === 'par' && <MergeBanner />}
-                {mg.buildingId === 'inf' && <TypeSprintBanner />}
-                {mg.buildingId === 'hkr' && <HackerBanner />}
-                {mg.buildingId === 'alien' && <CosmicBanner />}
                 {mg.buildingId === 'quantum' && <QuantumBanner />}
 
                 {mg.buildingId === 'par' && mergeState && (
@@ -249,6 +299,8 @@ export default function MiniGamePanel({
                     onMove={onMoveGift}
                     onExpand={onExpandGrid}
                     onCollapse={collapseHandler}
+                    onSendGift={onSendGift}
+                    resonanceState={buffState?.quantumResonance}
                   />
                 )}
                 {mg.buildingId === 'ex' && gardenState && (
@@ -259,6 +311,8 @@ export default function MiniGamePanel({
                     onHarvest={onHarvest}
                     onClearWilted={onClearWilted}
                     onCollapse={collapseHandler}
+                    onHarvestChoice={onGardenHarvestChoice}
+                    resonanceState={buffState?.quantumResonance}
                   />
                 )}
                 {mg.buildingId === 'algo' && marketState && (
@@ -267,43 +321,18 @@ export default function MiniGamePanel({
                     algoCount={owned.algo ?? 0}
                     reads={reads}
                     prodPerSec={prodPerSec ?? 0}
-                    onBuy={onBuyShare}
-                    onSell={onSellShare}
-                    onBuyAll={onBuyAllShares}
-                    onSellAll={onSellAllShares}
-                    onCollapse={collapseHandler}
-                  />
-                )}
-                {mg.buildingId === 'inf' && (
-                  <TypeSprint
-                    perSecond={prodPerSec ?? 0}
-                    infCount={owned.inf ?? 0}
-                    onEarn={onMiniGameEarn}
-                    onCollapse={collapseHandler}
-                  />
-                )}
-                {mg.buildingId === 'hkr' && (
-                  <HackerTerminal
-                    perSecond={prodPerSec ?? 0}
-                    hkrCount={owned.hkr ?? 0}
-                    onEarn={onMiniGameEarn}
-                    onCollapse={collapseHandler}
-                  />
-                )}
-                {mg.buildingId === 'alien' && (
-                  <CosmicPostOffice
-                    perSecond={prodPerSec ?? 0}
-                    alienCount={owned.alien ?? 0}
-                    onEarn={onMiniGameEarn}
+                    onInvest={onInvestFutures}
+                    onCollect={onCollectFuture}
                     onCollapse={collapseHandler}
                   />
                 )}
                 {mg.buildingId === 'quantum' && (
                   <QuantumLab
-                    perSecond={prodPerSec ?? 0}
                     quantumCount={owned.quantum ?? 0}
-                    onEarn={onMiniGameEarn}
+                    onResonance={onQuantumResonance}
                     onCollapse={collapseHandler}
+                    cooldownEnd={buffState?.quantumCooldownEnd ?? 0}
+                    resonanceState={buffState?.quantumResonance}
                   />
                 )}
               </div>

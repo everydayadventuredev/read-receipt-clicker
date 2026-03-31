@@ -26,6 +26,12 @@ export function saveGame(state) {
       stormPerfect: state.stormPerfect ?? 0,
       guilt: state.guilt ?? 0,
       coldMaster: state.coldMaster ?? false,
+      buffState: state.buffState ? {
+        activeBuffs: state.buffState.activeBuffs,
+        quantumResonance: state.buffState.quantumResonance,
+        stormCooldownEnd: state.buffState.stormCooldownEnd,
+        quantumCooldownEnd: state.buffState.quantumCooldownEnd,
+      } : null,
       marketState: state.marketState ? {
         prices: state.marketState.prices,
         holdings: state.marketState.holdings,
@@ -33,6 +39,7 @@ export function saveGame(state) {
         history: state.marketState.history,
         modes: state.marketState.modes,
         modeTimers: state.marketState.modeTimers,
+        futures: state.marketState.futures ?? [],
       } : null,
       gardenState: state.gardenState ? {
         slots: state.gardenState.slots,
@@ -82,6 +89,7 @@ export function loadGame() {
       stormPerfect: data.stormPerfect ?? 0,
       guilt: data.guilt ?? 0,
       coldMaster: data.coldMaster ?? false,
+      buffState: data.buffState ?? null,
       marketState: data.marketState ?? null,
       gardenState: data.gardenState ?? null,
       mergeState: data.mergeState ?? null,

@@ -1,9 +1,10 @@
 /**
- * Stock Market Mini-Game — "Feed 操盤手"
+ * Stock Market Mini-Game — "已讀期貨"
  * Tied to the 社群演算法 (algo) building.
  *
  * Content channels have fluctuating "reach rates" (prices).
- * Players buy low, sell high to earn bonus 已讀.
+ * Players invest reads as "futures" — lock reads for 15 minutes,
+ * choose risk level. Returns based on price changes during lock.
  */
 
 export const CHANNELS = [
@@ -57,7 +58,7 @@ export function createMarketState() {
     modeTimers[ch.id] = MODE_SWITCH_MIN + Math.floor(Math.random() * (MODE_SWITCH_MAX - MODE_SWITCH_MIN));
   }
 
-  return { prices, holdings, costBasis, history, modes, modeTimers };
+  return { prices, holdings, costBasis, history, modes, modeTimers, futures: [] };
 }
 
 /**
@@ -213,6 +214,7 @@ export function getTotalCostBasis(state) {
 
 /**
  * Reset holdings and cost basis to 0 (used on prestige). Keeps prices/history running.
+ * Also forfeits all active futures.
  */
 export function resetHoldings(state) {
   const holdings = {};
@@ -221,5 +223,96 @@ export function resetHoldings(state) {
     holdings[ch.id] = 0;
     costBasis[ch.id] = 0;
   }
-  return { ...state, holdings, costBasis };
+  return { ...state, holdings, costBasis, futures: [] };
+}
+
+// ═══════════════════════════════════════════════
+// FUTURES SYSTEM — "已讀期貨"
+// ═══════════════════════════════════════════════
+
+const FUTURES_DURATION = 15 * 60 * 1000; // 15 minutes
+const MAX_FUTURES = 3; // max concurrent futures
+
+const RISK_LEVELS = {
+  safe:       { label: '穩健', minMult: 0.9, maxMult: 1.2 },
+  aggressive: { label: '積極', minMult: 0.5, maxMult: 1.8 },
+};
+
+export { RISK_LEVELS, FUTURES_DURATION, MAX_FUTURES };
+
+/**
+ * Invest reads as a futures contract.
+ * @param {object} state - market state
+ * @param {string} channelId - which channel to bet on
+ * @param {number} amount - reads to invest
+ * @param {string} riskLevel - 'safe' | 'aggressive'
+ * @returns {{ newState, cost }} or null if can't invest
+ */
+export function investFutures(state, channelId, amount, riskLevel, now = Date.now()) {
+  const futures = state.futures ?? [];
+  if (futures.length >= MAX_FUTURES) return null;
+  if (!RISK_LEVELS[riskLevel]) return null;
+  if (amount <= 0) return null;
+
+  const price = state.prices[channelId];
+  if (price == null) return null;
+
+  const future = {
+    id: `f_${now}_${channelId}`,
+    channelId,
+    amount,
+    riskLevel,
+    investedAt: now,
+    maturesAt: now + FUTURES_DURATION,
+    investPrice: price,
+  };
+
+  return {
+    newState: {
+      ...state,
+      futures: [...futures, future],
+    },
+    cost: amount,
+  };
+}
+
+/**
+ * Collect a matured future.
+ * Returns { newState, payout } or null if not matured.
+ */
+export function collectFuture(state, futureId, now = Date.now()) {
+  const futures = state.futures ?? [];
+  const idx = futures.findIndex(f => f.id === futureId);
+  if (idx < 0) return null;
+
+  const future = futures[idx];
+  if (future.maturesAt > now) return null;
+
+  // Calculate return based on price change
+  const currentPrice = state.prices[future.channelId];
+  const priceRatio = currentPrice / future.investPrice;
+  const risk = RISK_LEVELS[future.riskLevel];
+
+  // Map price ratio to payout multiplier within risk bounds
+  // Price doubled → max multiplier; price halved → min multiplier
+  const normalized = Math.max(0, Math.min(2, priceRatio)); // clamp 0-2
+  const t = normalized / 2; // 0-1
+  const mult = risk.minMult + t * (risk.maxMult - risk.minMult);
+  const payout = Math.round(future.amount * mult);
+
+  const newFutures = [...futures];
+  newFutures.splice(idx, 1);
+
+  return {
+    newState: { ...state, futures: newFutures },
+    payout,
+    mult,
+  };
+}
+
+/**
+ * Get active futures list.
+ */
+export function getActiveFutures(state) {
+  return state.futures ?? [];
 }

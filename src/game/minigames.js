@@ -23,24 +23,6 @@ export const MINIGAME_REGISTRY = [
     unlockCount: 5,
   },
   {
-    buildingId: 'inf',
-    name: '打字衝刺',
-    emoji: '⌨️',
-    unlockCount: 10,
-  },
-  {
-    buildingId: 'hkr',
-    name: '駭客終端',
-    emoji: '💻',
-    unlockCount: 5,
-  },
-  {
-    buildingId: 'alien',
-    name: '宇宙郵局',
-    emoji: '📬',
-    unlockCount: 5,
-  },
-  {
     buildingId: 'quantum',
     name: '量子實驗室',
     emoji: '⚛️',

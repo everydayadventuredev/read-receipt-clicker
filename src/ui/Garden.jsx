@@ -341,9 +341,10 @@ function BuffBar({ activeBuffs }) {
 /**
  * Garden — iOS Widget style main component.
  */
-export default function Garden({ gardenState, exCount, onPlant, onHarvest, onClearWilted, onCollapse }) {
+export default function Garden({ gardenState, exCount, onPlant, onHarvest, onClearWilted, onCollapse, onHarvestChoice, resonanceState }) {
   const [showCollection, setShowCollection] = useState(false);
   const [newFlowerFlash, setNewFlowerFlash] = useState(null); // { name, emoji, color, label }
+  const [harvestModal, setHarvestModal] = useState(null); // { index, flower, rarity } | null
   const prevCollectionSizeRef = useRef(0);
 
   // Detect new flower discoveries — must be before early return
@@ -508,7 +509,14 @@ export default function Garden({ gardenState, exCount, onPlant, onHarvest, onCle
                     fieldCount={fieldCount}
                     seeds={seeds}
                     onPlant={onPlant}
-                    onHarvest={onHarvest}
+                    onHarvest={onHarvestChoice ? (idx) => {
+                      const s = slots[idx];
+                      if (s && s.flowerId && !s.wilted) {
+                        const flower = getFlowerById(s.flowerId);
+                        const rarity = RARITY[flower?.rarity ?? 'common'];
+                        setHarvestModal({ index: idx, flower, rarity });
+                      }
+                    } : onHarvest}
                     onClear={onClearWilted}
                   />
                 ))}
@@ -518,6 +526,66 @@ export default function Garden({ gardenState, exCount, onPlant, onHarvest, onCle
 
           {/* Active buffs */}
           <BuffBar activeBuffs={activeBuffs ?? []} />
+
+          {/* Harvest choice modal */}
+          {harvestModal && (
+            <div style={{
+              position: 'absolute', inset: 0, zIndex: 100,
+              background: 'rgba(0,0,0,.3)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              backdropFilter: 'blur(4px)',
+            }} onClick={() => setHarvestModal(null)}>
+              <div onClick={e => e.stopPropagation()} style={{
+                background: '#fff', borderRadius: 20, padding: '20px 24px',
+                boxShadow: '0 8px 40px rgba(0,0,0,.15)',
+                maxWidth: 320, width: '90%', textAlign: 'center',
+              }}>
+                <div style={{ fontSize: 40, marginBottom: 8 }}>
+                  {harvestModal.flower?.emoji ?? '🌸'}
+                </div>
+                <div style={{
+                  fontSize: 16, fontWeight: 800, color: harvestModal.rarity?.color ?? 'var(--text)',
+                  marginBottom: 4,
+                }}>
+                  {harvestModal.flower?.name}
+                </div>
+                <div style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 16 }}>
+                  選擇收成方式
+                  {resonanceState && !resonanceState.consumed && (
+                    <span style={{ color: '#f59e0b', fontWeight: 700, marginLeft: 6 }}>
+                      ⚛️ 量子共振 ×{resonanceState.mult}
+                    </span>
+                  )}
+                </div>
+                <div style={{ display: 'flex', gap: 10 }}>
+                  <button onClick={() => {
+                    onHarvestChoice(harvestModal.index, 'burst');
+                    setHarvestModal(null);
+                  }} style={{
+                    flex: 1, padding: '12px 8px', borderRadius: 14,
+                    background: 'linear-gradient(135deg, #f59e0b, #d97706)',
+                    color: '#fff', border: 'none', cursor: 'pointer',
+                    fontFamily: "'Space Grotesk', sans-serif",
+                  }}>
+                    <div style={{ fontSize: 14, fontWeight: 800 }}>猛爆收成</div>
+                    <div style={{ fontSize: 11, opacity: 0.9, marginTop: 2 }}>×3.0 · 2分鐘</div>
+                  </button>
+                  <button onClick={() => {
+                    onHarvestChoice(harvestModal.index, 'sustained');
+                    setHarvestModal(null);
+                  }} style={{
+                    flex: 1, padding: '12px 8px', borderRadius: 14,
+                    background: 'linear-gradient(135deg, #22c55e, #16a34a)',
+                    color: '#fff', border: 'none', cursor: 'pointer',
+                    fontFamily: "'Space Grotesk', sans-serif",
+                  }}>
+                    <div style={{ fontSize: 14, fontWeight: 800 }}>細水長流</div>
+                    <div style={{ fontSize: 11, opacity: 0.9, marginTop: 2 }}>×1.3 · 30分鐘</div>
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       )}
     </div>

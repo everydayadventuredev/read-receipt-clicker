@@ -2,27 +2,34 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 
 const WAVE_PERIOD = 2800; // ms for one full oscillation
 const COLLAPSE_WINDOW = 0.14; // fraction of range = perfect zone width
-const COOLDOWN = 6;
 
-export default function QuantumLab({ perSecond, onEarn, quantumCount, onCollapse }) {
-  const [phase, setPhase] = useState('idle'); // idle | wave | collapsed | cooldown
-  const [wavePos, setWavePos] = useState(0.5); // 0..1
-  const [collapseResult, setCollapseResult] = useState(null); // 'perfect' | 'good' | 'miss'
-  const [earned, setEarned] = useState(0);
-  const [cooldown, setCooldown] = useState(0);
+export default function QuantumLab({ onResonance, quantumCount, onCollapse, cooldownEnd, resonanceState }) {
+  const [phase, setPhase] = useState('idle'); // idle | wave | collapsed
+  const [wavePos, setWavePos] = useState(0.5);
+  const [collapseResult, setCollapseResult] = useState(null);
   const [totalCollapses, setTotalCollapses] = useState(0);
   const [perfectCount, setPerfectCount] = useState(0);
-  const [superposition, setSuperposition] = useState(false);
   const rafRef = useRef(null);
   const startTimeRef = useRef(0);
-  const cooldownRef = useRef(null);
   const waveRef = useRef(0.5);
 
+  const now = Date.now();
+  const onCooldown = cooldownEnd > now;
+  const cooldownSecs = onCooldown ? Math.ceil((cooldownEnd - now) / 1000) : 0;
+
+  // Update cooldown display
+  const [, forceUpdate] = useState(0);
+  useEffect(() => {
+    if (!onCooldown) return;
+    const iv = setInterval(() => forceUpdate(n => n + 1), 1000);
+    return () => clearInterval(iv);
+  }, [onCooldown]);
+
   const startWave = useCallback(() => {
+    if (onCooldown) return;
     startTimeRef.current = performance.now();
     setPhase('wave');
-    setSuperposition(false);
-  }, []);
+  }, [onCooldown]);
 
   // Animate wave
   useEffect(() => {
@@ -33,7 +40,6 @@ export default function QuantumLab({ perSecond, onEarn, quantumCount, onCollapse
     const animate = (now) => {
       const elapsed = now - startTimeRef.current;
       const t = (elapsed % WAVE_PERIOD) / WAVE_PERIOD;
-      // Smooth sine wave: 0→1→0 etc
       const pos = 0.5 + 0.45 * Math.sin(t * Math.PI * 2);
       waveRef.current = pos;
       setWavePos(pos);
@@ -43,61 +49,42 @@ export default function QuantumLab({ perSecond, onEarn, quantumCount, onCollapse
     return () => cancelAnimationFrame(rafRef.current);
   }, [phase]);
 
-  useEffect(() => () => {
-    cancelAnimationFrame(rafRef.current);
-    clearInterval(cooldownRef.current);
-  }, []);
+  useEffect(() => () => cancelAnimationFrame(rafRef.current), []);
 
   const collapse = useCallback(() => {
     if (phase !== 'wave') return;
     cancelAnimationFrame(rafRef.current);
     const pos = waveRef.current;
-    const center = 0.5;
-    const dist = Math.abs(pos - center);
+    const dist = Math.abs(pos - 0.5);
 
-    let result, mult;
+    let result, resMult;
     if (dist <= COLLAPSE_WINDOW / 2) {
       result = 'perfect';
-      mult = 3;
+      resMult = 2.0;
       setPerfectCount(p => p + 1);
     } else if (dist <= COLLAPSE_WINDOW) {
       result = 'good';
-      mult = 1.5;
+      resMult = 1.3;
     } else {
       result = 'miss';
-      mult = 0.3;
+      resMult = 0.5;
     }
 
-    const bonus = Math.max(1, Math.floor(perSecond * mult * 2));
-    setEarned(bonus);
     setCollapseResult(result);
     setTotalCollapses(t => t + 1);
-    if (onEarn && mult > 0.3) onEarn(bonus);
     setPhase('collapsed');
 
-    // Show result briefly then cooldown
-    setTimeout(() => {
-      setCooldown(COOLDOWN);
-      setPhase('cooldown');
-      cooldownRef.current = setInterval(() => {
-        setCooldown(c => {
-          if (c <= 1) {
-            clearInterval(cooldownRef.current);
-            setPhase('idle');
-            return 0;
-          }
-          return c - 1;
-        });
-      }, 1000);
-    }, 1200);
-  }, [phase, perSecond, onEarn]);
+    if (onResonance) onResonance(resMult);
+
+    // Show result briefly then return to idle
+    setTimeout(() => setPhase('idle'), 2000);
+  }, [phase, onResonance]);
 
   const resultColor = collapseResult === 'perfect' ? '#f59e0b'
-    : collapseResult === 'good' ? '#10b981' : '#94a3b8';
-  const resultLabel = collapseResult === 'perfect' ? '完美坍縮！⚡'
-    : collapseResult === 'good' ? '良好坍縮 ✓' : '波函數失焦...';
+    : collapseResult === 'good' ? '#10b981' : '#ef4444';
+  const resultLabel = collapseResult === 'perfect' ? '完美共振！×2.0'
+    : collapseResult === 'good' ? '良好共振 ×1.3' : '失焦... ×0.5';
 
-  // Draw the probability distribution
   const center = 0.5;
   const perfectZone = COLLAPSE_WINDOW / 2;
   const goodZone = COLLAPSE_WINDOW;
@@ -158,22 +145,32 @@ export default function QuantumLab({ perSecond, onEarn, quantumCount, onCollapse
               fontFamily: "'JetBrains Mono',monospace",
             }}>{perfectCount}</div>
           </div>
+          {/* Resonance status */}
           <div style={{
-            background: 'rgba(99,102,241,.06)', borderRadius: 10,
-            padding: '6px 14px', textAlign: 'center', flex: 1,
+            background: resonanceState && !resonanceState.consumed
+              ? `rgba(${resonanceState.mult >= 1.3 ? '245,158,11' : '239,68,68'},.08)`
+              : 'rgba(148,163,184,.04)',
+            borderRadius: 10, padding: '6px 14px', textAlign: 'center', flex: 1,
+            border: resonanceState && !resonanceState.consumed
+              ? `1px solid rgba(${resonanceState.mult >= 1.3 ? '245,158,11' : '239,68,68'},.2)`
+              : '1px solid transparent',
           }}>
-            <div style={{ fontSize: 11, color: 'var(--text-muted)', fontWeight: 600 }}>量子建築</div>
+            <div style={{ fontSize: 11, color: 'var(--text-muted)', fontWeight: 600 }}>共振</div>
             <div style={{
-              fontSize: 20, fontWeight: 700, color: 'var(--purple)',
+              fontSize: 20, fontWeight: 700,
+              color: resonanceState && !resonanceState.consumed
+                ? (resonanceState.mult >= 1.3 ? '#f59e0b' : '#ef4444')
+                : 'var(--text-disabled)',
               fontFamily: "'JetBrains Mono',monospace",
-            }}>{quantumCount}</div>
+            }}>
+              {resonanceState && !resonanceState.consumed ? `×${resonanceState.mult}` : '—'}
+            </div>
           </div>
         </div>
 
         {/* Wave display */}
         {(phase === 'wave' || phase === 'collapsed') && (
           <div style={{ position: 'relative', height: 80 }}>
-            {/* Zone backgrounds */}
             <div style={{
               position: 'absolute', inset: '10px 0',
               background: `linear-gradient(90deg,
@@ -187,40 +184,27 @@ export default function QuantumLab({ perSecond, onEarn, quantumCount, onCollapse
                 transparent ${(center + goodZone) * 100}%)`,
               borderRadius: 6,
             }} />
-            {/* Center line */}
             <div style={{
-              position: 'absolute',
-              left: `${center * 100}%`,
-              top: 6, bottom: 6,
-              width: 1,
+              position: 'absolute', left: `${center * 100}%`,
+              top: 6, bottom: 6, width: 1,
               background: 'rgba(245,158,11,.4)',
             }} />
-            {/* Wave particle */}
             <div style={{
-              position: 'absolute',
-              left: `${wavePos * 100}%`,
-              top: '50%',
+              position: 'absolute', left: `${wavePos * 100}%`, top: '50%',
               transform: 'translate(-50%, -50%)',
-              width: 24, height: 24,
-              borderRadius: '50%',
+              width: 24, height: 24, borderRadius: '50%',
               background: phase === 'collapsed'
-                ? (collapseResult === 'perfect' ? '#f59e0b' : collapseResult === 'good' ? '#10b981' : '#94a3b8')
+                ? (collapseResult === 'perfect' ? '#f59e0b' : collapseResult === 'good' ? '#10b981' : '#ef4444')
                 : '#22d3ee',
-              boxShadow: phase === 'wave'
-                ? '0 0 12px #22d3ee, 0 0 24px rgba(34,211,238,.4)'
-                : undefined,
-              transition: phase === 'collapsed' ? 'none' : undefined,
+              boxShadow: phase === 'wave' ? '0 0 12px #22d3ee, 0 0 24px rgba(34,211,238,.4)' : undefined,
             }} />
-            {/* Labels */}
             <div style={{
               position: 'absolute', bottom: -2, left: `${(center - perfectZone) * 100}%`,
-              fontSize: 9, color: '#f59e0b', fontWeight: 600,
-              transform: 'translateX(-50%)',
+              fontSize: 9, color: '#f59e0b', fontWeight: 600, transform: 'translateX(-50%)',
             }}>完美</div>
             <div style={{
               position: 'absolute', bottom: -2, left: `${(center + perfectZone) * 100}%`,
-              fontSize: 9, color: '#f59e0b', fontWeight: 600,
-              transform: 'translateX(-50%)',
+              fontSize: 9, color: '#f59e0b', fontWeight: 600, transform: 'translateX(-50%)',
             }}>完美</div>
           </div>
         )}
@@ -230,11 +214,11 @@ export default function QuantumLab({ perSecond, onEarn, quantumCount, onCollapse
           flex: 1, display: 'flex', flexDirection: 'column',
           alignItems: 'center', justifyContent: 'center', gap: 10,
         }}>
-          {phase === 'idle' && (
+          {phase === 'idle' && !onCooldown && (
             <>
               <div style={{ fontSize: 13, color: 'var(--text-secondary)', textAlign: 'center', lineHeight: 1.5 }}>
-                當量子粒子在<span style={{ color: '#f59e0b', fontWeight: 700 }}>中心完美區域</span>時<br />
-                按下坍縮！獲得 <b>×3</b> 獎勵
+                在<span style={{ color: '#f59e0b', fontWeight: 700 }}>中心區域</span>坍縮<br />
+                影響下一次花園/合成的倍率
               </div>
               <button onClick={startWave} style={{
                 background: 'linear-gradient(135deg, #22d3ee, #0891b2)',
@@ -248,18 +232,27 @@ export default function QuantumLab({ perSecond, onEarn, quantumCount, onCollapse
             </>
           )}
 
+          {phase === 'idle' && onCooldown && (
+            <div style={{ textAlign: 'center' }}>
+              <div style={{ fontSize: 13, color: 'var(--text-muted)' }}>量子場重置中...</div>
+              <div style={{
+                fontSize: 28, fontWeight: 800, color: '#22d3ee',
+                fontFamily: "'JetBrains Mono',monospace", marginTop: 6,
+              }}>
+                {Math.floor(cooldownSecs / 60)}:{String(cooldownSecs % 60).padStart(2, '0')}
+              </div>
+            </div>
+          )}
+
           {phase === 'wave' && (
-            <button
-              onClick={collapse}
-              style={{
-                background: 'linear-gradient(135deg, #22d3ee, #0891b2)',
-                color: '#fff', border: 'none', borderRadius: 12,
-                padding: '14px 40px', fontSize: 20, fontWeight: 800,
-                cursor: 'pointer', boxShadow: '0 4px 20px rgba(34,211,238,.4)',
-                fontFamily: "'Space Grotesk', sans-serif",
-                animation: 'quantum-pulse 1.2s ease-in-out infinite',
-              }}
-            >
+            <button onClick={collapse} style={{
+              background: 'linear-gradient(135deg, #22d3ee, #0891b2)',
+              color: '#fff', border: 'none', borderRadius: 12,
+              padding: '14px 40px', fontSize: 20, fontWeight: 800,
+              cursor: 'pointer', boxShadow: '0 4px 20px rgba(34,211,238,.4)',
+              fontFamily: "'Space Grotesk', sans-serif",
+              animation: 'quantum-pulse 1.2s ease-in-out infinite',
+            }}>
               ⚡ 坍縮！
             </button>
           )}
@@ -269,32 +262,8 @@ export default function QuantumLab({ perSecond, onEarn, quantumCount, onCollapse
               <div style={{ fontSize: 22, fontWeight: 800, color: resultColor }}>
                 {resultLabel}
               </div>
-              {collapseResult !== 'miss' && (
-                <div style={{
-                  fontFamily: "'JetBrains Mono',monospace",
-                  fontSize: 20, fontWeight: 700, color: '#10b981', marginTop: 6,
-                }}>
-                  +{earned.toLocaleString()}
-                </div>
-              )}
-            </div>
-          )}
-
-          {phase === 'cooldown' && (
-            <div style={{ textAlign: 'center' }}>
-              <div style={{ fontSize: 20, fontWeight: 800, color: resultColor }}>
-                {resultLabel}
-              </div>
-              {collapseResult !== 'miss' && (
-                <div style={{
-                  fontFamily: "'JetBrains Mono',monospace",
-                  fontSize: 20, fontWeight: 700, color: '#10b981', marginTop: 4,
-                }}>
-                  +{earned.toLocaleString()}
-                </div>
-              )}
-              <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 8 }}>
-                量子場重置中... {cooldown}s
+              <div style={{ fontSize: 13, color: 'var(--text-secondary)', marginTop: 6 }}>
+                下一次花園/合成將獲得此倍率
               </div>
             </div>
           )}

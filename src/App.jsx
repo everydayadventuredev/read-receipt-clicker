@@ -31,9 +31,10 @@ import HeroBackground from './ui/HeroBackground.jsx';
 import { StatsPanel, LogPanel, AchievementBadges } from './ui/Panels.jsx';
 import { HeaderBanner, TickerBanner, CounterBanner, ChatBanner, UpgradeBanner } from './ui/SectionBanners.jsx';
 
-import { createMarketState, tickMarket, buyShare, sellShare, resetHoldings } from './game/stockMarket.js';
-import { createGardenState, tickGarden, plantSeed, harvestFlower, clearWilted, getGardenBuffMult, getGardenExBuffMult, getSeriesBonusMult, resetGarden } from './game/garden.js';
-import { createMergeState, tickMerge, placeGift, mergeGifts, moveGift, expandGrid, getMergeBuffMult, getMergePermMult, resetMerge, getTier as getMergeTier } from './game/merge.js';
+import { createMarketState, tickMarket, buyShare, sellShare, resetHoldings, investFutures, collectFuture } from './game/stockMarket.js';
+import { createGardenState, tickGarden, plantSeed, harvestFlower, clearWilted, getGardenExBuffMult, getSeriesBonusMult, resetGarden } from './game/garden.js';
+import { createMergeState, tickMerge, placeGift, mergeGifts, moveGift, expandGrid, getMergePermMult, resetMerge, getTier as getMergeTier } from './game/merge.js';
+import { createBuffState, addBuff, expireBuffs, setResonance, consumeResonance, getBuffMultiplier, getActiveBuffs } from './game/buffSystem.js';
 
 function initState() {
   const saved = loadGame();
@@ -119,6 +120,7 @@ export default function App() {
   });
   const [gardenState,      setGardenState]      = useState(() => init.gardenState ?? createGardenState());
   const [mergeState,       setMergeState]       = useState(() => init.mergeState ?? createMergeState());
+  const [buffState,        setBuffState]        = useState(() => init.buffState ?? createBuffState());
   const [activeMiniGame,   setActiveMiniGame]   = useState(null);
 
   const idRef      = useRef(0);
@@ -191,16 +193,15 @@ export default function App() {
       : guilt >= GUILT_THRESHOLDS.medium ? 0.7
       : guilt >= GUILT_THRESHOLDS.low ? 0.9
       : 1;
-    const gardenBuff = getGardenBuffMult(gardenState);
+    const unifiedBuff = getBuffMultiplier(buffState);
     const gardenSeries = getSeriesBonusMult(gardenState);
-    const mergeBuff = getMergeBuffMult(mergeState);
     const mergePerm = getMergePermMult(mergeState);
     // Achievement permanent bonus (survives prestige)
     const achievementMult = 1 + getAchievementBonus(unlockedAchievements);
-    const total = p * prestigeMult * prestigeGlobalMult * chainGlobalBuff * tempMult * coldMasterMult * guiltPenalty * gardenBuff * gardenSeries * mergeBuff * mergePerm * achievementMult;
+    const total = p * prestigeMult * prestigeGlobalMult * chainGlobalBuff * tempMult * coldMasterMult * guiltPenalty * unifiedBuff * gardenSeries * mergePerm * achievementMult;
     setProdPerSec(total);
     psRef.current = total;
-  }, [owned, boughtUpgrades, prestigeMult, prestigeGlobalMult, chainGlobalBuff, tempMult, boughtPrestige, eventChainBuffs, gardenState, mergeState, guilt, coldMaster, unlockedAchievements]);
+  }, [owned, boughtUpgrades, prestigeMult, prestigeGlobalMult, chainGlobalBuff, tempMult, boughtPrestige, eventChainBuffs, buffState, gardenState, mergeState, guilt, coldMaster, unlockedAchievements]);
 
   const calcClickPower = useCallback(() => {
     let bonus = 1, pct = 0;
@@ -261,9 +262,9 @@ export default function App() {
       boughtUpgrades: boughtRef.current, prestigeCount, prestigePower,
       seenMilestones, unlockedAchievements, unlockedBuildings,
       boughtPrestige, activeSynergies, completedChains, eventChainBuffs,
-      stormCount, stormPerfect, guilt, coldMaster, marketState, gardenState, mergeState,
+      stormCount, stormPerfect, guilt, coldMaster, marketState, gardenState, mergeState, buffState,
     });
-  }, [prestigeCount, prestigePower, seenMilestones, unlockedAchievements, unlockedBuildings, boughtPrestige, activeSynergies, completedChains, eventChainBuffs, stormCount, stormPerfect, guilt, coldMaster, marketState, gardenState, mergeState]);
+  }, [prestigeCount, prestigePower, seenMilestones, unlockedAchievements, unlockedBuildings, boughtPrestige, activeSynergies, completedChains, eventChainBuffs, stormCount, stormPerfect, guilt, coldMaster, marketState, gardenState, mergeState, buffState]);
 
   // Autosave every 30 s
   useEffect(() => {
@@ -487,40 +488,99 @@ export default function App() {
     finishChain(chainChoice.chain);
   }, [chainChoice]);
 
-  // Read Storm spawner — every 5-10 minutes
-  useEffect(() => {
-    let t;
-    const schedule = () => {
-      t = setTimeout(() => {
-        if (psRef.current > 0 && !stormActive) {
-          setStormActive(true);
-        }
-        schedule();
-      }, (300 + Math.random() * 300) * 1000); // 5-10 min
-    };
-    schedule();
-    return () => clearTimeout(t);
-  }, []);
+  // ReadStorm — player-initiated, buff output
+  const handleStartStorm = useCallback(() => {
+    const now = Date.now();
+    if (buffState.stormCooldownEnd > now || stormActive) return;
+    setStormActive(true);
+  }, [buffState.stormCooldownEnd, stormActive]);
 
-  const handleMiniGameEarn = useCallback((earned) => {
-    if (earned > 0) {
-      setReads(r => r + earned);
-      setAllTime(a => a + earned);
-    }
-  }, []);
-
-  const handleStormComplete = useCallback((earned) => {
+  const handleStormComplete = useCallback((popRatio) => {
     setStormActive(false);
     setStormCount(c => c + 1);
-    if (earned > 0) {
-      setReads(r => r + earned);
-      setAllTime(a => a + earned);
-      addToast(`🌪️ 已讀風暴結束！獲得 +${fmt(earned)} 已讀`);
-    }
+    // Performance-based buff
+    let mult, duration;
+    if (popRatio >= 0.9) { mult = 3.0; duration = 90; }
+    else if (popRatio >= 0.7) { mult = 2.0; duration = 60; }
+    else if (popRatio >= 0.5) { mult = 1.5; duration = 60; }
+    else { mult = 1.2; duration = 30; }
+    setBuffState(prev => {
+      const withBuff = addBuff(prev, { source: 'storm', mult, expiresAt: Date.now() + duration * 1000 });
+      return { ...withBuff, stormCooldownEnd: Date.now() + 180000 }; // 3 min cooldown
+    });
+    addToast(`🌪️ 已讀風暴！×${mult} 產能 ${duration}s`);
   }, []);
 
   const handleStormPerfect = useCallback(() => {
     setStormPerfect(p => p + 1);
+  }, []);
+
+  // Legacy mini-game earn handler (no longer used by redesigned games, kept for compatibility)
+  const handleMiniGameEarn = useCallback((amount) => {
+    setReads(r => r + amount);
+    setAllTime(a => a + amount);
+  }, []);
+
+  // QuantumLab — resonance output
+  const handleQuantumResonance = useCallback((mult) => {
+    setBuffState(prev => ({
+      ...setResonance(prev, mult),
+      quantumCooldownEnd: Date.now() + 300000, // 5 min cooldown
+    }));
+    const label = mult >= 2.0 ? '完美！' : mult >= 1.3 ? '不錯！' : '失誤...';
+    addToast(`⚛️ 量子共振 ×${mult} ${label}`);
+  }, []);
+
+  // Garden harvest with choice — burst or sustained
+  const handleGardenHarvestChoice = useCallback((slotIndex, choiceType) => {
+    setGardenState(prev => {
+      const result = harvestFlower(prev, slotIndex);
+      if (!result) return prev;
+      // Determine buff from choice
+      let baseMult, duration;
+      if (choiceType === 'burst') { baseMult = 3.0; duration = 120; }
+      else { baseMult = 1.3; duration = 1800; }
+      // Apply quantum resonance
+      setBuffState(bs => {
+        const [afterRes, resMult] = consumeResonance(bs);
+        const finalMult = baseMult * resMult;
+        return addBuff(afterRes, { source: 'garden', mult: finalMult, expiresAt: Date.now() + duration * 1000 });
+      });
+      const label = choiceType === 'burst' ? '猛爆' : '細水長流';
+      addToast(`🌸 ${label}收成！`);
+      return result.newState;
+    });
+  }, []);
+
+  // Merge send gift — consume gift for buff
+  const handleSendGift = useCallback((slotIndex) => {
+    setMergeState(prev => {
+      const item = prev.grid[slotIndex];
+      if (!item) return prev;
+      const tier = getMergeTier(item.tier);
+      // Buff multiplier by tier
+      const tierMults = { 1: 1.2, 2: 1.5, 3: 2.0, 4: 2.5, 5: 3.5, 6: 4.0, 7: 5.0 };
+      const baseMult = tierMults[item.tier] ?? 1.2;
+      // Apply quantum resonance
+      setBuffState(bs => {
+        const [afterRes, resMult] = consumeResonance(bs);
+        const finalMult = baseMult * resMult;
+        return addBuff(afterRes, { source: 'merge', mult: finalMult, expiresAt: Date.now() + 300000 });
+      });
+      addToast(`🎁 送出 ${tier.emoji} ${tier.name}！`);
+      // Remove gift from grid
+      const newGrid = [...prev.grid];
+      newGrid[slotIndex] = null;
+      return { ...prev, grid: newGrid };
+    });
+  }, []);
+
+  // Expire buffs periodically
+  useEffect(() => {
+    const iv = setInterval(() => {
+      setBuffState(prev => expireBuffs(prev));
+    }, 1000);
+    return () => clearInterval(iv);
   }, []);
 
   // ═══ GUILT SYSTEM ═══
@@ -777,6 +837,27 @@ export default function App() {
     }
   }, [marketState]);
 
+  // ── Futures handlers ──
+  const handleInvestFutures = useCallback((channelId, amount, riskLevel) => {
+    const result = investFutures(marketState, channelId, amount, riskLevel);
+    if (!result) return;
+    setMarketState(result.newState);
+    setReads(r => r - result.cost);
+    const riskLabel = riskLevel === 'aggressive' ? '積極' : '穩健';
+    addToast(`📈 投資 ${fmt(amount)} 已讀期貨（${riskLabel}）`);
+  }, [marketState]);
+
+  const handleCollectFuture = useCallback((futureId) => {
+    const result = collectFuture(marketState, futureId);
+    if (!result) return;
+    setMarketState(result.newState);
+    setReads(r => r + result.payout);
+    const profitLabel = result.payout > 0
+      ? `回收 ${fmt(result.payout)}（×${result.mult.toFixed(2)}）`
+      : '期貨到期';
+    addToast(`📊 ${profitLabel}`);
+  }, [marketState]);
+
   // ── Garden handlers ──
   const handlePlantSeed = useCallback((slotIndex) => {
     const result = plantSeed(gardenState, slotIndex);
@@ -853,9 +934,10 @@ export default function App() {
     setBoughtUpgrades(new Set());
     setUnlockedBuildings(new Set(['ex', 'par', 'bsy']));
     setNewBuildings(new Set());
-    setMarketState(prev => resetHoldings(prev)); // reset holdings, keep market running
+    setMarketState(prev => resetHoldings(prev)); // reset holdings+futures, keep market running
     setGardenState(prev => resetGarden(prev)); // reset slots/seeds/buffs, keep collection
     setMergeState(prev => resetMerge(prev)); // reset grid/gifts, keep highestTier
+    setBuffState(createBuffState()); // reset all buffs, resonance, cooldowns
     setSeenMilestones(new Set());
     setRecentMsgs([]);
     setTempMult(1);
@@ -1163,17 +1245,29 @@ export default function App() {
 
           {/* Combo boost chips — inside phone, near numbers */}
           {(() => {
-            const gardenBuff = getGardenBuffMult(gardenState);
             const gardenExBuff = getGardenExBuffMult(gardenState);
-            const mergeBuff = getMergeBuffMult(mergeState);
+            const liveBuffs = getActiveBuffs(buffState);
             const boosts = [];
             if (tempMult > 1) boosts.push({ icon: '🔥', label: `×${tempMult}`, color: '#6366f1', sub: tempMultExpiry > 0 ? `${Math.max(0, Math.ceil((tempMultExpiry - Date.now()) / 1000))}s` : '', title: '黃金訊息：全局產能加乘（限時）' });
-            if (gardenBuff > 1) boosts.push({ icon: '🌸', label: `×${gardenBuff.toFixed(1)}`, color: '#22c55e', sub: '全局', title: '花園 buff：採收花朵後獲得全局加成' });
+            // Show unified buffs by source
+            const sourceIcons = { storm: ['🌪️', '#6366f1', '風暴'], garden: ['🌸', '#22c55e', '花園'], merge: ['🎁', '#f59e0b', '合成'] };
+            const bySource = {};
+            for (const b of liveBuffs) {
+              if (b.scope !== 'global') continue;
+              if (!bySource[b.source]) bySource[b.source] = 0;
+              bySource[b.source] += (b.mult - 1);
+            }
+            for (const [src, bonus] of Object.entries(bySource)) {
+              if (bonus > 0) {
+                const [icon, color, sub] = sourceIcons[src] ?? ['✨', '#8b5cf6', src];
+                boosts.push({ icon, label: `×${(1 + bonus).toFixed(1)}`, color, sub, title: `${sub} buff` });
+              }
+            }
             if (gardenExBuff > 1) boosts.push({ icon: '💔', label: `×${gardenExBuff.toFixed(1)}`, color: '#f43f5e', sub: '前任', title: '前任 buff：花朵加成前任產能' });
-            if (mergeBuff > 1) boosts.push({ icon: '🎁', label: `×${mergeBuff.toFixed(1)}`, color: '#f59e0b', sub: '合成', title: '合成 buff：完成伴手禮合成後的臨時加成' });
             if (coldMaster) boosts.push({ icon: '🧊', label: '×1.5', color: '#06b6d4', sub: '冷漠', title: '冷漠大師：已讀不回的修行，永久×1.5 產能' });
             if (boosts.length === 0) return null;
-            const totalCombo = tempMult * gardenBuff * mergeBuff * (coldMaster ? 1.5 : 1);
+            const unifiedMult = getBuffMultiplier(buffState);
+            const totalCombo = tempMult * unifiedMult * (coldMaster ? 1.5 : 1);
             return (
               <div style={{
                 display: 'flex', flexWrap: 'wrap', justifyContent: 'center',
@@ -1346,6 +1440,8 @@ export default function App() {
             onSellShare={handleSellShare}
             onBuyAllShares={handleBuyAllShares}
             onSellAllShares={handleSellAllShares}
+            onInvestFutures={handleInvestFutures}
+            onCollectFuture={handleCollectFuture}
             prodPerSec={prodPerSec}
             gardenState={gardenState}
             onPlant={handlePlantSeed}
@@ -1359,6 +1455,14 @@ export default function App() {
             onMoveGift={handleMoveGift}
             onExpandGrid={handleExpandGrid}
             onMiniGameEarn={handleMiniGameEarn}
+            buffState={buffState}
+            onStartStorm={handleStartStorm}
+            onStormComplete={handleStormComplete}
+            onStormPerfect={handleStormPerfect}
+            stormActive={stormActive}
+            onQuantumResonance={handleQuantumResonance}
+            onGardenHarvestChoice={handleGardenHarvestChoice}
+            onSendGift={handleSendGift}
           />
 
         </div>

@@ -65,8 +65,8 @@ export const SERIES = [
 // CONSTANTS
 // ═══════════════════════════════════════════════
 
-export const GROWTH_TIME    = 2 * 60 * 60 * 1000;     // 2 hours
-export const WILT_TIME      = 6 * 60 * 60 * 1000;   // 6 hours after maturity
+export const GROWTH_TIME    = 10 * 60 * 1000;          // 10 minutes
+export const WILT_TIME      = 30 * 60 * 1000;         // 30 minutes after maturity
 export const SEED_INTERVAL  = 10 * 60 * 1000;        // 10 minutes per ex building
 export const MAX_SEEDS      = 32;
 export const GRID_SIZE      = 16;                     // 4×4

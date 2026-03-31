@@ -197,7 +197,7 @@ function MergeBuffBar({ activeBuffs }) {
 /**
  * MergeGame — App Store icon grid style.
  */
-export default function MergeGame({ mergeState, parCount, reads, onPlace, placeCost, onMerge, onMove, onExpand, onCollapse }) {
+export default function MergeGame({ mergeState, parCount, reads, onPlace, placeCost, onMerge, onMove, onExpand, onCollapse, onSendGift, resonanceState }) {
   const [selected, setSelected] = useState(null);
   const [lastEvent, setLastEvent] = useState(null);
   const eventTimer = useRef(null);
@@ -372,6 +372,39 @@ export default function MergeGame({ mergeState, parCount, reads, onPlace, placeC
 
       {/* Active buffs */}
       <MergeBuffBar activeBuffs={activeBuffs ?? []} />
+
+      {/* Send gift bar — shown when a gift is selected */}
+      {selected !== null && grid[selected] && onSendGift && (
+        <div style={{
+          padding: '8px 14px', flexShrink: 0,
+          background: 'linear-gradient(90deg, rgba(245,158,11,.06), rgba(220,38,38,.04))',
+          borderTop: '1px solid rgba(245,158,11,.15)',
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+        }}>
+          <div style={{ fontSize: 12, color: 'var(--text-secondary)' }}>
+            送出 {getTier(grid[selected].tier).emoji} {getTier(grid[selected].tier).name}
+            <span style={{ color: 'var(--text-muted)', marginLeft: 4 }}>
+              → ×{({ 1: 1.2, 2: 1.5, 3: 2.0, 4: 2.5, 5: 3.5, 6: 4.0, 7: 5.0 })[grid[selected].tier] ?? 1.2} 產能 5分鐘
+            </span>
+            {resonanceState && !resonanceState.consumed && (
+              <span style={{ color: '#f59e0b', fontWeight: 700, marginLeft: 4 }}>
+                ⚛️ ×{resonanceState.mult}
+              </span>
+            )}
+          </div>
+          <button onClick={() => {
+            onSendGift(selected);
+            setSelected(null);
+          }} style={{
+            padding: '5px 16px', fontSize: 13, fontWeight: 800,
+            background: 'linear-gradient(135deg, #f59e0b, #d97706)',
+            color: '#fff', border: 'none', borderRadius: 10,
+            cursor: 'pointer', boxShadow: '0 2px 8px rgba(245,158,11,.3)',
+          }}>
+            🎁 送出
+          </button>
+        </div>
+      )}
 
       {/* Footer */}
       <div style={{
