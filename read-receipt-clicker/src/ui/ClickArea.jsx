@@ -68,10 +68,10 @@ export default function ClickArea({ message, isRead, isFirstClick, popAnim, rece
           flex: 1, overflowY: 'auto',
           display: 'flex', flexDirection: 'column',
           gap: 6,
-          background: bg,
+          backgroundColor: bg,
           backgroundImage: 'radial-gradient(circle, rgba(99,102,241,.02) 1px, transparent 1px)',
           backgroundSize: '20px 20px',
-          transition: 'background .5s ease',
+          transition: 'background-color .5s ease',
         }}>
           {/* Spacer at TOP — pushes everything to the bottom */}
           <div style={{ flex: 1 }} />
