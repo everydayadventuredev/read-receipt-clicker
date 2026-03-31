@@ -1278,7 +1278,7 @@ export default function App() {
                           disabled={onCooldown || guilt < 10}
                           title={`${r.name}：${r.desc}（-${r.guiltReduce}罪惡感）`}
                           style={{
-                            fontSize: 13, padding: '4px 10px', borderRadius: 8,
+                            fontSize: 14, padding: '8px 12px', borderRadius: 8, minHeight: 44,
                             border: '1px solid #e2e8f0',
                             background: onCooldown ? '#f1f5f9' : '#fff',
                             cursor: onCooldown ? 'default' : 'pointer',

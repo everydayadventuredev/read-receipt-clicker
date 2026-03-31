@@ -88,10 +88,10 @@ export default function UpgradeRow({ upgrades, reads, onBuy, onBuyAll, compact =
             <button
               onClick={onBuyAll}
               style={{
-                padding: '2px 8px', fontSize: 11, fontWeight: 700,
+                padding: '6px 10px', fontSize: 11, fontWeight: 700,
                 color: '#10b981', background: 'rgba(16,185,129,.08)',
                 border: '1px solid rgba(16,185,129,.2)',
-                borderRadius: 6, cursor: 'pointer',
+                borderRadius: 6, cursor: 'pointer', minHeight: 32,
               }}
             >
               全買
