@@ -26,6 +26,7 @@ import ReadStorm from './ui/ReadStorm.jsx';
 import ReplyTrap from './ui/ReplyTrap.jsx';
 import Ticker from './ui/Ticker.jsx';
 import MiniGamePanel from './ui/MiniGamePanel.jsx';
+import MilestonePanel from './ui/MilestonePanel.jsx';
 import HeroBackground from './ui/HeroBackground.jsx';
 import { StatsPanel, LogPanel, AchievementBadges } from './ui/Panels.jsx';
 import { HeaderBanner, TickerBanner, CounterBanner, ChatBanner, UpgradeBanner } from './ui/SectionBanners.jsx';
@@ -1333,6 +1334,9 @@ export default function App() {
           {/* Ticker — news/events at top of middle column */}
           <Ticker allTime={allTime} logEntries={log} />
 
+          {/* Achievement / Milestone panel */}
+          <MilestonePanel unlockedAchievements={unlockedAchievements} allTime={allTime} />
+
           {/* Mini-Game panel — building sub-systems */}
           <MiniGamePanel
             owned={owned}
@@ -1399,7 +1403,7 @@ export default function App() {
               }}>✦{prestigePower}</span>
             )}
             <span style={{ fontSize: 10, color: 'var(--text-muted)', fontFamily: "'JetBrains Mono',monospace" }}>
-              {unlockedAchievements.length}/{103}⭐
+              {unlockedAchievements.size}/{ACHIEVEMENTS.filter(a => !a.hidden).length}⭐
             </span>
             <div style={{ flex: 1 }} />
             {prestigeCount > 0 && (
