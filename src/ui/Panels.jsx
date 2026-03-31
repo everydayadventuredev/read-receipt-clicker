@@ -62,7 +62,7 @@ export function StatsPanel({ reads, allTime, prodPerSec, clickPower, owned, seen
         display: 'flex', justifyContent: 'space-between', alignItems: 'center',
         padding: '2px 0',
       }}>
-        <span style={{ fontSize: 10, color: 'var(--text-muted)' }}>{label}</span>
+        <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>{label}</span>
         <span style={{
           fontSize: 12, fontWeight: 700, color,
           fontFamily: "'JetBrains Mono',monospace",
@@ -91,7 +91,7 @@ export function StatsPanel({ reads, allTime, prodPerSec, clickPower, owned, seen
               display: 'flex', alignItems: 'center', gap: 3,
               padding: '2px 8px',
             }}>
-              <span style={{ fontSize: 9, color: 'var(--text-muted)' }}>{label}</span>
+              <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>{label}</span>
               <span style={{
                 fontSize: 11, fontWeight: 700, color,
                 fontFamily: "'JetBrains Mono',monospace",
@@ -173,6 +173,7 @@ export function AchievementBadges({ unlockedAchievements, maxVisible }) {
             key={a.id}
             onMouseEnter={() => setHoveredId(a.id)}
             onMouseLeave={() => setHoveredId(null)}
+            onClick={() => setHoveredId(prev => prev === a.id ? null : a.id)}
             style={{
               position: 'relative',
               width: 24, height: 24, borderRadius: 6,

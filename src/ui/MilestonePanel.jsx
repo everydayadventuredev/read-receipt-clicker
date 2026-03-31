@@ -76,6 +76,7 @@ const CATEGORIES = [
 
 function CategorySection({ cat, achievements, unlockedAchievements, defaultOpen = false }) {
   const [open, setOpen] = useState(defaultOpen);
+  const [selectedId, setSelectedId] = useState(null);
   const items = achievements.filter(cat.filter);
   if (cat.sort) items.sort(cat.sort);
   const unlocked = items.filter(a => unlockedAchievements.has(a.id));
@@ -156,30 +157,37 @@ function CategorySection({ cat, achievements, unlockedAchievements, defaultOpen 
             return (
               <div
                 key={a.id}
-                title={done ? `${a.name}\n${a.desc}${a.bonus ? `\n+${(a.bonus * 100).toFixed(0)}% 產能` : ''}` : isHidden ? '???' : a.desc}
+                onClick={() => setSelectedId(prev => prev === a.id ? null : a.id)}
                 style={{
                   display: 'flex', alignItems: 'center', gap: 5,
-                  padding: '5px 7px', borderRadius: 6,
-                  background: done ? 'rgba(217,119,6,.06)' : 'rgba(0,0,0,.02)',
+                  padding: '6px 8px', borderRadius: 6, cursor: 'pointer',
+                  background: selectedId === a.id ? (done ? 'rgba(217,119,6,.12)' : 'rgba(0,0,0,.05)')
+                    : done ? 'rgba(217,119,6,.06)' : 'rgba(0,0,0,.02)',
                   border: done ? '1px solid rgba(217,119,6,.15)' : '1px solid transparent',
                   opacity: done ? 1 : 0.45,
                   transition: 'all .2s',
                 }}
               >
-                <span style={{ fontSize: 14, flexShrink: 0 }}>
+                <span style={{ fontSize: 15, flexShrink: 0 }}>
                   {isHidden ? '❓' : a.icon}
                 </span>
                 <div style={{ flex: 1, minWidth: 0, overflow: 'hidden' }}>
                   <div style={{
-                    fontSize: 11, fontWeight: 600,
+                    fontSize: 12, fontWeight: 600,
                     color: done ? 'var(--text)' : 'var(--text-muted)',
                     whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
                   }}>
                     {isHidden ? '???' : a.name}
                   </div>
+                  {selectedId === a.id && !isHidden && (
+                    <div style={{
+                      fontSize: 11, color: 'var(--text-secondary)',
+                      marginTop: 2, lineHeight: 1.3,
+                    }}>{a.desc}</div>
+                  )}
                   {a.bonus && done && (
                     <div style={{
-                      fontSize: 9, fontWeight: 700, color: 'var(--success)',
+                      fontSize: 10, fontWeight: 700, color: 'var(--success)',
                       fontFamily: "'JetBrains Mono',monospace",
                     }}>+{(a.bonus * 100).toFixed(0)}%</div>
                   )}
@@ -196,12 +204,10 @@ function CategorySection({ cat, achievements, unlockedAchievements, defaultOpen 
 /* ── Main Panel ── */
 
 export default function MilestonePanel({ unlockedAchievements, allTime }) {
-  const [expanded, setExpanded] = useState(true);
   const totalBonus = getAchievementBonus(unlockedAchievements);
   const unlockedCount = unlockedAchievements.size;
   const visibleTotal = ACHIEVEMENTS.filter(a => !a.hidden).length;
   const hiddenUnlocked = ACHIEVEMENTS.filter(a => a.hidden && unlockedAchievements.has(a.id)).length;
-  const hiddenTotal = ACHIEVEMENTS.filter(a => a.hidden).length;
 
   // Find next allTime milestone to show progress
   const allTimeThresholds = [1, 100, 1e3, 1e4, 1e5, 1e6, 1e7, 5e7, 1e8, 5e8, 1e9, 1e10, 1e11];
@@ -212,26 +218,14 @@ export default function MilestonePanel({ unlockedAchievements, allTime }) {
     : 100;
 
   return (
-    <div style={{
-      display: 'flex', flexDirection: 'column',
-      background: 'rgba(255,255,255,.4)',
-    }}>
-      {/* Header */}
-      <button
-        onClick={() => setExpanded(e => !e)}
-        style={{
-          display: 'flex', alignItems: 'center', gap: 8,
-          padding: '10px 14px', border: 'none', background: 'none',
-          cursor: 'pointer', fontFamily: 'inherit', textAlign: 'left',
-          minHeight: 44,
-        }}
-      >
-        <span style={{ fontSize: 16 }}>🎖️</span>
-        <span style={{ fontSize: 14, fontWeight: 800, color: 'var(--text)' }}>
-          成就
-        </span>
+    <div style={{ display: 'flex', flexDirection: 'column' }}>
+      {/* Summary bar */}
+      <div style={{
+        display: 'flex', alignItems: 'center', gap: 8,
+        padding: '8px 14px',
+      }}>
         <span style={{
-          fontSize: 12, fontWeight: 600, color: 'var(--text-muted)',
+          fontSize: 13, fontWeight: 600, color: 'var(--text-muted)',
           fontFamily: "'JetBrains Mono',monospace",
         }}>
           {unlockedCount}/{visibleTotal}{hiddenUnlocked > 0 ? ` +${hiddenUnlocked}` : ''}
@@ -248,62 +242,55 @@ export default function MilestonePanel({ unlockedAchievements, allTime }) {
             +{(totalBonus * 100).toFixed(0)}% 產能
           </span>
         )}
-        <span style={{
-          fontSize: 12, color: 'var(--text-muted)',
-          transform: expanded ? 'rotate(180deg)' : 'rotate(0)',
-          transition: 'transform .15s',
-        }}>▼</span>
-      </button>
+      </div>
 
-      {expanded && (
-        <div style={{ padding: '0 10px 10px', display: 'flex', flexDirection: 'column', gap: 4 }}>
-          {/* Next milestone progress */}
-          {nextThreshold && (
+      <div style={{ padding: '0 10px 10px', display: 'flex', flexDirection: 'column', gap: 4 }}>
+        {/* Next milestone progress */}
+        {nextThreshold && (
+          <div style={{
+            padding: '6px 10px', borderRadius: 8,
+            background: 'rgba(99,102,241,.04)',
+            border: '1px solid rgba(99,102,241,.1)',
+            marginBottom: 4,
+          }}>
             <div style={{
-              padding: '6px 10px', borderRadius: 8,
-              background: 'rgba(99,102,241,.04)',
-              border: '1px solid rgba(99,102,241,.1)',
+              display: 'flex', justifyContent: 'space-between', alignItems: 'center',
               marginBottom: 4,
             }}>
-              <div style={{
-                display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-                marginBottom: 4,
+              <span style={{ fontSize: 12, color: 'var(--text-secondary)', fontWeight: 600 }}>
+                下個里程碑
+              </span>
+              <span style={{
+                fontSize: 12, fontWeight: 700, color: 'var(--purple-text)',
+                fontFamily: "'JetBrains Mono',monospace",
               }}>
-                <span style={{ fontSize: 11, color: 'var(--text-secondary)', fontWeight: 600 }}>
-                  下個里程碑
-                </span>
-                <span style={{
-                  fontSize: 11, fontWeight: 700, color: 'var(--purple-text)',
-                  fontFamily: "'JetBrains Mono',monospace",
-                }}>
-                  {fmt(allTime)} / {fmt(nextThreshold)}
-                </span>
-              </div>
-              <div style={{
-                height: 6, background: 'rgba(0,0,0,.06)', borderRadius: 3, overflow: 'hidden',
-              }}>
-                <div style={{
-                  height: '100%', borderRadius: 3,
-                  width: `${progressToNext}%`,
-                  background: 'linear-gradient(90deg, var(--purple), var(--purple-dark))',
-                  transition: 'width .5s',
-                }} />
-              </div>
+                {fmt(allTime)} / {fmt(nextThreshold)}
+              </span>
             </div>
-          )}
+            <div style={{
+              height: 6, background: 'rgba(0,0,0,.06)', borderRadius: 3, overflow: 'hidden',
+            }}>
+              <div style={{
+                height: '100%', borderRadius: 3,
+                width: `${progressToNext}%`,
+                background: 'linear-gradient(90deg, var(--purple), var(--purple-dark))',
+                transition: 'width .5s',
+              }} />
+            </div>
+          </div>
+        )}
 
-          {/* Category sections */}
-          {CATEGORIES.map(cat => (
-            <CategorySection
-              key={cat.id}
-              cat={cat}
-              achievements={ACHIEVEMENTS}
-              unlockedAchievements={unlockedAchievements}
-              defaultOpen={cat.id === 'alltime'}
-            />
-          ))}
-        </div>
-      )}
+        {/* Category sections */}
+        {CATEGORIES.map(cat => (
+          <CategorySection
+            key={cat.id}
+            cat={cat}
+            achievements={ACHIEVEMENTS}
+            unlockedAchievements={unlockedAchievements}
+            defaultOpen={cat.id === 'alltime'}
+          />
+        ))}
+      </div>
     </div>
   );
 }

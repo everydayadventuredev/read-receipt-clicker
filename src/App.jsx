@@ -659,7 +659,7 @@ export default function App() {
     setIsRead(true);
     setReads(r => r + power);
     setAllTime(a => a + power);
-    setGuilt(g => g + 1);
+    setGuilt(g => g + 0.5);
     setPopAnim(true);
     setTimeout(() => setPopAnim(false), 180);
 
@@ -1210,12 +1210,12 @@ export default function App() {
           <div style={{
             width: '100%', marginBottom: 10,
             padding: '8px 10px', borderRadius: 10,
-            background: guilt < 50 ? 'rgba(148,163,184,.03)'
+            background: guilt < 200 ? 'rgba(148,163,184,.03)'
               : coldMaster ? 'rgba(20,184,166,.06)'
               : guiltLevel === 'high' ? 'rgba(239,68,68,.05)'
               : guiltLevel === 'medium' ? 'rgba(245,158,11,.04)'
               : 'rgba(99,102,241,.03)',
-            border: `1px solid ${guilt < 50 ? 'rgba(148,163,184,.1)'
+            border: `1px solid ${guilt < 200 ? 'rgba(148,163,184,.1)'
               : coldMaster ? 'rgba(20,184,166,.15)'
               : guiltLevel === 'high' ? 'rgba(239,68,68,.15)'
               : guiltLevel === 'medium' ? 'rgba(245,158,11,.1)'
@@ -1224,20 +1224,20 @@ export default function App() {
             animation: guiltLevel === 'high' ? 'guiltShake 0.5s ease-in-out infinite' : 'none',
           }}>
             <div style={{
-              display: 'flex', alignItems: 'center', gap: 6, marginBottom: guilt >= 50 ? 4 : 0,
+              display: 'flex', alignItems: 'center', gap: 6, marginBottom: guilt >= 200 ? 4 : 0,
             }}>
               <span style={{
                 fontSize: 10, fontWeight: 600, letterSpacing: 0.5, textTransform: 'uppercase',
-                color: guilt < 50 ? '#cbd5e1'
+                color: guilt < 200 ? '#cbd5e1'
                   : coldMaster ? '#14b8a6'
                   : guiltLevel === 'high' ? '#ef4444'
                   : guiltLevel === 'medium' ? '#f59e0b'
                   : '#94a3b8',
               }}>
-                {guilt < 50 ? '😶 罪惡感尚未覺醒' : coldMaster ? '🧊 冷漠大師' : '😔 罪惡感'}
+                {guilt < 200 ? '😶 罪惡感尚未覺醒' : coldMaster ? '🧊 冷漠大師' : '😔 罪惡感'}
               </span>
               <span style={{ flex: 1 }} />
-              {guilt >= 50 && (
+              {guilt >= 200 && (
                 <span style={{
                   fontSize: 12, fontWeight: 800,
                   fontFamily: "'JetBrains Mono',monospace",
@@ -1250,7 +1250,7 @@ export default function App() {
                 </span>
               )}
             </div>
-            {guilt >= 50 && (
+            {guilt >= 200 && (
               <>
                 <div style={{
                   height: 4, background: 'rgba(0,0,0,.05)', borderRadius: 3,
@@ -1401,10 +1401,10 @@ export default function App() {
               }}>✦{prestigePower}</span>
             )}
             <button onClick={() => setShowAchievements(true)} style={{
-              fontSize: 10, color: 'var(--text-muted)', fontFamily: "'JetBrains Mono',monospace",
+              fontSize: 11, color: 'var(--text-muted)', fontFamily: "'JetBrains Mono',monospace",
               background: 'rgba(245,158,11,.06)', border: '1px solid rgba(245,158,11,.15)',
-              borderRadius: 6, padding: '4px 8px', cursor: 'pointer',
-              minHeight: 28, fontWeight: 600,
+              borderRadius: 6, padding: '6px 10px', cursor: 'pointer',
+              minHeight: 44, fontWeight: 600,
             }}>
               {unlockedAchievements.size}/{ACHIEVEMENTS.filter(a => !a.hidden).length}⭐
             </button>
@@ -1412,17 +1412,17 @@ export default function App() {
             {prestigeCount > 0 && (
               <button onClick={() => setShowPrestigeShop(true)} style={{
                 background: 'rgba(99,102,241,.08)', border: '1px solid rgba(99,102,241,.2)',
-                borderRadius: 6, padding: '6px 10px', color: 'var(--purple-text)',
-                fontSize: 11, fontWeight: 700, cursor: 'pointer',
-                fontFamily: "'JetBrains Mono',monospace", minHeight: 32,
+                borderRadius: 6, padding: '8px 12px', color: 'var(--purple-text)',
+                fontSize: 12, fontWeight: 700, cursor: 'pointer',
+                fontFamily: "'JetBrains Mono',monospace", minHeight: 44,
               }}>✦商店</button>
             )}
             {prestigeEarned >= 1 && (
               <button onClick={handlePrestige} style={{
                 background: 'linear-gradient(135deg, var(--purple), var(--purple-dark))',
                 color: 'var(--text-on-dark)', border: 'none', borderRadius: 6,
-                padding: '6px 10px', fontSize: 11, fontWeight: 700,
-                cursor: 'pointer', boxShadow: '0 2px 8px rgba(99,102,241,.3)', minHeight: 32,
+                padding: '8px 12px', fontSize: 12, fontWeight: 700,
+                cursor: 'pointer', boxShadow: '0 2px 8px rgba(99,102,241,.3)', minHeight: 44,
               }}>重生 +✦{prestigeEarned}</button>
             )}
             <button onClick={() => { const m = toggleMute(); setMutedUI(m); }} style={{
@@ -1504,8 +1504,9 @@ export default function App() {
                 onClick={() => setShowPrestigeShop(false)}
                 style={{
                   background: 'var(--surface-hover)', border: '1px solid var(--border)',
-                  borderRadius: 8, padding: '4px 12px', fontSize: 12,
+                  borderRadius: 8, padding: '8px 16px', fontSize: 13,
                   cursor: 'pointer', color: 'var(--text-secondary)', fontFamily: 'inherit',
+                  minHeight: 44,
                 }}
               >關閉</button>
             </div>
@@ -1541,9 +1542,9 @@ export default function App() {
                 onClick={() => setShowAchievements(false)}
                 style={{
                   background: 'var(--surface-hover)', border: '1px solid var(--border)',
-                  borderRadius: 8, padding: '6px 14px', fontSize: 12,
+                  borderRadius: 8, padding: '8px 16px', fontSize: 13,
                   cursor: 'pointer', color: 'var(--text-secondary)', fontFamily: 'inherit',
-                  minHeight: 32,
+                  minHeight: 44,
                 }}
               >關閉</button>
             </div>

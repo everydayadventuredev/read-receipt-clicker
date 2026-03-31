@@ -189,16 +189,16 @@ export default function BuildingList({ buildings, owned, reads, allTime, unlocke
 
             return (
               <div key={b.id} style={{
-                display: 'flex', alignItems: 'center', gap: 4,
-                padding: '2px 8px', height: 22,
-                opacity: 0.4, fontSize: 10, color: 'var(--text-muted)',
+                display: 'flex', alignItems: 'center', gap: 6,
+                padding: '4px 8px', height: 28,
+                opacity: 0.55, fontSize: 12, color: 'var(--text-muted)',
               }}>
-                <span style={{ fontSize: 8 }}>🔒</span>
+                <span style={{ fontSize: 10 }}>🔒</span>
                 <span style={{ fontWeight: 600, minWidth: 50 }}>{b.name}</span>
-                <div style={{ flex: 1, height: 2, background: 'rgba(148,163,184,.15)', borderRadius: 2, overflow: 'hidden' }}>
+                <div style={{ flex: 1, height: 3, background: 'rgba(148,163,184,.15)', borderRadius: 2, overflow: 'hidden' }}>
                   <div style={{ height: '100%', width: `${unlockPct}%`, background: 'rgba(148,163,184,.35)', borderRadius: 2, transition: 'width .5s' }} />
                 </div>
-                <span style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 8 }}>{fmt(unlockAt)}</span>
+                <span style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 10 }}>{fmt(unlockAt)}</span>
               </div>
             );
           })}
