@@ -214,7 +214,6 @@ export default function MilestonePanel({ unlockedAchievements, allTime }) {
   return (
     <div style={{
       display: 'flex', flexDirection: 'column',
-      borderBottom: '1px solid var(--border)',
       background: 'rgba(255,255,255,.4)',
     }}>
       {/* Header */}

@@ -103,6 +103,7 @@ export default function App() {
   const [offlineBanner, setOfflineBanner] = useState(null);
   const [prodPerSec, setProdPerSec] = useState(0);
   const [showPrestigeShop, setShowPrestigeShop] = useState(false);
+  const [showAchievements, setShowAchievements] = useState(false);
   const [marketState,      setMarketState]      = useState(() => {
     const def = createMarketState();
     const saved = init.marketState;
@@ -1334,9 +1335,6 @@ export default function App() {
           {/* Ticker — news/events at top of middle column */}
           <Ticker allTime={allTime} logEntries={log} />
 
-          {/* Achievement / Milestone panel */}
-          <MilestonePanel unlockedAchievements={unlockedAchievements} allTime={allTime} />
-
           {/* Mini-Game panel — building sub-systems */}
           <MiniGamePanel
             owned={owned}
@@ -1402,9 +1400,14 @@ export default function App() {
                 border: '1px solid rgba(99,102,241,.15)',
               }}>✦{prestigePower}</span>
             )}
-            <span style={{ fontSize: 10, color: 'var(--text-muted)', fontFamily: "'JetBrains Mono',monospace" }}>
+            <button onClick={() => setShowAchievements(true)} style={{
+              fontSize: 10, color: 'var(--text-muted)', fontFamily: "'JetBrains Mono',monospace",
+              background: 'rgba(245,158,11,.06)', border: '1px solid rgba(245,158,11,.15)',
+              borderRadius: 6, padding: '4px 8px', cursor: 'pointer',
+              minHeight: 28, fontWeight: 600,
+            }}>
               {unlockedAchievements.size}/{ACHIEVEMENTS.filter(a => !a.hidden).length}⭐
-            </span>
+            </button>
             <div style={{ flex: 1 }} />
             {prestigeCount > 0 && (
               <button onClick={() => setShowPrestigeShop(true)} style={{
@@ -1511,6 +1514,40 @@ export default function App() {
               boughtPrestige={boughtPrestige}
               onBuy={handleBuyPrestige}
             />
+          </div>
+        </div>
+      )}
+
+      {/* Achievement Panel Modal */}
+      {showAchievements && (
+        <div style={{
+          position: 'fixed', inset: 0, zIndex: 400,
+          background: 'rgba(0,0,0,.4)', backdropFilter: 'blur(4px)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+        }} onClick={(e) => { if (e.target === e.currentTarget) setShowAchievements(false); }}>
+          <div style={{
+            background: '#fff', borderRadius: 16,
+            maxWidth: 560, width: '92vw', maxHeight: '85vh', overflowY: 'auto',
+            boxShadow: '0 20px 60px rgba(0,0,0,.15)',
+          }}>
+            <div style={{
+              display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+              padding: '16px 20px 0',
+              position: 'sticky', top: 0, background: '#fff', zIndex: 1,
+              borderRadius: '16px 16px 0 0',
+            }}>
+              <div style={{ fontSize: 15, fontWeight: 800, color: 'var(--text)' }}>🎖️ 成就總覽</div>
+              <button
+                onClick={() => setShowAchievements(false)}
+                style={{
+                  background: 'var(--surface-hover)', border: '1px solid var(--border)',
+                  borderRadius: 8, padding: '6px 14px', fontSize: 12,
+                  cursor: 'pointer', color: 'var(--text-secondary)', fontFamily: 'inherit',
+                  minHeight: 32,
+                }}
+              >關閉</button>
+            </div>
+            <MilestonePanel unlockedAchievements={unlockedAchievements} allTime={allTime} />
           </div>
         </div>
       )}
