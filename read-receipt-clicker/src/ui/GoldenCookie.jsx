@@ -3,13 +3,13 @@ export default function GoldenCookie({ gc, pos, onClick }) {
 
   const bg =
     gc.type === 'mult5' ? 'linear-gradient(135deg, #ef4444, #f59e0b)' :
-    gc.type === 'mult'  ? 'linear-gradient(135deg, #a78bfa, #818cf8)' :
-                          'linear-gradient(135deg, #a3e635, #84cc16)';
+    gc.type === 'mult'  ? 'linear-gradient(135deg, #6366f1, #4338ca)' :
+                          'linear-gradient(135deg, #d97706, #b45309)';
 
   const shadow =
     gc.type === 'mult5' ? '0 0 20px rgba(239,68,68,.4), 0 0 60px rgba(239,68,68,.15)' :
-    gc.type === 'mult'  ? '0 0 20px rgba(139,92,246,.4), 0 0 60px rgba(139,92,246,.15)' :
-                          '0 0 20px rgba(163,230,53,.4), 0 0 60px rgba(163,230,53,.15)';
+    gc.type === 'mult'  ? '0 0 20px rgba(99,102,241,.4), 0 0 60px rgba(99,102,241,.15)' :
+                          '0 0 20px rgba(217,119,6,.4), 0 0 60px rgba(217,119,6,.15)';
 
   return (
     <div

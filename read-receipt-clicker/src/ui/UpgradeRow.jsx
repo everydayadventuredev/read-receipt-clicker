@@ -1,93 +1,243 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { BUILDINGS } from '../game/buildings.js';
 import { fmt } from '../utils/format.js';
 import CheckIcon from './CheckIcon.jsx';
 
-export default function UpgradeRow({ upgrades, reads, onBuy }) {
-  const [hov, setHov] = useState(null);
+const UPGRADE_TIPS = [
+  '已讀是一門藝術，升級是修行。',
+  '投資效率，永遠不虧。',
+  '有時候不回覆，比回覆更有力量。',
+  '每一次升級，都是對社交焦慮的勝利。',
+  '「我手機壞了」——進階版藉口需要升級。',
+  '已讀之道，在於精進。',
+  '速度決定一切：越快已讀，越顯冷漠。',
+  '省下的表情符號，都是你的資產。',
+];
 
-  return (
-    <div style={{
-      padding: '10px 16px 8px',
-      borderBottom: '1px solid rgba(255,255,255,.03)',
-      flexShrink: 0,
-    }}>
-      <div style={{ display: 'flex', gap: 5, overflowX: 'auto', paddingBottom: 3 }}>
-        {upgrades.map(u => (
-          <div key={u.id} style={{ position: 'relative' }}>
+function getEffectLabel(u) {
+  if (u.type === 'm' && u.target) {
+    const b = BUILDINGS.find(b => b.id === u.target);
+    return `${b?.name ?? u.target} ×${u.bonus}`;
+  }
+  if (u.type === 'g') return `全局產能 ×${u.bonus}`;
+  if (u.type === 'ck') return `點擊 +${u.bonus}`;
+  if (u.type === 'cp') return `點擊 +${(u.bonus * 100).toFixed(0)}% CPS`;
+  return u.desc;
+}
+
+/** Extract flavor text after — separator in desc */
+function getFlavor(u) {
+  if (!u.desc || !u.desc.includes('—')) return null;
+  return u.desc.split('—')[1].trim();
+}
+
+export default function UpgradeRow({ upgrades, reads, onBuy, onBuyAll, compact = false }) {
+  const doneCount = upgrades.filter(u => u.state === 'done').length;
+  const seenRef = useRef(new Set());
+  const [newIds, setNewIds] = useState(new Set());
+
+  useEffect(() => {
+    const freshIds = new Set();
+    upgrades.forEach(u => {
+      if ((u.state === 'buy' || u.state === 'wait') && !seenRef.current.has(u.id)) {
+        freshIds.add(u.id);
+        seenRef.current.add(u.id);
+      }
+    });
+    if (freshIds.size > 0) {
+      setNewIds(prev => {
+        const merged = new Set(prev);
+        freshIds.forEach(id => merged.add(id));
+        return merged;
+      });
+      const timer = setTimeout(() => {
+        setNewIds(prev => {
+          const next = new Set(prev);
+          freshIds.forEach(id => next.delete(id));
+          return next;
+        });
+      }, 500);
+      return () => clearTimeout(timer);
+    }
+  }, [upgrades]);
+
+  const sorted = [...upgrades].sort((a, b) => {
+    const order = { buy: 0, wait: 1, done: 2 };
+    return (order[a.state] ?? 1) - (order[b.state] ?? 1);
+  });
+
+  const activeItems = compact ? sorted.filter(u => u.state !== 'done') : sorted;
+
+  // Compact mode: 2-column grid of pills
+  if (compact) {
+    return (
+      <div style={{ padding: '8px 10px 6px', flexShrink: 0 }}>
+        <div style={{
+          fontSize: 13, fontWeight: 700, color: '#4f46e5',
+          marginBottom: 6, letterSpacing: 0.5,
+          display: 'flex', alignItems: 'center', gap: 6,
+          padding: '0 4px',
+        }}>
+          ⚡ 升級
+          <span style={{
+            fontFamily: "'JetBrains Mono',monospace", fontSize: 12,
+            color: 'var(--text-muted)', fontWeight: 500,
+          }}>{doneCount}/{upgrades.length}</span>
+          <div style={{ flex: 1 }} />
+          {activeItems.some(u => u.state === 'buy') && onBuyAll && (
             <button
-              onClick={() => u.state === 'buy' && onBuy(u)}
-              onMouseEnter={() => setHov(u.id)}
-              onMouseLeave={() => setHov(null)}
-              onTouchStart={() => setHov(u.id)}
-              onTouchEnd={() => { if (u.state === 'buy') onBuy(u); setTimeout(() => setHov(null), 2000); }}
+              onClick={onBuyAll}
               style={{
-                width: 40, height: 40, borderRadius: 14, fontSize: 17,
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                background: u.state === 'done'
-                  ? 'rgba(163,230,53,.06)'
-                  : u.state === 'buy'
-                    ? 'linear-gradient(135deg, rgba(139,92,246,.15), rgba(99,102,241,.1))'
-                    : 'rgba(255,255,255,.02)',
-                border: u.state === 'done'
-                  ? '1px solid rgba(163,230,53,.15)'
-                  : u.state === 'buy'
-                    ? '1px solid rgba(167,139,250,.25)'
-                    : '1px solid rgba(255,255,255,.04)',
-                opacity: u.state === 'done' ? 0.35 : u.state === 'buy' ? 1 : 0.2,
-                transition: 'all .2s cubic-bezier(.4,0,.2,1)',
-                flexShrink: 0,
-                cursor: u.state === 'buy' ? 'pointer' : 'default',
-                position: 'relative',
-                backdropFilter: 'blur(8px)',
+                padding: '6px 10px', fontSize: 11, fontWeight: 700,
+                color: '#10b981', background: 'rgba(16,185,129,.08)',
+                border: '1px solid rgba(16,185,129,.2)',
+                borderRadius: 6, cursor: 'pointer', minHeight: 32,
               }}
             >
-              {u.state === 'done' && (
-                <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <CheckIcon size={13} color="#a3e635" />
-                </div>
-              )}
-              <span style={{ opacity: u.state === 'done' ? 0.2 : 1 }}>{u.emoji}</span>
+              全買
             </button>
+          )}
+        </div>
 
-            {/* Tooltip */}
-            {hov === u.id && (
-              <div style={{
-                position: 'absolute', bottom: '115%', left: '50%',
-                transform: 'translateX(-50%)',
-                background: 'rgba(15,15,25,.95)',
-                backdropFilter: 'blur(20px)',
-                border: '1px solid rgba(167,139,250,.15)',
-                borderRadius: 16, padding: '10px 14px', minWidth: 155,
-                zIndex: 100, fontSize: 12,
-                boxShadow: '0 8px 32px rgba(0,0,0,.6)',
-                pointerEvents: 'none', whiteSpace: 'nowrap',
+        {/* Rotating flavor tip */}
+        {activeItems.length > 0 && (
+          <div style={{
+            padding: '3px 10px 6px',
+            fontSize: 11, color: 'var(--text-muted)', fontStyle: 'italic',
+            letterSpacing: 0.2, lineHeight: 1.4,
+          }}>
+            {UPGRADE_TIPS[doneCount % UPGRADE_TIPS.length]}
+          </div>
+        )}
+
+        <div style={{
+          display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)',
+          gap: 4,
+        }}>
+          {activeItems.map(u => {
+            const canBuy = u.state === 'buy';
+            const isWait = u.state === 'wait';
+            return (
+              <button
+                key={u.id}
+                onClick={() => canBuy && onBuy(u)}
+                style={{
+                  display: 'flex', alignItems: 'center', gap: 6,
+                  padding: '6px 10px', borderRadius: 8,
+                  background: canBuy ? 'linear-gradient(135deg, rgba(99,102,241,.04), rgba(168,85,247,.04))' : '#f8fafc',
+                  border: canBuy ? '1px solid rgba(99,102,241,.2)' : '1px solid #e8eaed',
+                  opacity: isWait ? 0.5 : 1,
+                  cursor: canBuy ? 'pointer' : 'default',
+                  textAlign: 'left', fontFamily: 'inherit',
+                  transition: 'all .15s',
+                  ...(canBuy ? { animation: 'glowPulse 2.5s ease-in-out infinite' } : {}),
+                }}
+              >
+                <span style={{ fontSize: 16, lineHeight: 1, flexShrink: 0 }}>{u.emoji}</span>
+                <div style={{ flex: 1, minWidth: 0, overflow: 'hidden' }}>
+                  <div style={{
+                    fontSize: 13, fontWeight: 700, color: 'var(--text)',
+                    whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
+                  }}>{u.name}</div>
+                  <div style={{
+                    fontSize: 11, color: canBuy ? '#6366f1' : 'var(--text-muted)', fontWeight: 600,
+                  }}>{getEffectLabel(u)}</div>
+                  {getFlavor(u) && (
+                    <div style={{
+                      fontSize: 10, color: 'var(--text-muted)', fontWeight: 500,
+                      whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
+                      fontStyle: 'italic', marginTop: 1,
+                    }}>{getFlavor(u)}</div>
+                  )}
+                </div>
+                <span style={{
+                  fontSize: 12, fontWeight: 700,
+                  color: canBuy ? 'var(--amber-text)' : 'var(--text-disabled)',
+                  fontFamily: "'JetBrains Mono',monospace",
+                  flexShrink: 0,
+                }}>{fmt(u.cost)}</span>
+              </button>
+            );
+          })}
+        </div>
+
+        {doneCount > 0 && (
+          <div style={{
+            marginTop: 4, padding: '4px 10px',
+            fontSize: 12, color: 'var(--text-muted)', opacity: 0.6,
+          }}>
+            ✓ {doneCount}/{upgrades.length}
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  // Non-compact mode (unused in current layout but preserved)
+  return (
+    <div style={{ padding: '10px 12px 8px', flexShrink: 0 }}>
+      <div style={{
+        fontSize: 11, fontWeight: 600, color: 'var(--text-muted)',
+        marginBottom: 8, letterSpacing: 0.5, textTransform: 'uppercase',
+        display: 'flex', alignItems: 'center', gap: 6,
+      }}>
+        升級
+        <span style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 10, color: 'var(--text-muted)' }}>
+          {doneCount}/{upgrades.length}
+        </span>
+      </div>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+        {sorted.map(u => {
+          const isDone = u.state === 'done';
+          const canBuy = u.state === 'buy';
+          const isWait = u.state === 'wait';
+          const buildingName = u.req?.building ? BUILDINGS.find(b => b.id === u.req.building)?.name : null;
+
+          if (isDone) {
+            return (
+              <div key={u.id} style={{
+                display: 'flex', alignItems: 'center', gap: 6,
+                padding: '4px 8px', borderRadius: 8,
+                background: '#f8fafc', opacity: 0.5,
+                fontSize: 11, color: 'var(--text-muted)',
               }}>
-                <div style={{ fontWeight: 700, color: '#e2e8f0' }}>{u.name}</div>
-                <div style={{ color: '#9ca3af', marginTop: 2 }}>{u.desc}</div>
-                {u.state === 'buy' && (
-                  <div style={{
-                    color: '#a3e635', marginTop: 4,
-                    fontFamily: "'JetBrains Mono',monospace",
-                    fontSize: 11,
-                  }}>✉ {fmt(u.cost)} — 可購買！</div>
-                )}
-                {u.state === 'wait' && (
-                  <div style={{
-                    color: '#f59e0b', marginTop: 4,
-                    fontFamily: "'JetBrains Mono',monospace",
-                    fontSize: 11,
-                  }}>✉ {fmt(u.cost)} — 還差 {fmt(u.cost - reads)}</div>
-                )}
-                {u.req?.building && u.state !== 'done' && (
-                  <div style={{ color: '#6b7280', marginTop: 2, fontSize: 10 }}>
-                    需要 {BUILDINGS.find(b => b.id === u.req.building)?.name} ×{u.req.count}
+                <CheckIcon size={10} color="#059669" />
+                <span>{u.emoji}</span>
+                <span>{u.name}</span>
+              </div>
+            );
+          }
+
+          return (
+            <button
+              key={u.id}
+              onClick={() => canBuy && onBuy(u)}
+              style={{
+                display: 'flex', alignItems: 'flex-start', gap: 10,
+                width: '100%', padding: '10px 12px', borderRadius: 10,
+                background: canBuy ? '#fff' : '#f8fafc',
+                border: canBuy ? '1px solid rgba(99,102,241,.25)' : '1px solid #e2e8f0',
+                opacity: isWait ? 0.55 : 1,
+                cursor: canBuy ? 'pointer' : 'default',
+                textAlign: 'left', fontFamily: 'inherit',
+              }}
+            >
+              <span style={{ fontSize: 22, lineHeight: 1, flexShrink: 0 }}>{u.emoji}</span>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--text)' }}>{u.name}</span>
+                  <span style={{ fontSize: 14, fontWeight: 800, fontFamily: "'JetBrains Mono',monospace", color: canBuy ? 'var(--amber-text)' : 'var(--text-disabled)' }}>{fmt(u.cost)}</span>
+                </div>
+                <div style={{ fontSize: 12, color: canBuy ? '#6366f1' : 'var(--text-muted)', marginTop: 2, fontWeight: 600 }}>{u.desc}</div>
+                {isWait && buildingName && (
+                  <div style={{ fontSize: 10, color: '#f59e0b', marginTop: 3, fontFamily: "'JetBrains Mono',monospace" }}>
+                    還差 {fmt(u.cost - reads)} · 需 {buildingName} ×{u.req.count}
                   </div>
                 )}
               </div>
-            )}
-          </div>
-        ))}
+            </button>
+          );
+        })}
       </div>
     </div>
   );

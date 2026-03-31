@@ -1,61 +1,137 @@
+import { useState, useRef, useEffect } from 'react';
 import { ACHIEVEMENTS } from '../game/achievements.js';
 import { MILESTONES } from '../game/milestones.js';
 import { UPGRADES } from '../game/upgrades.js';
 import { fmt } from '../utils/format.js';
 
-const panelBase = {
-  padding: '14px 16px',
-  background: 'rgba(255,255,255,.02)',
-  backdropFilter: 'blur(20px)',
-  borderBottom: '1px solid rgba(255,255,255,.03)',
-  animation: 'si .25s cubic-bezier(.4,0,.2,1)',
-};
+/* ── helpers ── */
 
-export function StatsPanel({ reads, allTime, prodPerSec, clickPower, owned, seenMilestones, prestigeCount, prestigePower, boughtUpgrades }) {
+// Milestones for allTime value that trigger gold display
+const ALLTIME_MILESTONES = [1000, 10000, 100000, 1e6, 1e7, 1e8, 1e9, 1e10, 1e11, 1e12];
+
+function isNewMilestone(value) {
+  return ALLTIME_MILESTONES.some(m => value >= m && value < m * 1.05);
+}
+
+/* ── StatsPanel ── */
+
+export function StatsPanel({ reads, allTime, prodPerSec, clickPower, owned, seenMilestones, prestigeCount, prestigePower, boughtUpgrades, layout = 'grid' }) {
   const totalOwned = Object.values(owned).reduce((a, b) => a + b, 0);
-  const rows = [
-    ['生涯已讀', fmt(allTime),    '#c4b5fd'],
-    ['產能/秒',  fmt(prodPerSec), '#a3e635'],
-    ['點擊力',   fmt(clickPower), '#c4b5fd'],
-    ['已讀大師', totalOwned,       '#e2e8f0'],
-    ['里程碑',   `${seenMilestones.size}/${MILESTONES.length}`, '#f59e0b'],
-    ['重生',     `${prestigeCount}次`, '#ec4899'],
-    ['已讀之力', `✦${prestigePower}`, '#c4b5fd'],
-    ['升級',     `${boughtUpgrades.size}/${UPGRADES.length}`, '#a3e635'],
+  const prevRef = useRef({});
+  const [flashKeys, setFlashKeys] = useState(new Set());
+
+  const allTimeGold = isNewMilestone(allTime);
+
+  const left = [
+    ['生涯', fmt(allTime), allTimeGold ? '#d97706' : '#4f46e5'],
+    ['產能', `${fmt(prodPerSec)}/s`, '#b45309'],
+    ['點擊', fmt(clickPower), '#4f46e5'],
+    ['大師', totalOwned, 'var(--text)'],
+  ];
+  const right = [
+    ['里程', `${seenMilestones.size}/${MILESTONES.length}`, '#f59e0b'],
+    ['重生', `${prestigeCount}次`, '#ec4899'],
+    ['✦力', prestigePower, '#4f46e5'],
+    ['升級', `${boughtUpgrades.size}/${UPGRADES.length}`, '#b45309'],
   ];
 
-  return (
-    <div style={panelBase}>
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-        {rows.map(([label, value, color]) => (
-          <div key={label} style={{
-            background: 'rgba(255,255,255,.03)',
-            border: '1px solid rgba(255,255,255,.04)',
-            borderRadius: 14, padding: '8px 14px', minWidth: 85,
-            textAlign: 'center', flex: '1 0 auto',
-          }}>
-            <div style={{ fontSize: 10, color: '#6b7280', letterSpacing: 0.5 }}>{label}</div>
-            <div style={{
-              fontSize: 14, fontWeight: 800, color,
-              fontFamily: "'JetBrains Mono',monospace", marginTop: 2,
-            }}>{value}</div>
-          </div>
-        ))}
+  // Detect value changes to trigger flash
+  const allItems = [...left, ...right];
+  useEffect(() => {
+    const newFlashes = new Set();
+    allItems.forEach(([label, value]) => {
+      const strVal = String(value);
+      if (prevRef.current[label] !== undefined && prevRef.current[label] !== strVal) {
+        newFlashes.add(label);
+      }
+      prevRef.current[label] = strVal;
+    });
+    if (newFlashes.size > 0) {
+      setFlashKeys(newFlashes);
+      const timer = setTimeout(() => setFlashKeys(new Set()), 600);
+      return () => clearTimeout(timer);
+    }
+  }, [allTime, prodPerSec, clickPower, totalOwned, seenMilestones.size, prestigeCount, prestigePower, boughtUpgrades.size]);
+
+  const renderCol = (items) => items.map(([label, value, color]) => {
+    const isFlashing = flashKeys.has(label);
+    const isGold = label === '生涯' && allTimeGold;
+
+    return (
+      <div key={label} style={{
+        display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+        padding: '2px 0',
+      }}>
+        <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>{label}</span>
+        <span style={{
+          fontSize: 12, fontWeight: 700, color,
+          fontFamily: "'JetBrains Mono',monospace",
+          transition: 'color .3s ease',
+          ...(isFlashing ? { animation: 'statFlash .6s ease-out' } : {}),
+          ...(isGold ? { animation: 'goldPulse 1.5s ease-in-out infinite' } : {}),
+        }}>{value}</span>
       </div>
+    );
+  });
+
+  if (layout === 'horizontal') {
+    const allItems = [...left, ...right];
+    return (
+      <div style={{
+        display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: '0 2px',
+        padding: '2px 4px',
+        background: 'rgba(255,255,255,.5)',
+        borderBottom: '1px solid var(--border)',
+      }}>
+        {allItems.map(([label, value, color]) => {
+          const isFlashing = flashKeys.has(label);
+          const isGold = label === '生涯' && allTimeGold;
+          return (
+            <div key={label} style={{
+              display: 'flex', alignItems: 'center', gap: 3,
+              padding: '2px 8px',
+            }}>
+              <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>{label}</span>
+              <span style={{
+                fontSize: 11, fontWeight: 700, color,
+                fontFamily: "'JetBrains Mono',monospace",
+                ...(isFlashing ? { animation: 'statFlash .6s ease-out' } : {}),
+                ...(isGold ? { animation: 'goldPulse 1.5s ease-in-out infinite' } : {}),
+              }}>{value}</span>
+            </div>
+          );
+        })}
+      </div>
+    );
+  }
+
+  return (
+    <div style={{
+      display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0 12px',
+      padding: '6px 8px',
+      background: 'rgba(255,255,255,.6)',
+      borderRadius: 8, border: '1px solid var(--border)',
+    }}>
+      <div>{renderCol(left)}</div>
+      <div>{renderCol(right)}</div>
     </div>
   );
 }
 
 export function LogPanel({ log }) {
   return (
-    <div style={{ ...panelBase, maxHeight: 200, overflowY: 'auto' }}>
+    <div style={{ padding: '12px 0', maxHeight: 200, overflowY: 'auto' }}>
+      <div style={{
+        fontSize: 11, fontWeight: 600, color: 'var(--text-muted)',
+        marginBottom: 8, letterSpacing: 0.5, textTransform: 'uppercase',
+      }}>紀錄</div>
       {log.length === 0
-        ? <div style={{ fontSize: 13, color: '#374151' }}>還沒有紀錄⋯</div>
+        ? <div style={{ fontSize: 12, color: 'var(--text-muted)', fontStyle: 'italic' }}>開始已讀就會有紀錄出現</div>
         : log.map((l, i) => (
           <div key={l.id} style={{
-            fontSize: 12, color: '#9ca3af',
+            fontSize: 12, color: 'var(--text-secondary)',
             padding: '5px 0',
-            borderBottom: i < log.length - 1 ? '1px solid rgba(255,255,255,.02)' : 'none',
+            borderBottom: i < log.length - 1 ? '1px solid var(--surface-hover)' : 'none',
             lineHeight: 1.5,
           }}>{l.m}</div>
         ))
@@ -64,33 +140,89 @@ export function LogPanel({ log }) {
   );
 }
 
-export function AchievementsPanel({ unlockedAchievements }) {
+export function AchievementBadges({ unlockedAchievements, maxVisible }) {
+  const [hoveredId, setHoveredId] = useState(null);
+  const seenRef = useRef(new Set());
+  const allUnlocked = ACHIEVEMENTS.filter(a => unlockedAchievements.has(a.id));
+  const unlocked = maxVisible ? allUnlocked.slice(-maxVisible) : allUnlocked;
+  const overflowUnlocked = maxVisible && allUnlocked.length > maxVisible ? allUnlocked.length - maxVisible : 0;
+  const lockedCount = ACHIEVEMENTS.filter(a => !unlockedAchievements.has(a.id) && !a.hidden).length;
+  const hiddenCount = ACHIEVEMENTS.filter(a => !unlockedAchievements.has(a.id) && a.hidden).length;
+
+  // Track which badges are newly appearing this render
+  const newBadges = new Set();
+  unlocked.forEach(a => {
+    if (!seenRef.current.has(a.id)) {
+      newBadges.add(a.id);
+    }
+  });
+  // Update seen set after render check
+  useEffect(() => {
+    unlocked.forEach(a => seenRef.current.add(a.id));
+  });
+
   return (
-    <div style={{ ...panelBase, maxHeight: 220, overflowY: 'auto' }}>
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(150px,1fr))', gap: 8 }}>
-        {ACHIEVEMENTS.map(a => {
-          const done = unlockedAchievements.has(a.id);
-          return (
-            <div key={a.id} style={{
-              background: done
-                ? 'linear-gradient(135deg, rgba(163,230,53,.06), rgba(139,92,246,.04))'
-                : 'rgba(255,255,255,.02)',
-              border: `1px solid ${done ? 'rgba(163,230,53,.15)' : 'rgba(255,255,255,.03)'}`,
-              borderRadius: 16, padding: '10px 12px',
-              opacity: done ? 1 : 0.35,
-              transition: 'all .2s',
-            }}>
-              <div style={{ fontSize: 20, marginBottom: 3 }}>{done ? a.icon : '❓'}</div>
-              <div style={{ fontSize: 12, fontWeight: 700, color: done ? '#e2e8f0' : '#374151' }}>
-                {done ? a.name : '???'}
+    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 3, alignItems: 'center' }}>
+      {unlocked.map(a => {
+        const isDark = a.id.startsWith('dk');
+        const isNew = newBadges.has(a.id);
+        const isHovered = hoveredId === a.id;
+
+        return (
+          <div
+            key={a.id}
+            onMouseEnter={() => setHoveredId(a.id)}
+            onMouseLeave={() => setHoveredId(null)}
+            onClick={() => setHoveredId(prev => prev === a.id ? null : a.id)}
+            style={{
+              position: 'relative',
+              width: 24, height: 24, borderRadius: 6,
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              fontSize: 13,
+              background: isDark ? 'rgba(139,92,246,.08)' : 'rgba(217,119,6,.06)',
+              border: isDark
+                ? '1.5px solid rgba(139,92,246,.4)'
+                : '1px solid rgba(217,119,6,.15)',
+              cursor: 'default',
+              transition: 'transform .15s ease, box-shadow .15s ease',
+              transform: isHovered ? 'scale(1.15)' : 'scale(1)',
+              boxShadow: isHovered
+                ? isDark
+                  ? '0 0 8px rgba(139,92,246,.3)'
+                  : '0 0 8px rgba(217,119,6,.2)'
+                : 'none',
+              ...(isNew ? {
+                animation: 'badgeEntrance .5s cubic-bezier(.34,1.56,.64,1) forwards',
+              } : {}),
+            }}
+          >
+            {a.icon}
+            {hoveredId === a.id && (
+              <div style={{
+                position: 'absolute', bottom: '100%', left: '50%',
+                transform: 'translateX(-50%)', marginBottom: 4,
+                background: isDark ? 'rgba(88,28,135,.92)' : 'rgba(30,41,59,.9)',
+                color: '#fff',
+                padding: '3px 7px', borderRadius: 5,
+                fontSize: 10, whiteSpace: 'nowrap', zIndex: 50,
+                pointerEvents: 'none',
+              }}>
+                {a.name}
               </div>
-              <div style={{ fontSize: 10, color: '#6b7280', marginTop: 2 }}>
-                {done ? a.desc : '繼續探索...'}
-              </div>
-            </div>
-          );
-        })}
-      </div>
+            )}
+          </div>
+        );
+      })}
+      {(lockedCount > 0 || hiddenCount > 0 || overflowUnlocked > 0) && (
+        <span style={{
+          fontSize: 11, color: 'var(--text-muted)',
+          fontFamily: "'JetBrains Mono',monospace",
+          padding: '2px 6px',
+        }}>
+          {allUnlocked.length}/{ACHIEVEMENTS.length - hiddenCount}
+          {hiddenCount > 0 && <span style={{ color: 'var(--text-disabled)' }}> +?</span>}
+        </span>
+      )}
     </div>
   );
 }
