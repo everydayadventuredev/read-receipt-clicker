@@ -2,7 +2,7 @@ import CheckIcon from './CheckIcon.jsx';
 
 const bgColors = {
   none: '#f8f9fb',
-  low: '#fdf2f2',
+  low: '#fdf5f5',
   medium: '#fce8e8',
   high: '#fbe4e4',
   transcend: '#f0f9ff',
@@ -11,9 +11,17 @@ const bgColors = {
 const headerGradients = {
   none: 'linear-gradient(135deg, #6366f1, #4338ca)',
   low: 'linear-gradient(135deg, #6366f1, #4338ca)',
-  medium: 'linear-gradient(135deg, #6366f1, #4338ca)',
+  medium: 'linear-gradient(135deg, #7c3aed, #6d28d9)',
   high: 'linear-gradient(135deg, #ef4444, #dc2626)',
   transcend: 'linear-gradient(135deg, #14b8a6, #0d9488)',
+};
+
+const bubbleBorders = {
+  none: '1px solid var(--border)',
+  low: '1px solid #fca5a5',
+  medium: '1px solid #f87171',
+  high: '2px solid #ef4444',
+  transcend: '1px solid #5eead4',
 };
 
 const inputBarTexts = {
@@ -44,6 +52,7 @@ export default function ClickArea({ message, isRead, isFirstClick, popAnim, rece
   const bg = bgColors[guiltLevel] || bgColors.none;
   const headerGrad = headerGradients[guiltLevel] || headerGradients.none;
   const inputText = inputBarTexts[guiltLevel] || inputBarTexts.none;
+  const bubbleBorder = bubbleBorders[guiltLevel] || bubbleBorders.none;
   const isHigh = guiltLevel === 'high';
 
   return (
@@ -52,6 +61,14 @@ export default function ClickArea({ message, isRead, isFirstClick, popAnim, rece
         @keyframes typingDot {
           0%, 60%, 100% { opacity: 0.3; transform: translateY(0); }
           30% { opacity: 1; transform: translateY(-2px); }
+        }
+        @keyframes msgSlideIn {
+          0% { opacity: 0; transform: translateX(-12px); }
+          100% { opacity: 1; transform: translateX(0); }
+        }
+        @keyframes guiltPulse {
+          0%, 100% { box-shadow: 0 0 0 0 rgba(239,68,68,0); }
+          50% { box-shadow: 0 0 8px 2px rgba(239,68,68,.15); }
         }
       `}</style>
       <div style={{
@@ -95,16 +112,18 @@ export default function ClickArea({ message, isRead, isFirstClick, popAnim, rece
               <div key={i} style={{
                 display: 'flex', alignItems: 'flex-start', gap: 6,
                 opacity: Math.max(0.22, 0.9 - age * 0.08),
+                animation: age <= 2 ? `msgSlideIn 0.3s ease-out` : 'none',
               }}>
                 <Avatar size={20} />
                 <div style={{ flex: 1 }}>
                   <div style={{
                     maxWidth: '82%',
                     background: '#fff',
-                    border: '1px solid var(--border)',
+                    border: bubbleBorder,
                     borderRadius: '4px 12px 12px 12px',
                     padding: '5px 10px',
                     fontSize: 12, color: 'var(--text-secondary)', lineHeight: 1.4,
+                    transition: 'border .5s ease',
                   }}>
                     {m}
                   </div>
@@ -118,6 +137,29 @@ export default function ClickArea({ message, isRead, isFirstClick, popAnim, rece
               </div>
             );
           })}
+
+          {/* Typing indicator — shows between messages */}
+          {!isRead && (
+            <div style={{
+              display: 'flex', alignItems: 'center', gap: 6, padding: '2px 0',
+            }}>
+              <Avatar size={18} />
+              <div style={{
+                display: 'flex', gap: 3, padding: '6px 12px',
+                background: '#fff', borderRadius: '4px 12px 12px 12px',
+                border: bubbleBorder,
+                transition: 'border .5s ease',
+              }}>
+                {[0, 1, 2].map(j => (
+                  <div key={j} style={{
+                    width: 5, height: 5, borderRadius: '50%',
+                    background: isHigh ? '#ef4444' : '#94a3b8',
+                    animation: `typingDot 1.2s ease-in-out ${j * 0.15}s infinite`,
+                  }} />
+                ))}
+              </div>
+            </div>
+          )}
 
           {/* Current message — THE CTA, always at bottom */}
           <div
@@ -136,6 +178,7 @@ export default function ClickArea({ message, isRead, isFirstClick, popAnim, rece
                     : 'linear-gradient(145deg, rgba(99,102,241,.12), rgba(99,102,241,.05))',
                   border: isRead
                     ? '1px solid var(--border)'
+                    : isHigh ? '2px solid rgba(239,68,68,.4)'
                     : '2px solid rgba(99,102,241,.3)',
                   borderRadius: '4px 16px 16px 16px',
                   padding: '12px 16px',
@@ -143,8 +186,10 @@ export default function ClickArea({ message, isRead, isFirstClick, popAnim, rece
                   transform: isRead ? 'scale(.97)' : 'scale(1)',
                   boxShadow: isRead
                     ? 'none'
+                    : isHigh ? '0 4px 16px rgba(239,68,68,.15)'
                     : '0 4px 16px rgba(99,102,241,.12)',
-                  animation: !isRead && !isFirstClick ? 'ib 2.5s ease-in-out infinite' : 'none',
+                  animation: !isRead && isHigh ? 'guiltPulse 2s ease-in-out infinite'
+                    : !isRead && !isFirstClick ? 'ib 2.5s ease-in-out infinite' : 'none',
                 }}>
                   <div style={{
                     color: isRead ? 'var(--text-muted)' : 'var(--text)',

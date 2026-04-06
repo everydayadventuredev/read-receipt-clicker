@@ -1,7 +1,7 @@
 import { fmt } from '../utils/format.js';
 
 export default function PrestigeBar({ allTime, prestigeEarned, prestigeCount = 0, onPrestige }) {
-  const progress = Math.min(100, (allTime / 500000) * 100);
+  const progress = Math.min(100, (allTime / 200000) * 100);
   const canPrestige = prestigeEarned >= 1;
   const isComplete = progress >= 100;
   const isHigh = progress >= 80;
@@ -97,7 +97,7 @@ export default function PrestigeBar({ allTime, prestigeEarned, prestigeCount = 0
                   重生
                 </button>
               : <span style={{ color: 'var(--text-muted)', fontFamily: "'JetBrains Mono',monospace", fontSize: 10 }}>
-                  需{fmt(500000)}已讀
+                  需{fmt(200000)}已讀
                 </span>
             }
           </span>

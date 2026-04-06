@@ -173,7 +173,7 @@ export function placeGift(state, slotIndex) {
  * source → target. Source cell becomes empty, target becomes tier+1.
  * Random events: crit (skip tier), fail (surprise), normal.
  */
-export function mergeGifts(state, sourceIdx, targetIdx, now = Date.now()) {
+export function mergeGifts(state, sourceIdx, targetIdx, now = Date.now(), opts = {}) {
   if (!state) return null;
   const src = state.grid[sourceIdx];
   const tgt = state.grid[targetIdx];
@@ -185,13 +185,19 @@ export function mergeGifts(state, sourceIdx, targetIdx, now = Date.now()) {
   let resultTier = src.tier + 1;
   let event = 'normal';
 
+  // Cross-system: garden series completion boosts crit chance
+  const critBonus = opts.critBonus ?? 0;
+  const effectiveCrit = Math.min(0.5, CRIT_CHANCE + critBonus);
+  // Cross-system: garden epic+ harvest grants fail immunity
+  const noFail = opts.noFail ?? false;
+
   // Random merge events
   const roll = Math.random();
-  if (roll < CRIT_CHANCE && resultTier < MAX_TIER) {
+  if (roll < effectiveCrit && resultTier < MAX_TIER) {
     // Critical merge — skip a tier!
     resultTier = Math.min(MAX_TIER, resultTier + 1);
     event = 'critical';
-  } else if (roll < CRIT_CHANCE + FAIL_CHANCE) {
+  } else if (!noFail && roll < effectiveCrit + FAIL_CHANCE) {
     // Surprise — same tier but get a buff immediately
     event = 'surprise';
   }

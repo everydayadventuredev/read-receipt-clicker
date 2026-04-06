@@ -113,7 +113,7 @@ function BuildingBar({ b, count, cost, prodRate, canAfford, buyN, isNew, onBuy, 
   );
 }
 
-export default function BuildingList({ buildings, owned, reads, allTime, unlockedBuildings, newBuildings, buyN, onBuy, setBuyN, singleColumn = false }) {
+export default function BuildingList({ buildings, owned, reads, allTime, unlockedBuildings, newBuildings, buyN, onBuy, setBuyN, singleColumn = false, costDiscount = 0 }) {
   const [lastBought, setLastBought] = useState(null);
   const [hovered, setHovered] = useState(null);
 
@@ -158,7 +158,7 @@ export default function BuildingList({ buildings, owned, reads, allTime, unlocke
           {/* Unlocked buildings — horizontal bars */}
           {visibleBuildings.map(b => {
             const count = owned[b.id] ?? 0;
-            const cost = buildingCostN(b, count, buyN);
+            const cost = buildingCostN(b, count, buyN, costDiscount);
             const canAfford = reads >= cost;
             const isNew = newBuildings.has(b.id);
             const prodRate = b.baseProd * count;

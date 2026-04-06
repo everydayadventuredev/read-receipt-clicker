@@ -1,4 +1,5 @@
 import { BUILDINGS } from '../game/buildings.js';
+import { LEGACY_ID_MAP, SKILL_TREE_NODES } from '../game/prestige.js';
 
 const SAVE_KEY = 'rrc_save_v1';
 
@@ -66,6 +67,54 @@ export function saveGame(state) {
   }
 }
 
+/** Migrate old ps-IDs to new st-IDs, auto-grant prerequisites, refund excess ✦. */
+function migratePrestige(rawIds, data) {
+  const hasLegacy = rawIds.some(id => id.startsWith('ps'));
+  if (!hasLegacy) return new Set(rawIds); // already migrated or fresh
+
+  // Map old IDs to new IDs (deduplicate)
+  const mapped = new Set();
+  let oldTotalCost = 0;
+  for (const id of rawIds) {
+    const newId = LEGACY_ID_MAP[id];
+    if (newId) {
+      mapped.add(newId);
+      // Track old cost for refund calc (approximate: use new node cost)
+    } else if (id.startsWith('st-')) {
+      mapped.add(id); // already new format
+    }
+  }
+
+  // Auto-grant prerequisites for all owned nodes
+  let changed = true;
+  while (changed) {
+    changed = false;
+    for (const node of SKILL_TREE_NODES) {
+      if (mapped.has(node.id) && node.requires) {
+        for (const req of node.requires) {
+          if (!mapped.has(req)) {
+            mapped.add(req);
+            changed = true;
+          }
+        }
+      }
+    }
+  }
+
+  // Calculate new total cost and refund difference to prestigePower
+  let newTotalCost = 0;
+  for (const node of SKILL_TREE_NODES) {
+    if (mapped.has(node.id)) newTotalCost += node.cost;
+  }
+  // Ensure player doesn't go negative — set prestigePower to max(0, old - newCost)
+  const currentPower = data.prestigePower ?? 0;
+  // Old spent = unknown exactly, so just ensure they keep their current power
+  // The auto-granted prereqs are free (generous migration)
+  data.prestigePower = currentPower;
+
+  return mapped;
+}
+
 export function loadGame() {
   try {
     const raw = localStorage.getItem(SAVE_KEY);
@@ -81,7 +130,7 @@ export function loadGame() {
       seenMilestones: new Set(data.seenMilestones ?? []),
       unlockedAchievements: new Set(data.unlockedAchievements ?? []),
       unlockedBuildings: new Set(data.unlockedBuildings ?? ['ex', 'par', 'bsy']),
-      boughtPrestige: new Set(data.boughtPrestige ?? []),
+      boughtPrestige: migratePrestige(data.boughtPrestige ?? [], data),
       activeSynergies: new Set(data.activeSynergies ?? []),
       completedChains: new Set(data.completedChains ?? []),
       eventChainBuffs: data.eventChainBuffs ?? {},

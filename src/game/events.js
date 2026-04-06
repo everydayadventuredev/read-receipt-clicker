@@ -16,5 +16,9 @@ export const GOLDEN_COOKIES = [
   { label: '量子已讀風暴',  emoji: '⚛️', mult: 0,  toast: '量子疊加態爆發！x5持續20秒！', type: 'mult5', dur: 20, minAt: 10000000 },
   { label: '全宇宙已讀',    emoji: '🌌', mult: 200, toast: '從大爆炸到熱寂，每則訊息都已讀！', type: 'add', minAt: 50000000 },
   { label: '媽媽連環奪命call', emoji: '📞', mult: 40, toast: '32通未接來電轉化為已讀！', type: 'add', minAt: 25000 },
+  { label: '前輩的關懷',    emoji: '🧓', mult: 18, toast: '前輩的人生經驗轉化為已讀！', type: 'add', minAt: 8000 },
+  { label: '外送員迷路了',  emoji: '🛵', mult: 22, toast: '外送員的困惑轉化為效率！', type: 'add', minAt: 35000 },
+  { label: '記者爆料',      emoji: '📰', mult: 0,  toast: '獨家！已讀率飆升！x3持續15秒！', type: 'mult', dur: 15, minAt: 80000 },
+  { label: '駭客入侵',      emoji: '💻', mult: 0,  toast: '系統被駭！已讀暴走！x5持續8秒！', type: 'mult5', dur: 8, minAt: 300000 },
   { label: '社死現場',      emoji: '😵', mult: 0,  toast: '社交性死亡轉化為動力！x10持續5秒！', type: 'mult10', dur: 5, minAt: 500000 },
 ];

@@ -6,7 +6,7 @@ import { MILESTONES } from './game/milestones.js';
 import { ACHIEVEMENTS, getAchievementBonus } from './game/achievements.js';
 import { GOLDEN_COOKIES } from './game/events.js';
 import { MSG_GENERIC } from './game/messages.js';
-import { PRESTIGE_UPGRADES, getNodeEffects } from './game/prestige.js';
+import { PRESTIGE_UPGRADES, getNodeEffects, getCapstoneBlocker } from './game/prestige.js';
 import { SYNERGIES, getActiveSynergies, getSynergyMult } from './game/synergies.js';
 import { EVENT_CHAINS } from './game/eventChains.js';
 import { REPLY_TRAPS, GUILT_EVENTS, GUILT_RELIEF, GUILT_THRESHOLDS } from './game/guilt.js';
@@ -289,11 +289,17 @@ export default function App() {
     return () => clearInterval(iv);
   }, [(owned.algo ?? 0) >= 1]);
 
+  // Cross-system: merge highestTier ref for garden tick
+  const mergeHighestTierRef = useRef(mergeState.highestTier ?? 0);
+  useEffect(() => { mergeHighestTierRef.current = mergeState.highestTier ?? 0; }, [mergeState.highestTier]);
+
   // Garden tick — every 3s when ex >= 1
+  // Cross-system: merge highestTier boosts seed generation speed
   useEffect(() => {
     if ((owned.ex ?? 0) < 1) return;
     const iv = setInterval(() => {
-      setGardenState(prev => tickGarden(prev, ownedRef.current.ex ?? 0));
+      const seedSpeedMult = 1 + Math.max(0, mergeHighestTierRef.current - 2) * 0.25;
+      setGardenState(prev => tickGarden(prev, ownedRef.current.ex ?? 0, Date.now(), { seedSpeedMult }));
     }, 3000);
     return () => clearInterval(iv);
   }, [(owned.ex ?? 0) >= 1]);
@@ -749,6 +755,13 @@ export default function App() {
     if (prestigePower < u.cost || boughtPrestige.has(u.id)) return;
     // Check prerequisites
     if (u.requires?.length && !u.requires.every(req => boughtPrestige.has(req))) return;
+    // Check capstone mutual exclusion
+    const blocker = getCapstoneBlocker(u.id, boughtPrestige);
+    if (blocker) {
+      const rival = PRESTIGE_UPGRADES.find(n => n.id === blocker);
+      addToast(`🔒 已選擇 ${rival?.name ?? '對立天賦'}，無法購買此天賦`);
+      return;
+    }
     setPrestigePower(p => p - u.cost);
     setBoughtPrestige(s => new Set([...s, u.id]));
     addToast(`✦ ${u.emoji} ${u.name}！${u.desc}`);
@@ -937,6 +950,20 @@ export default function App() {
       ? `回收 ${fmt(result.payout)}（×${result.mult.toFixed(2)}）`
       : '期貨到期';
     addToast(`📊 ${profitLabel}`);
+    // Cross-system: profitable futures grant a temporary global production buff
+    if (result.mult > 1.0) {
+      const buffMult = 1 + (result.mult - 1) * 0.5; // half the profit ratio as buff
+      const duration = 5 * 60 * 1000; // 5 minutes
+      setBuffState(prev => addBuff(prev, {
+        source: 'market',
+        mult: Math.min(1.5, buffMult),
+        scope: 'global',
+        expiresAt: Date.now() + duration,
+        label: '投資收益',
+        emoji: '📈',
+      }));
+      addToast(`📈 投資收益 buff！生產 ×${Math.min(1.5, buffMult).toFixed(2)} 持續 5 分鐘`);
+    }
   }, [marketState]);
 
   // ── Garden handlers ──
@@ -978,7 +1005,13 @@ export default function App() {
   }, [mergeState]);
 
   const handleMergeGifts = useCallback((srcIdx, tgtIdx) => {
-    const result = mergeGifts(mergeState, srcIdx, tgtIdx);
+    // Cross-system: garden completedSeries boosts crit chance (+5% per series)
+    const critBonus = (gardenState.completedSeries?.length ?? 0) * 0.05;
+    // Cross-system: garden epic/legendary buff active → merge fail immunity
+    const hasEpicBuff = (gardenState.activeBuffs ?? []).some(
+      b => b.expiresAt > Date.now() && b.mult >= 2.0
+    );
+    const result = mergeGifts(mergeState, srcIdx, tgtIdx, Date.now(), { critBonus, noFail: hasEpicBuff });
     if (!result) return null;
     setMergeState(result.newState);
     if (result.event === 'critical') {
@@ -988,7 +1021,7 @@ export default function App() {
       addToast(`🎉 意外驚喜！獲得額外 buff！`);
     }
     return result;
-  }, [mergeState]);
+  }, [mergeState, gardenState]);
 
   const handleMoveGift = useCallback((fromIdx, toIdx) => {
     const result = moveGift(mergeState, fromIdx, toIdx);

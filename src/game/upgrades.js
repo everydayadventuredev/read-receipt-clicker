@@ -10,6 +10,7 @@ export const UPGRADES = [
   // CLICK % UPGRADES — early-mid game
   { id: 'p1', name: '效率已讀術', desc: '點擊+1%產能',  type: 'cp', bonus: 0.01, cost: 5000,   req: { allTime: 2000 },         emoji: '📈' },
   { id: 'p2', name: '高效已讀術', desc: '點擊+3%產能',  type: 'cp', bonus: 0.03, cost: 50000,  req: { allTime: 20000 },        emoji: '📈' },
+  { id: 'p2b', name: '已讀大師認證', desc: '點擊+4%產能', type: 'cp', bonus: 0.04, cost: 200000, req: { allTime: 80000 },       emoji: '📈' },
   { id: 'p3', name: '極效已讀術', desc: '點擊+5%產能',  type: 'cp', bonus: 0.05, cost: 500000, req: { allTime: 200000 },       emoji: '📈' },
 
   // ═══════════════════════════════════════════════
@@ -240,6 +241,41 @@ export const UPGRADES = [
       { id: 'int', count: 100 }, { id: 'algo', count: 100 }, { id: 'ai', count: 100 },
       { id: 'alien', count: 100 }, { id: 'time', count: 100 },
     ] },
+  },
+
+  // ═══════════════════════════════════════════════
+  // MID-GAME GLOBAL UPGRADES — allTime-gated production boosts
+  // Fill reward gaps between building unlock thresholds
+  // ═══════════════════════════════════════════════
+  {
+    id: 'mg1', name: '冷漠的覺悟',
+    desc: '全建築×1.05 — 你開始享受不回覆的自由',
+    type: 'g', bonus: 1.05, cost: 15000, emoji: '🧘',
+    req: { allTime: 8000 },
+  },
+  {
+    id: 'mg2', name: '社交節能模式',
+    desc: '全建築×1.05 — 減少不必要的社交消耗',
+    type: 'g', bonus: 1.05, cost: 75000, emoji: '🔋',
+    req: { allTime: 40000 },
+  },
+  {
+    id: 'mg3', name: '職業已讀人',
+    desc: '全建築×1.08 — 已讀成為一種專業技能',
+    type: 'g', bonus: 1.08, cost: 400000, emoji: '🎓',
+    req: { allTime: 200000 },
+  },
+  {
+    id: 'mg4', name: '情緒隔離層',
+    desc: '全建築×1.08 — 建立起完美的心理防線',
+    type: 'g', bonus: 1.08, cost: 2000000, emoji: '🛡️',
+    req: { allTime: 1000000 },
+  },
+  {
+    id: 'mg5', name: '數位苦行者',
+    desc: '全建築×1.10 — 在已讀的修行中找到平靜',
+    type: 'g', bonus: 1.10, cost: 8000000, emoji: '⛩️',
+    req: { allTime: 5000000 },
   },
 
   // ═══════════════════════════════════════════════
