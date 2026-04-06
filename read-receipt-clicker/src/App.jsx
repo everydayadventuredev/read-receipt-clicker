@@ -6,7 +6,7 @@ import { MILESTONES } from './game/milestones.js';
 import { ACHIEVEMENTS, getAchievementBonus } from './game/achievements.js';
 import { GOLDEN_COOKIES } from './game/events.js';
 import { MSG_GENERIC } from './game/messages.js';
-import { PRESTIGE_UPGRADES } from './game/prestige.js';
+import { PRESTIGE_UPGRADES, getNodeEffects } from './game/prestige.js';
 import { SYNERGIES, getActiveSynergies, getSynergyMult } from './game/synergies.js';
 import { EVENT_CHAINS } from './game/eventChains.js';
 import { REPLY_TRAPS, GUILT_EVENTS, GUILT_RELIEF, GUILT_THRESHOLDS } from './game/guilt.js';
@@ -130,13 +130,13 @@ export default function App() {
   const ownedRef   = useRef(owned);
   const boughtRef  = useRef(boughtUpgrades);
   const tempMultRef = useRef(tempMult);
+  const costDiscountRef = useRef(0);
 
   useEffect(() => { readsRef.current   = reads;   }, [reads]);
   useEffect(() => { allTimeRef.current = allTime; }, [allTime]);
   useEffect(() => { ownedRef.current   = owned;   }, [owned]);
   useEffect(() => { boughtRef.current  = boughtUpgrades; }, [boughtUpgrades]);
   useEffect(() => { tempMultRef.current = tempMult; }, [tempMult]);
-
   // Auto-expire tempMult
   useEffect(() => {
     if (tempMultExpiry <= 0 || tempMult <= 1) return;
@@ -148,15 +148,29 @@ export default function App() {
 
 
 
-  const prestigeMult   = 1 + prestigePower * 0.1;
-  // Prestige bonus for earned ✦
-  const prestigeBonusMult = (boughtPrestige.has('ps27') ? 2.0 : boughtPrestige.has('ps9') ? 1.5 : 1);
-  const prestigeEarned = Math.floor(Math.sqrt(allTime / 50000) * prestigeBonusMult);
+  const prestigeMult   = 1 + prestigePower * 0.05;
+  // Prestige bonus for earned ✦ (additive stacking, data-driven)
+  let prestigeBonusMult = 1;
+  PRESTIGE_UPGRADES.forEach(u => {
+    if (!boughtPrestige.has(u.id)) return;
+    getNodeEffects(u).forEach(e => { if (e.type === 'prestigeBonus') prestigeBonusMult += e.value; });
+  });
+  const prestigeEarned = Math.floor(3 * Math.log(1 + allTime / 200000) * prestigeBonusMult);
 
-  // Global mult from prestige upgrades
-  const prestigeGlobalMult = PRESTIGE_UPGRADES
-    .filter(u => boughtPrestige.has(u.id) && u.effect.type === 'globalMult')
-    .reduce((acc, u) => acc * u.effect.value, 1);
+  // Global mult from prestige upgrades (multi-effect aware)
+  let prestigeGlobalMult = 1;
+  PRESTIGE_UPGRADES.forEach(u => {
+    if (!boughtPrestige.has(u.id)) return;
+    getNodeEffects(u).forEach(e => { if (e.type === 'globalMult') prestigeGlobalMult *= e.value; });
+  });
+
+  // Cost discount from prestige upgrades (multi-effect aware)
+  let costDiscount = 0;
+  PRESTIGE_UPGRADES.forEach(u => {
+    if (!boughtPrestige.has(u.id)) return;
+    getNodeEffects(u).forEach(e => { if (e.type === 'costDiscount') costDiscount += e.value; });
+  });
+  useEffect(() => { costDiscountRef.current = costDiscount; }, [costDiscount]);
 
   // Event chain buff multipliers
   const chainGlobalBuff = eventChainBuffs._global ?? 1;
@@ -174,11 +188,12 @@ export default function App() {
       });
       // Synergy multipliers
       m *= getSynergyMult(owned, b.id);
-      // Prestige building-specific multipliers
+      // Prestige building-specific multipliers (multi-effect aware)
       PRESTIGE_UPGRADES.forEach(u => {
-        if (boughtPrestige.has(u.id) && u.effect.type === 'buildingMult' && u.effect.target === b.id) {
-          m *= u.effect.value;
-        }
+        if (!boughtPrestige.has(u.id)) return;
+        getNodeEffects(u).forEach(e => {
+          if (e.type === 'buildingMult' && e.target === b.id) m *= e.value;
+        });
       });
       // Event chain permanent building buffs
       if (eventChainBuffs[b.id]) m *= eventChainBuffs[b.id];
@@ -210,11 +225,17 @@ export default function App() {
       if (u.type === 'ck') bonus += u.bonus;
       if (u.type === 'cp') pct  += u.bonus;
     });
-    // Prestige click bonus
-    const prestigeClickBonus = PRESTIGE_UPGRADES
-      .filter(u => boughtPrestige.has(u.id) && u.effect.type === 'clickBonus')
-      .reduce((acc, u) => acc + u.effect.value, 0);
-    return Math.floor((bonus + prestigeClickBonus + psRef.current * pct) * prestigeMult * tempMultRef.current);
+    // Prestige click bonus + multiplier (multi-effect aware)
+    let prestigeClickBonus = 0;
+    let prestigeClickMult = 1;
+    PRESTIGE_UPGRADES.forEach(u => {
+      if (!boughtPrestige.has(u.id)) return;
+      getNodeEffects(u).forEach(e => {
+        if (e.type === 'clickBonus') prestigeClickBonus += e.value;
+        if (e.type === 'clickMult') prestigeClickMult *= e.value;
+      });
+    });
+    return Math.floor((bonus + prestigeClickBonus + psRef.current * pct) * prestigeMult * tempMultRef.current * prestigeClickMult);
   }, [prestigeMult, boughtPrestige]);
 
   // Production tick
@@ -307,7 +328,12 @@ export default function App() {
       });
       p += b.baseProd * (saved.owned[b.id] ?? 0) * m;
     });
-    const offlineProd = p * (1 + (saved.prestigePower ?? 0) * 0.1);
+    let offlineBonusTotal = 0;
+    PRESTIGE_UPGRADES.forEach(u => {
+      if (!saved.boughtPrestige.has(u.id)) return;
+      getNodeEffects(u).forEach(e => { if (e.type === 'offlineBonus') offlineBonusTotal += e.value; });
+    });
+    const offlineProd = p * (1 + (saved.prestigePower ?? 0) * 0.05) * (1 + offlineBonusTotal);
     const earned = calcOfflineEarnings(saved.savedAt, offlineProd);
     if (earned > 10) {
       setReads(r => r + earned);
@@ -321,7 +347,12 @@ export default function App() {
   }, []);
 
   // Building unlocks
-  const unlockDiscount = boughtPrestige.has('ps7') ? 0.8 : 1;
+  let unlockDiscountTotal = 0;
+  PRESTIGE_UPGRADES.forEach(u => {
+    if (!boughtPrestige.has(u.id)) return;
+    getNodeEffects(u).forEach(e => { if (e.type === 'unlockDiscount') unlockDiscountTotal += e.value; });
+  });
+  const unlockDiscount = 1 - unlockDiscountTotal;
   useEffect(() => {
     Object.entries(UNLOCK_THRESHOLDS).forEach(([id, rawThreshold]) => {
       const threshold = Math.floor(rawThreshold * unlockDiscount);
@@ -372,7 +403,12 @@ export default function App() {
 
   // Golden cookie spawner — gated behind gc1 upgrade
   const hasGoldenCookie = boughtUpgrades.has('gc1');
-  const gcFreqMult = (boughtPrestige.has('ps5') ? 0.7 : 1) * (boughtUpgrades.has('gc2') ? 0.7 : 1);
+  let goldenFreqBonus = 0;
+  PRESTIGE_UPGRADES.forEach(u => {
+    if (!boughtPrestige.has(u.id)) return;
+    getNodeEffects(u).forEach(e => { if (e.type === 'goldenFreq') goldenFreqBonus += e.value; });
+  });
+  const gcFreqMult = (1 - goldenFreqBonus) * (boughtUpgrades.has('gc2') ? 0.7 : 1);
   const gcDurMult = boughtUpgrades.has('gc4') ? 1.5 : 1;
   useEffect(() => {
     if (!hasGoldenCookie) return;
@@ -506,7 +542,12 @@ export default function App() {
     else { mult = 1.2; duration = 30; }
     setBuffState(prev => {
       const withBuff = addBuff(prev, { source: 'storm', mult, expiresAt: Date.now() + duration * 1000 });
-      return { ...withBuff, stormCooldownEnd: Date.now() + 180000 }; // 3 min cooldown
+      let stormFreqBonus = 0;
+      PRESTIGE_UPGRADES.forEach(u => {
+        if (!boughtPrestige.has(u.id)) return;
+        getNodeEffects(u).forEach(e => { if (e.type === 'stormFreq') stormFreqBonus += e.value; });
+      });
+      return { ...withBuff, stormCooldownEnd: Date.now() + 180000 * (1 - stormFreqBonus) };
     });
     addToast(`🌪️ 已讀風暴！×${mult} 產能 ${duration}s`);
   }, []);
@@ -676,6 +717,8 @@ export default function App() {
   // Prestige shop buy handler
   const handleBuyPrestige = useCallback((u) => {
     if (prestigePower < u.cost || boughtPrestige.has(u.id)) return;
+    // Check prerequisites
+    if (u.requires?.length && !u.requires.every(req => boughtPrestige.has(req))) return;
     setPrestigePower(p => p - u.cost);
     setBoughtPrestige(s => new Set([...s, u.id]));
     addToast(`✦ ${u.emoji} ${u.name}！${u.desc}`);
@@ -760,7 +803,7 @@ export default function App() {
 
   const handleBuy = useCallback((b, n) => {
     const count = ownedRef.current[b.id] ?? 0;
-    const cost = buildingCostN(b, count, n);
+    const cost = buildingCostN(b, count, n, costDiscountRef.current);
     if (readsRef.current < cost) return;
 
     const newCount = count + n;
@@ -925,7 +968,12 @@ export default function App() {
   const handlePrestige = useCallback(() => {
     if (prestigeEarned < 1) return;
     playPrestige();
-    const startBonus = boughtPrestige.has('ps1') ? 100 : 0;
+    let startBonus = 0;
+    // Use updated boughtPrestige (after adding new ✦)
+    boughtPrestige.forEach(id => {
+      const node = PRESTIGE_UPGRADES.find(u => u.id === id);
+      if (node) getNodeEffects(node).forEach(e => { if (e.type === 'startBonus') startBonus += e.value; });
+    });
     setPrestigePower(p => p + prestigeEarned);
     setPrestigeCount(c => c + 1);
     setReads(startBonus);
@@ -1586,6 +1634,7 @@ export default function App() {
             onBuy={handleBuy}
             setBuyN={setBuyN}
             singleColumn
+            costDiscount={costDiscount}
           />
         </div>
       </div>

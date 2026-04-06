@@ -49,7 +49,8 @@
       "Bash(sort -t: -k2 -rn)",
       "Bash(grep -n \"pulse\" /c/Users/USER/claude/read_game/read-receipt-clicker/src/*.css /c/Users/USER/claude/read_game/read-receipt-clicker/src/ui/*.jsx)",
       "Skill(qa)",
-      "Skill(qa:*)"
+      "Skill(qa:*)",
+      "WebFetch(domain:www.aigei.com)"
     ]
   }
 }
