@@ -6,7 +6,7 @@ import { MILESTONES } from './game/milestones.js';
 import { ACHIEVEMENTS, getAchievementBonus } from './game/achievements.js';
 import { GOLDEN_COOKIES } from './game/events.js';
 import { MSG_GENERIC } from './game/messages.js';
-import { PRESTIGE_UPGRADES } from './game/prestige.js';
+import { PRESTIGE_UPGRADES, getNodeEffects } from './game/prestige.js';
 import { SYNERGIES, getActiveSynergies, getSynergyMult } from './game/synergies.js';
 import { EVENT_CHAINS } from './game/eventChains.js';
 import { REPLY_TRAPS, GUILT_EVENTS, GUILT_RELIEF, GUILT_THRESHOLDS } from './game/guilt.js';
@@ -98,6 +98,8 @@ export default function App() {
   const [started,    setStarted]    = useState(false);
   const [showHint,   setShowHint]   = useState(true);
   const [buyN,       setBuyN]       = useState(1);
+  const [particles,  setParticles]  = useState([]);
+  const [prestigeAnim, setPrestigeAnim] = useState(null); // null | 'wipe' | 'fadeOut'
   const [tempMult,   setTempMult]   = useState(1);
   const [tempMultExpiry, setTempMultExpiry] = useState(0); // timestamp when tempMult expires
   const [mutedUI,    setMutedUI]    = useState(false);
@@ -130,13 +132,41 @@ export default function App() {
   const ownedRef   = useRef(owned);
   const boughtRef  = useRef(boughtUpgrades);
   const tempMultRef = useRef(tempMult);
+  const costDiscountRef = useRef(0);
+  const gameRootRef = useRef(null);
+
+  // Screen shake utility
+  const triggerShake = useCallback((strong = false) => {
+    const el = gameRootRef.current;
+    if (!el) return;
+    el.classList.remove('shake', 'shake-strong');
+    void el.offsetWidth; // reflow to restart animation
+    el.classList.add(strong ? 'shake-strong' : 'shake');
+  }, []);
+
+  // Spawn click burst particles at (x, y)
+  const spawnParticles = useCallback((x, y, count = 6, symbols = ['✓', '✓✓', '✓']) => {
+    const ps = Array.from({ length: count }, (_, i) => {
+      const angle = (Math.PI * 2 / count) * i + (Math.random() - 0.5) * 0.8;
+      const dist = 30 + Math.random() * 40;
+      return {
+        id: idRef.current++,
+        x, y,
+        bx: Math.cos(angle) * dist,
+        by: Math.sin(angle) * dist - 10,
+        symbol: symbols[i % symbols.length],
+        size: 10 + Math.random() * 6,
+      };
+    });
+    setParticles(prev => [...prev, ...ps]);
+    setTimeout(() => setParticles(prev => prev.filter(p => !ps.includes(p))), 600);
+  }, []);
 
   useEffect(() => { readsRef.current   = reads;   }, [reads]);
   useEffect(() => { allTimeRef.current = allTime; }, [allTime]);
   useEffect(() => { ownedRef.current   = owned;   }, [owned]);
   useEffect(() => { boughtRef.current  = boughtUpgrades; }, [boughtUpgrades]);
   useEffect(() => { tempMultRef.current = tempMult; }, [tempMult]);
-
   // Auto-expire tempMult
   useEffect(() => {
     if (tempMultExpiry <= 0 || tempMult <= 1) return;
@@ -148,15 +178,29 @@ export default function App() {
 
 
 
-  const prestigeMult   = 1 + prestigePower * 0.1;
-  // Prestige bonus for earned ✦
-  const prestigeBonusMult = (boughtPrestige.has('ps27') ? 2.0 : boughtPrestige.has('ps9') ? 1.5 : 1);
-  const prestigeEarned = Math.floor(Math.sqrt(allTime / 50000) * prestigeBonusMult);
+  const prestigeMult   = 1 + prestigePower * 0.05;
+  // Prestige bonus for earned ✦ (additive stacking, data-driven)
+  let prestigeBonusMult = 1;
+  PRESTIGE_UPGRADES.forEach(u => {
+    if (!boughtPrestige.has(u.id)) return;
+    getNodeEffects(u).forEach(e => { if (e.type === 'prestigeBonus') prestigeBonusMult += e.value; });
+  });
+  const prestigeEarned = Math.floor(3 * Math.log(1 + allTime / 200000) * prestigeBonusMult);
 
-  // Global mult from prestige upgrades
-  const prestigeGlobalMult = PRESTIGE_UPGRADES
-    .filter(u => boughtPrestige.has(u.id) && u.effect.type === 'globalMult')
-    .reduce((acc, u) => acc * u.effect.value, 1);
+  // Global mult from prestige upgrades (multi-effect aware)
+  let prestigeGlobalMult = 1;
+  PRESTIGE_UPGRADES.forEach(u => {
+    if (!boughtPrestige.has(u.id)) return;
+    getNodeEffects(u).forEach(e => { if (e.type === 'globalMult') prestigeGlobalMult *= e.value; });
+  });
+
+  // Cost discount from prestige upgrades (multi-effect aware)
+  let costDiscount = 0;
+  PRESTIGE_UPGRADES.forEach(u => {
+    if (!boughtPrestige.has(u.id)) return;
+    getNodeEffects(u).forEach(e => { if (e.type === 'costDiscount') costDiscount += e.value; });
+  });
+  useEffect(() => { costDiscountRef.current = costDiscount; }, [costDiscount]);
 
   // Event chain buff multipliers
   const chainGlobalBuff = eventChainBuffs._global ?? 1;
@@ -174,11 +218,12 @@ export default function App() {
       });
       // Synergy multipliers
       m *= getSynergyMult(owned, b.id);
-      // Prestige building-specific multipliers
+      // Prestige building-specific multipliers (multi-effect aware)
       PRESTIGE_UPGRADES.forEach(u => {
-        if (boughtPrestige.has(u.id) && u.effect.type === 'buildingMult' && u.effect.target === b.id) {
-          m *= u.effect.value;
-        }
+        if (!boughtPrestige.has(u.id)) return;
+        getNodeEffects(u).forEach(e => {
+          if (e.type === 'buildingMult' && e.target === b.id) m *= e.value;
+        });
       });
       // Event chain permanent building buffs
       if (eventChainBuffs[b.id]) m *= eventChainBuffs[b.id];
@@ -210,11 +255,17 @@ export default function App() {
       if (u.type === 'ck') bonus += u.bonus;
       if (u.type === 'cp') pct  += u.bonus;
     });
-    // Prestige click bonus
-    const prestigeClickBonus = PRESTIGE_UPGRADES
-      .filter(u => boughtPrestige.has(u.id) && u.effect.type === 'clickBonus')
-      .reduce((acc, u) => acc + u.effect.value, 0);
-    return Math.floor((bonus + prestigeClickBonus + psRef.current * pct) * prestigeMult * tempMultRef.current);
+    // Prestige click bonus + multiplier (multi-effect aware)
+    let prestigeClickBonus = 0;
+    let prestigeClickMult = 1;
+    PRESTIGE_UPGRADES.forEach(u => {
+      if (!boughtPrestige.has(u.id)) return;
+      getNodeEffects(u).forEach(e => {
+        if (e.type === 'clickBonus') prestigeClickBonus += e.value;
+        if (e.type === 'clickMult') prestigeClickMult *= e.value;
+      });
+    });
+    return Math.floor((bonus + prestigeClickBonus + psRef.current * pct) * prestigeMult * tempMultRef.current * prestigeClickMult);
   }, [prestigeMult, boughtPrestige]);
 
   // Production tick
@@ -307,7 +358,12 @@ export default function App() {
       });
       p += b.baseProd * (saved.owned[b.id] ?? 0) * m;
     });
-    const offlineProd = p * (1 + (saved.prestigePower ?? 0) * 0.1);
+    let offlineBonusTotal = 0;
+    PRESTIGE_UPGRADES.forEach(u => {
+      if (!saved.boughtPrestige.has(u.id)) return;
+      getNodeEffects(u).forEach(e => { if (e.type === 'offlineBonus') offlineBonusTotal += e.value; });
+    });
+    const offlineProd = p * (1 + (saved.prestigePower ?? 0) * 0.05) * (1 + offlineBonusTotal);
     const earned = calcOfflineEarnings(saved.savedAt, offlineProd);
     if (earned > 10) {
       setReads(r => r + earned);
@@ -321,7 +377,12 @@ export default function App() {
   }, []);
 
   // Building unlocks
-  const unlockDiscount = boughtPrestige.has('ps7') ? 0.8 : 1;
+  let unlockDiscountTotal = 0;
+  PRESTIGE_UPGRADES.forEach(u => {
+    if (!boughtPrestige.has(u.id)) return;
+    getNodeEffects(u).forEach(e => { if (e.type === 'unlockDiscount') unlockDiscountTotal += e.value; });
+  });
+  const unlockDiscount = 1 - unlockDiscountTotal;
   useEffect(() => {
     Object.entries(UNLOCK_THRESHOLDS).forEach(([id, rawThreshold]) => {
       const threshold = Math.floor(rawThreshold * unlockDiscount);
@@ -372,7 +433,12 @@ export default function App() {
 
   // Golden cookie spawner — gated behind gc1 upgrade
   const hasGoldenCookie = boughtUpgrades.has('gc1');
-  const gcFreqMult = (boughtPrestige.has('ps5') ? 0.7 : 1) * (boughtUpgrades.has('gc2') ? 0.7 : 1);
+  let goldenFreqBonus = 0;
+  PRESTIGE_UPGRADES.forEach(u => {
+    if (!boughtPrestige.has(u.id)) return;
+    getNodeEffects(u).forEach(e => { if (e.type === 'goldenFreq') goldenFreqBonus += e.value; });
+  });
+  const gcFreqMult = (1 - goldenFreqBonus) * (boughtUpgrades.has('gc2') ? 0.7 : 1);
   const gcDurMult = boughtUpgrades.has('gc4') ? 1.5 : 1;
   useEffect(() => {
     if (!hasGoldenCookie) return;
@@ -506,7 +572,12 @@ export default function App() {
     else { mult = 1.2; duration = 30; }
     setBuffState(prev => {
       const withBuff = addBuff(prev, { source: 'storm', mult, expiresAt: Date.now() + duration * 1000 });
-      return { ...withBuff, stormCooldownEnd: Date.now() + 180000 }; // 3 min cooldown
+      let stormFreqBonus = 0;
+      PRESTIGE_UPGRADES.forEach(u => {
+        if (!boughtPrestige.has(u.id)) return;
+        getNodeEffects(u).forEach(e => { if (e.type === 'stormFreq') stormFreqBonus += e.value; });
+      });
+      return { ...withBuff, stormCooldownEnd: Date.now() + 180000 * (1 - stormFreqBonus) };
     });
     addToast(`🌪️ 已讀風暴！×${mult} 產能 ${duration}s`);
   }, []);
@@ -676,6 +747,8 @@ export default function App() {
   // Prestige shop buy handler
   const handleBuyPrestige = useCallback((u) => {
     if (prestigePower < u.cost || boughtPrestige.has(u.id)) return;
+    // Check prerequisites
+    if (u.requires?.length && !u.requires.every(req => boughtPrestige.has(req))) return;
     setPrestigePower(p => p - u.cost);
     setBoughtPrestige(s => new Set([...s, u.id]));
     addToast(`✦ ${u.emoji} ${u.name}！${u.desc}`);
@@ -725,6 +798,7 @@ export default function App() {
 
     const fid = idRef.current++;
     setFloats(f => [...f, { id: fid, x, y, text: power > 1 ? `+${fmt(power)}` : '+1' }]);
+    spawnParticles(x, y, 5);
     setRecentMsgs(prev => [message, ...prev].slice(0, 5));
     playClick();
 
@@ -734,11 +808,17 @@ export default function App() {
     }, 200);
   }, [isRead, started, message, calcClickPower]);
 
-  const handleGoldenCookie = useCallback(() => {
+  const handleGoldenCookie = useCallback((e) => {
     if (!goldenCookie) return;
     playGoldenCookie();
     const gc = goldenCookie;
     setGoldenCookie(null);
+
+    // Explosion particles at click position
+    const cx = e?.clientX ?? window.innerWidth / 2;
+    const cy = e?.clientY ?? window.innerHeight / 3;
+    spawnParticles(cx, cy, 10, ['✦', '★', '✧', '⭐', '✨']);
+    triggerShake(gc.type === 'mult5');
 
     const durMult = boughtUpgrades.has('gc4') ? 1.5 : 1;
     const powerBonus = boughtUpgrades.has('gc3') ? 1 : 0;
@@ -756,11 +836,11 @@ export default function App() {
       setAllTime(a => a + bonus);
       addToast(`${gc.emoji} ${gc.toast} +${fmt(bonus)}`);
     }
-  }, [goldenCookie]);
+  }, [goldenCookie, spawnParticles, triggerShake]);
 
   const handleBuy = useCallback((b, n) => {
     const count = ownedRef.current[b.id] ?? 0;
-    const cost = buildingCostN(b, count, n);
+    const cost = buildingCostN(b, count, n, costDiscountRef.current);
     if (readsRef.current < cost) return;
 
     const newCount = count + n;
@@ -768,10 +848,11 @@ export default function App() {
     setOwned(o => ({ ...o, [b.id]: newCount }));
     setNewBuildings(prev => { const s = new Set(prev); s.delete(b.id); return s; });
     for (let i = count + 1; i <= newCount; i++) {
-      if (b.milestones?.[i]) addToast(`${b.emoji} ${b.milestones[i]}`);
+      if (b.milestones?.[i]) { addToast(`${b.emoji} ${b.milestones[i]}`); triggerShake(true); }
     }
+    triggerShake();
     playBuy();
-  }, []);
+  }, [triggerShake]);
 
   const handleBuyUpgrade = useCallback((u) => {
     if (readsRef.current < u.cost || boughtRef.current.has(u.id)) return;
@@ -925,27 +1006,42 @@ export default function App() {
   const handlePrestige = useCallback(() => {
     if (prestigeEarned < 1) return;
     playPrestige();
-    const startBonus = boughtPrestige.has('ps1') ? 100 : 0;
-    setPrestigePower(p => p + prestigeEarned);
-    setPrestigeCount(c => c + 1);
-    setReads(startBonus);
-    setAllTime(0);
-    setOwned(buildInitialOwned());
-    setBoughtUpgrades(new Set());
-    setUnlockedBuildings(new Set(['ex', 'par', 'bsy']));
-    setNewBuildings(new Set());
-    setMarketState(prev => resetHoldings(prev)); // reset holdings+futures, keep market running
-    setGardenState(prev => resetGarden(prev)); // reset slots/seeds/buffs, keep collection
-    setMergeState(prev => resetMerge(prev)); // reset grid/gifts, keep highestTier
-    setBuffState(createBuffState()); // reset all buffs, resonance, cooldowns
-    setSeenMilestones(new Set());
-    setRecentMsgs([]);
-    setTempMult(1);
-    setActiveChain(null);
-    setChainChoice(null);
-    // Note: boughtPrestige, activeSynergies, completedChains, eventChainBuffs persist across prestige
-    addToast(`🌀 Inbox Zero！+${prestigeEarned}已讀之力。第${prestigeCount + 1}次覺醒。${startBonus > 0 ? ` 快速啟動+${startBonus}！` : ''}`);
-  }, [prestigeEarned, prestigeCount, boughtPrestige]);
+    triggerShake(true);
+
+    // Start ceremony animation
+    setPrestigeAnim('wipe');
+
+    // Delay the actual reset to let the animation play
+    setTimeout(() => {
+      let startBonus = 0;
+      boughtPrestige.forEach(id => {
+        const node = PRESTIGE_UPGRADES.find(u => u.id === id);
+        if (node) getNodeEffects(node).forEach(e => { if (e.type === 'startBonus') startBonus += e.value; });
+      });
+      setPrestigePower(p => p + prestigeEarned);
+      setPrestigeCount(c => c + 1);
+      setReads(startBonus);
+      setAllTime(0);
+      setOwned(buildInitialOwned());
+      setBoughtUpgrades(new Set());
+      setUnlockedBuildings(new Set(['ex', 'par', 'bsy']));
+      setNewBuildings(new Set());
+      setMarketState(prev => resetHoldings(prev));
+      setGardenState(prev => resetGarden(prev));
+      setMergeState(prev => resetMerge(prev));
+      setBuffState(createBuffState());
+      setSeenMilestones(new Set());
+      setRecentMsgs([]);
+      setTempMult(1);
+      setActiveChain(null);
+      setChainChoice(null);
+      addToast(`🌀 Inbox Zero！+${prestigeEarned}已讀之力。第${prestigeCount + 1}次覺醒。${startBonus > 0 ? ` 快速啟動+${startBonus}！` : ''}`);
+
+      // Fade out the overlay
+      setPrestigeAnim('fadeOut');
+      setTimeout(() => setPrestigeAnim(null), 800);
+    }, 1200);
+  }, [prestigeEarned, prestigeCount, boughtPrestige, triggerShake]);
 
   const upgradeStates = UPGRADES.map(u => {
     if (boughtUpgrades.has(u.id)) return { ...u, state: 'done' };
@@ -958,7 +1054,7 @@ export default function App() {
   }).filter(u => u.state !== 'lock');
 
   return (
-    <div style={{
+    <div ref={gameRootRef} style={{
       height: '100vh', background: 'var(--bg)', color: 'var(--text)',
       display: 'flex', flexDirection: 'column',
       fontFamily: "'Noto Sans TC',-apple-system,sans-serif",
@@ -966,10 +1062,10 @@ export default function App() {
     }}>
       <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700;800&family=Noto+Sans+TC:wght@300;400;500;700;900&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet" />
       <style>{`
-        @keyframes fu  { 0% { opacity:1;transform:translateY(0) scale(1) } 100% { opacity:0;transform:translateY(-60px) scale(1.3) } }
+        @keyframes fu  { 0% { opacity:1;transform:translateY(0) scale(1) rotate(0deg) } 30% { opacity:1;transform:translateY(-20px) scale(1.4) } 100% { opacity:0;transform:translateY(-70px) scale(0.8) } }
         @keyframes pu  { 0%,100% { transform:scale(1);opacity:1 } 50% { transform:scale(1.4);opacity:.5 } }
         @keyframes ci  { 0% { opacity:0;transform:scale(.3) } 60% { transform:scale(1.1) } 100% { opacity:1;transform:scale(1) } }
-        @keyframes pn  { 0%,100% { transform:scale(1) } 50% { transform:scale(1.06) } }
+        @keyframes pn  { 0% { transform:scale(1) } 40% { transform:scale(1.12) } 100% { transform:scale(1) } }
         @keyframes ti  { 0% { opacity:0;transform:translateX(-50%) translateY(-20px) scale(.9) } 100% { opacity:1;transform:translateX(-50%) translateY(0) scale(1) } }
         @keyframes ib  { 0%,100% { transform:translateY(0) } 50% { transform:translateY(-6px) } }
         @keyframes hf  { 0% { opacity:.8 } 80% { opacity:.8 } 100% { opacity:0 } }
@@ -1050,6 +1146,51 @@ export default function App() {
           onAnimationEnd={() => setFloats(fs => fs.filter(x => x.id !== f.id))}
         >{f.text}</div>
       ))}
+
+      {/* Click burst particles */}
+      {particles.map(p => (
+        <div key={p.id} style={{
+          position: 'fixed', left: p.x, top: p.y,
+          pointerEvents: 'none', zIndex: 201,
+          fontSize: p.size,
+          color: '#6366f1',
+          fontWeight: 800,
+          fontFamily: "'JetBrains Mono',monospace",
+          textShadow: '0 0 6px rgba(99,102,241,.3)',
+          animation: 'clickBurst .5s ease-out forwards',
+          '--bx': `${p.bx}px`,
+          '--by': `${p.by}px`,
+        }}>{p.symbol}</div>
+      ))}
+
+      {/* Prestige ceremony overlay */}
+      {prestigeAnim && (
+        <div style={{
+          position: 'fixed', inset: 0, zIndex: 500,
+          background: 'linear-gradient(135deg, #1e1b4b, #312e81, #4338ca)',
+          display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+          animation: prestigeAnim === 'wipe' ? 'prestigeWipe 1s ease-out forwards'
+            : 'prestigeFadeOut 0.8s ease-in forwards',
+        }}>
+          <div style={{
+            fontSize: 60, fontWeight: 900,
+            color: '#fff',
+            textShadow: '0 0 40px rgba(99,102,241,.6), 0 0 80px rgba(99,102,241,.3)',
+            fontFamily: "'Space Grotesk','JetBrains Mono',monospace",
+            animation: 'prestigeText 1.8s ease-out forwards',
+          }}>
+            ✦ INBOX ZERO
+          </div>
+          <div style={{
+            fontSize: 18, color: 'rgba(255,255,255,.7)', marginTop: 12,
+            fontFamily: "'Noto Sans TC',sans-serif",
+            animation: 'prestigeText 1.8s ease-out 0.3s forwards',
+            opacity: 0,
+          }}>
+            +{prestigeEarned}已讀之力 · 第{prestigeCount + 1}次覺醒
+          </div>
+        </div>
+      )}
 
       {/* Toast */}
       {toasts.slice(-1).map(t => (
@@ -1586,6 +1727,7 @@ export default function App() {
             onBuy={handleBuy}
             setBuyN={setBuyN}
             singleColumn
+            costDiscount={costDiscount}
           />
         </div>
       </div>
