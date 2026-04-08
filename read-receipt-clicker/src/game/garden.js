@@ -135,7 +135,7 @@ export function createGardenState() {
  * Tick function — called every 3s from App.jsx.
  * Generates seeds, matures flowers, wilts old flowers, expires buffs.
  */
-export function tickGarden(state, exCount, now = Date.now()) {
+export function tickGarden(state, exCount, now = Date.now(), opts = {}) {
   if (!state) return createGardenState();
 
   let newSeeds = state.seeds;
@@ -144,12 +144,16 @@ export function tickGarden(state, exCount, now = Date.now()) {
   let changed = false;
   let newWiltedCount = 0;
 
+  // Cross-system: merge high-tier boosts seed generation speed
+  const seedSpeedMult = opts.seedSpeedMult ?? 1;
+  const effectiveInterval = Math.max(1000, SEED_INTERVAL / seedSpeedMult);
+
   // 1. Generate seeds based on elapsed time
   const elapsed = now - (state.lastSeedTick ?? now);
-  if (elapsed >= SEED_INTERVAL && exCount > 0) {
-    const seedsToAdd = Math.floor(elapsed / SEED_INTERVAL) * exCount;
+  if (elapsed >= effectiveInterval && exCount > 0) {
+    const seedsToAdd = Math.floor(elapsed / effectiveInterval) * exCount;
     newSeeds = Math.min(MAX_SEEDS, newSeeds + seedsToAdd);
-    newLastSeedTick = state.lastSeedTick + Math.floor(elapsed / SEED_INTERVAL) * SEED_INTERVAL;
+    newLastSeedTick = state.lastSeedTick + Math.floor(elapsed / effectiveInterval) * effectiveInterval;
     changed = true;
   }
 

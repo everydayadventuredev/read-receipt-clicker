@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { SKILL_TREE_NODES, BRANCHES } from '../game/prestige.js';
+import { SKILL_TREE_NODES, BRANCHES, getCapstoneBlocker } from '../game/prestige.js';
 
 const branchList = Object.values(BRANCHES).sort((a, b) => a.order - b.order);
 
@@ -9,6 +9,8 @@ function getNodesByBranch(branch) {
 
 function getNodeState(node, boughtPrestige, prestigePower) {
   if (boughtPrestige.has(node.id)) return 'bought';
+  // Check capstone mutual exclusion
+  if (getCapstoneBlocker(node.id, boughtPrestige)) return 'excluded';
   const prereqsMet = !node.requires?.length || node.requires.every(r => boughtPrestige.has(r));
   if (!prereqsMet) return 'locked';
   if (prestigePower >= node.cost) return 'available';
@@ -135,6 +137,10 @@ export default function PrestigeShop({ prestigePower, boughtPrestige, onBuy }) {
                     .filter(r => !boughtPrestige.has(r))
                     .map(r => SKILL_TREE_NODES.find(n => n.id === r)?.name || r);
 
+                  // Rival name for excluded state
+                  const rivalId = getCapstoneBlocker(node.id, boughtPrestige);
+                  const rivalName = rivalId ? (SKILL_TREE_NODES.find(n => n.id === rivalId)?.name || '對立天賦') : null;
+
                   return (
                     <div
                       key={node.id}
@@ -144,9 +150,11 @@ export default function PrestigeShop({ prestigePower, boughtPrestige, onBuy }) {
                         minWidth: 90, maxWidth: 160,
                         position: 'relative',
                         background: state === 'bought' ? '#f0fdf4'
+                          : state === 'excluded' ? '#fef2f2'
                           : state === 'available' ? '#fafaff'
                           : '#fafafa',
                         border: state === 'bought' ? '1.5px solid #86efac'
+                          : state === 'excluded' ? '1.5px solid #fca5a5'
                           : state === 'available' ? '1.5px solid #6366f1'
                           : state === 'unaffordable' ? '1px solid #e2e8f0'
                           : '1px solid #e2e8f0',
@@ -154,6 +162,7 @@ export default function PrestigeShop({ prestigePower, boughtPrestige, onBuy }) {
                         padding: '8px 8px 6px',
                         cursor: state === 'available' ? 'pointer' : 'default',
                         opacity: state === 'locked' ? 0.35
+                          : state === 'excluded' ? 0.4
                           : state === 'unaffordable' ? 0.65
                           : state === 'bought' ? 0.7
                           : 1,
@@ -173,11 +182,11 @@ export default function PrestigeShop({ prestigePower, boughtPrestige, onBuy }) {
                       )}
 
                       {/* Lock icon */}
-                      {state === 'locked' && (
+                      {(state === 'locked' || state === 'excluded') && (
                         <div style={{
                           position: 'absolute', top: 4, right: 6,
-                          fontSize: 10, color: '#94a3b8',
-                        }}>🔒</div>
+                          fontSize: 10, color: state === 'excluded' ? '#ef4444' : '#94a3b8',
+                        }}>{state === 'excluded' ? '⛔' : '🔒'}</div>
                       )}
 
                       {/* Emoji + Name */}
@@ -206,6 +215,10 @@ export default function PrestigeShop({ prestigePower, boughtPrestige, onBuy }) {
                         {state === 'bought' ? null
                           : state === 'available' ? (
                             <span style={{ color: 'var(--purple-text)' }}>✦{node.cost}</span>
+                          ) : state === 'excluded' ? (
+                            <span style={{ color: '#ef4444', fontSize: 9, fontWeight: 400 }}>
+                              已選: {rivalName}
+                            </span>
                           ) : state === 'locked' ? (
                             <span style={{ color: '#94a3b8', fontSize: 9, fontWeight: 400 }}>
                               需要: {missingPrereqs.join(', ')}

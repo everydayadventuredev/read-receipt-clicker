@@ -26,35 +26,35 @@ export const SYNERGIES = [
   {
     id: 'syn3',
     name: '官僚外包',
-    desc: '政府承辦產能+100%',
+    desc: '政府承辦產能+50%',
     emoji: '📦',
-    toast: '公文改用外送寄，效率倍增',
+    toast: '公文改用外送寄，效率提升',
     req: { gov: 5, del: 10 },
     effects: [
-      { target: 'gov', mult: 2 },
+      { target: 'gov', mult: 1.5 },
     ],
   },
   {
     id: 'syn4',
     name: '全面監控',
-    desc: '全域產能+30%',
+    desc: '全域產能+15%',
     emoji: '📡',
     toast: '每棟建築都被裝了監聽器，已讀效率全面提升',
     req: { ex: 1, par: 1, bsy: 1, hr: 1, del: 1, gov: 1, int: 3 },
     effects: [
-      { target: '_global', mult: 1.3 },
+      { target: '_global', mult: 1.15 },
     ],
   },
   {
     id: 'syn6',
     name: 'AI取代人類',
-    desc: 'AI客服+HR產能各+100%',
+    desc: 'AI客服+HR產能各+50%',
     emoji: '🤖',
     toast: 'AI正式取代HR部門。效率提升，靈魂消失。',
     req: { ai: 5, hr: 10 },
     effects: [
-      { target: 'ai', mult: 2 },
-      { target: 'hr', mult: 2 },
+      { target: 'ai', mult: 1.5 },
+      { target: 'hr', mult: 1.5 },
     ],
   },
   {
@@ -84,12 +84,12 @@ export const SYNERGIES = [
   {
     id: 'syn5',
     name: '已讀宇宙',
-    desc: '全域產能x2',
+    desc: '全域產能+40%',
     emoji: '🌌',
     toast: '已讀達到臨界質量，集體意識覺醒',
     req: { ex: 25, par: 25, bsy: 25, hr: 25, del: 25, gov: 25, int: 25, algo: 25, ai: 25, alien: 25, time: 25 },
     effects: [
-      { target: '_global', mult: 2 },
+      { target: '_global', mult: 1.4 },
     ],
   },
 ];

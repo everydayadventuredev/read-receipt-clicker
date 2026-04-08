@@ -6,7 +6,7 @@ import { MILESTONES } from './game/milestones.js';
 import { ACHIEVEMENTS, getAchievementBonus } from './game/achievements.js';
 import { GOLDEN_COOKIES } from './game/events.js';
 import { MSG_GENERIC } from './game/messages.js';
-import { PRESTIGE_UPGRADES, getNodeEffects } from './game/prestige.js';
+import { PRESTIGE_UPGRADES, getNodeEffects, getCapstoneBlocker } from './game/prestige.js';
 import { SYNERGIES, getActiveSynergies, getSynergyMult } from './game/synergies.js';
 import { EVENT_CHAINS } from './game/eventChains.js';
 import { REPLY_TRAPS, GUILT_EVENTS, GUILT_RELIEF, GUILT_THRESHOLDS } from './game/guilt.js';
@@ -98,6 +98,10 @@ export default function App() {
   const [started,    setStarted]    = useState(false);
   const [showHint,   setShowHint]   = useState(true);
   const [buyN,       setBuyN]       = useState(1);
+  const [particles,  setParticles]  = useState([]);
+  const [prestigeAnim, setPrestigeAnim] = useState(null); // null | 'wipe' | 'fadeOut'
+  // ── Fever (已讀狂潮) state ──
+  const [fever, setFever] = useState(null); // null | { startedAt, duration, clicks, combo, earned }
   const [tempMult,   setTempMult]   = useState(1);
   const [tempMultExpiry, setTempMultExpiry] = useState(0); // timestamp when tempMult expires
   const [mutedUI,    setMutedUI]    = useState(false);
@@ -122,6 +126,8 @@ export default function App() {
   const [mergeState,       setMergeState]       = useState(() => init.mergeState ?? createMergeState());
   const [buffState,        setBuffState]        = useState(() => init.buffState ?? createBuffState());
   const [activeMiniGame,   setActiveMiniGame]   = useState(null);
+  const [cheatMode,        setCheatMode]        = useState(false);
+  const cheatBufRef = useRef('');
 
   const idRef      = useRef(0);
   const readsRef   = useRef(reads);
@@ -131,6 +137,113 @@ export default function App() {
   const boughtRef  = useRef(boughtUpgrades);
   const tempMultRef = useRef(tempMult);
   const costDiscountRef = useRef(0);
+  const gameRootRef = useRef(null);
+  const feverRef = useRef(null); // current fever state for interval reads
+  const feverTimerRef = useRef(null);
+
+  // Screen shake utility
+  const triggerShake = useCallback((strong = false) => {
+    const el = gameRootRef.current;
+    if (!el) return;
+    el.classList.remove('shake', 'shake-strong');
+    void el.offsetWidth; // reflow to restart animation
+    el.classList.add(strong ? 'shake-strong' : 'shake');
+  }, []);
+
+  // Cheat mode: type "iddqd" anywhere to toggle
+  useEffect(() => {
+    const handler = (e) => {
+      cheatBufRef.current = (cheatBufRef.current + e.key.toLowerCase()).slice(-5);
+      if (cheatBufRef.current === 'iddqd') {
+        setCheatMode(v => !v);
+        cheatBufRef.current = '';
+      }
+    };
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, []);
+
+  // Spawn click burst particles at (x, y)
+  const spawnParticles = useCallback((x, y, count = 6, symbols = ['✓', '✓✓', '✓']) => {
+    const ps = Array.from({ length: count }, (_, i) => {
+      const angle = (Math.PI * 2 / count) * i + (Math.random() - 0.5) * 0.8;
+      const dist = 30 + Math.random() * 40;
+      return {
+        id: idRef.current++,
+        x, y,
+        bx: Math.cos(angle) * dist,
+        by: Math.sin(angle) * dist - 10,
+        symbol: symbols[i % symbols.length],
+        size: 10 + Math.random() * 6,
+      };
+    });
+    setParticles(prev => [...prev, ...ps]);
+    setTimeout(() => setParticles(prev => prev.filter(p => !ps.includes(p))), 600);
+  }, []);
+
+  // ── Fever (已讀狂潮) system ──
+  // Force re-render every 200ms during fever for countdown display
+  const [feverTick, setFeverTick] = useState(0);
+  useEffect(() => {
+    if (!fever || fever.ended) return;
+    const iv = setInterval(() => setFeverTick(t => t + 1), 200);
+    return () => clearInterval(iv);
+  }, [fever?.startedAt, fever?.ended]);
+
+  // Returns fever chance based on active buff count
+  const getFeverChance = useCallback(() => {
+    const activeCount = getActiveBuffs(buffState).length;
+    const base = 0.15;
+    // Each active buff adds +0.08 chance (e.g., 2 buffs → 31%)
+    return Math.min(0.5, base + activeCount * 0.08);
+  }, [buffState]);
+
+  const startFever = useCallback((duration = 6) => {
+    if (feverRef.current) return; // already active
+    const f = { startedAt: Date.now(), duration: duration * 1000, clicks: 0, combo: 1, earned: 0 };
+    feverRef.current = f;
+    setFever(f);
+    triggerShake(true);
+    // Auto-end fever after duration
+    if (feverTimerRef.current) clearTimeout(feverTimerRef.current);
+    feverTimerRef.current = setTimeout(() => {
+      const final = feverRef.current;
+      if (!final) return;
+      feverRef.current = null;
+      // Show result for 2.5s then clear
+      setFever({ ...final, ended: true });
+      setTimeout(() => setFever(null), 2500);
+    }, duration * 1000);
+  }, [triggerShake]);
+
+  const handleFeverClick = useCallback((e) => {
+    if (!feverRef.current) return;
+    const f = feverRef.current;
+    const elapsed = Date.now() - f.startedAt;
+    if (elapsed >= f.duration) return;
+
+    const newClicks = f.clicks + 1;
+    // Combo: every 3 rapid clicks → +1 combo (max 10)
+    const newCombo = Math.min(10, 1 + Math.floor(newClicks / 3));
+    // Each fever click = combo × 2s of production
+    const clickValue = Math.max(1, Math.floor(psRef.current * 2 * newCombo));
+    const newEarned = f.earned + clickValue;
+
+    const updated = { ...f, clicks: newClicks, combo: newCombo, earned: newEarned };
+    feverRef.current = updated;
+    setFever(updated);
+
+    setReads(r => r + clickValue);
+    setAllTime(a => a + clickValue);
+
+    // Visual feedback
+    const rect = e.currentTarget.getBoundingClientRect();
+    const x = e.clientX ?? (e.touches?.[0]?.clientX ?? rect.left + rect.width / 2);
+    const y = e.clientY ?? (e.touches?.[0]?.clientY ?? rect.top + rect.height / 2);
+    const fid = idRef.current++;
+    setFloats(fl => [...fl, { id: fid, x, y, text: `×${newCombo} +${fmt(clickValue)}` }]);
+    if (newCombo > f.combo) triggerShake();
+  }, [triggerShake]);
 
   useEffect(() => { readsRef.current   = reads;   }, [reads]);
   useEffect(() => { allTimeRef.current = allTime; }, [allTime]);
@@ -155,7 +268,7 @@ export default function App() {
     if (!boughtPrestige.has(u.id)) return;
     getNodeEffects(u).forEach(e => { if (e.type === 'prestigeBonus') prestigeBonusMult += e.value; });
   });
-  const prestigeEarned = Math.floor(3 * Math.log(1 + allTime / 200000) * prestigeBonusMult);
+  const prestigeEarned = Math.floor(1.5 * Math.log(1 + allTime / 2000000) * prestigeBonusMult);
 
   // Global mult from prestige upgrades (multi-effect aware)
   let prestigeGlobalMult = 1;
@@ -259,11 +372,17 @@ export default function App() {
     return () => clearInterval(iv);
   }, [(owned.algo ?? 0) >= 1]);
 
+  // Cross-system: merge highestTier ref for garden tick
+  const mergeHighestTierRef = useRef(mergeState.highestTier ?? 0);
+  useEffect(() => { mergeHighestTierRef.current = mergeState.highestTier ?? 0; }, [mergeState.highestTier]);
+
   // Garden tick — every 3s when ex >= 1
+  // Cross-system: merge highestTier boosts seed generation speed
   useEffect(() => {
     if ((owned.ex ?? 0) < 1) return;
     const iv = setInterval(() => {
-      setGardenState(prev => tickGarden(prev, ownedRef.current.ex ?? 0));
+      const seedSpeedMult = 1 + Math.max(0, mergeHighestTierRef.current - 2) * 0.25;
+      setGardenState(prev => tickGarden(prev, ownedRef.current.ex ?? 0, Date.now(), { seedSpeedMult }));
     }, 3000);
     return () => clearInterval(iv);
   }, [(owned.ex ?? 0) >= 1]);
@@ -418,7 +537,7 @@ export default function App() {
         const pool = GOLDEN_COOKIES.filter(e => !e.minAt || allTimeRef.current >= e.minAt);
         // Add mega event if gc5 unlocked
         if (boughtRef.current.has('gc5') && Math.random() < 0.08) {
-          setGoldenCookie({ type: 'mult5', mult: 10, dur: 5, toast: '宇宙彩券頭獎！×10 已讀！', minAt: 0 });
+          setGoldenCookie({ type: 'mult5', mult: 5, dur: 5, toast: '宇宙彩券頭獎！×5 已讀！', minAt: 0 });
         } else {
           const g = pk(pool);
           setGoldenCookie(g);
@@ -719,6 +838,13 @@ export default function App() {
     if (prestigePower < u.cost || boughtPrestige.has(u.id)) return;
     // Check prerequisites
     if (u.requires?.length && !u.requires.every(req => boughtPrestige.has(req))) return;
+    // Check capstone mutual exclusion
+    const blocker = getCapstoneBlocker(u.id, boughtPrestige);
+    if (blocker) {
+      const rival = PRESTIGE_UPGRADES.find(n => n.id === blocker);
+      addToast(`🔒 已選擇 ${rival?.name ?? '對立天賦'}，無法購買此天賦`);
+      return;
+    }
     setPrestigePower(p => p - u.cost);
     setBoughtPrestige(s => new Set([...s, u.id]));
     addToast(`✦ ${u.emoji} ${u.name}！${u.desc}`);
@@ -751,8 +877,18 @@ export default function App() {
   }
 
   const handleClick = useCallback((e) => {
-    if (isRead) return;
     if (!started) setStarted(true);
+
+    // During fever, bypass isRead cooldown — allow rapid clicking
+    if (feverRef.current && !feverRef.current.ended) {
+      handleFeverClick(e);
+      playClick();
+      setPopAnim(true);
+      setTimeout(() => setPopAnim(false), 80);
+      return;
+    }
+
+    if (isRead) return;
 
     const rect = e.currentTarget.getBoundingClientRect();
     const x = e.clientX ?? (e.touches?.[0]?.clientX ?? rect.left + rect.width / 2);
@@ -768,6 +904,7 @@ export default function App() {
 
     const fid = idRef.current++;
     setFloats(f => [...f, { id: fid, x, y, text: power > 1 ? `+${fmt(power)}` : '+1' }]);
+    spawnParticles(x, y, 5);
     setRecentMsgs(prev => [message, ...prev].slice(0, 5));
     playClick();
 
@@ -775,13 +912,29 @@ export default function App() {
       setIsRead(false);
       setMessage(nextMessage());
     }, 200);
-  }, [isRead, started, message, calcClickPower]);
+  }, [isRead, started, message, calcClickPower, handleFeverClick]);
 
-  const handleGoldenCookie = useCallback(() => {
+  const handleGoldenCookie = useCallback((e) => {
     if (!goldenCookie) return;
     playGoldenCookie();
     const gc = goldenCookie;
     setGoldenCookie(null);
+
+    // Explosion particles at click position
+    const cx = e?.clientX ?? window.innerWidth / 2;
+    const cy = e?.clientY ?? window.innerHeight / 3;
+    spawnParticles(cx, cy, 10, ['✦', '★', '✧', '⭐', '✨']);
+    triggerShake(gc.type === 'mult5');
+
+    // ── Fever chance: roll for 已讀狂潮 ──
+    const feverChance = getFeverChance();
+    if (!feverRef.current && Math.random() < feverChance) {
+      // Fever duration: 5-8s, longer if mult event
+      const feverDur = gc.type === 'mult5' ? 8 : gc.type === 'mult' ? 7 : 6;
+      startFever(feverDur);
+      addToast(`🔥 已讀狂潮！${feverDur} 秒內瘋狂點擊！`);
+      // Still apply the normal event effect too — but it stacks with fever
+    }
 
     const durMult = boughtUpgrades.has('gc4') ? 1.5 : 1;
     const powerBonus = boughtUpgrades.has('gc3') ? 1 : 0;
@@ -790,7 +943,7 @@ export default function App() {
       setTempMultExpiry(Date.now() + gc.dur * 1000 * durMult);
       addToast(`🚀 ${gc.toast}`);
     } else if (gc.type === 'mult5') {
-      setTempMult(5 + powerBonus);
+      setTempMult(4 + powerBonus);
       setTempMultExpiry(Date.now() + gc.dur * 1000 * durMult);
       addToast(`🔥 ${gc.toast}`);
     } else {
@@ -799,7 +952,7 @@ export default function App() {
       setAllTime(a => a + bonus);
       addToast(`${gc.emoji} ${gc.toast} +${fmt(bonus)}`);
     }
-  }, [goldenCookie]);
+  }, [goldenCookie, spawnParticles, triggerShake, getFeverChance, startFever]);
 
   const handleBuy = useCallback((b, n) => {
     const count = ownedRef.current[b.id] ?? 0;
@@ -811,10 +964,11 @@ export default function App() {
     setOwned(o => ({ ...o, [b.id]: newCount }));
     setNewBuildings(prev => { const s = new Set(prev); s.delete(b.id); return s; });
     for (let i = count + 1; i <= newCount; i++) {
-      if (b.milestones?.[i]) addToast(`${b.emoji} ${b.milestones[i]}`);
+      if (b.milestones?.[i]) { addToast(`${b.emoji} ${b.milestones[i]}`); triggerShake(true); }
     }
+    triggerShake();
     playBuy();
-  }, []);
+  }, [triggerShake]);
 
   const handleBuyUpgrade = useCallback((u) => {
     if (readsRef.current < u.cost || boughtRef.current.has(u.id)) return;
@@ -899,6 +1053,20 @@ export default function App() {
       ? `回收 ${fmt(result.payout)}（×${result.mult.toFixed(2)}）`
       : '期貨到期';
     addToast(`📊 ${profitLabel}`);
+    // Cross-system: profitable futures grant a temporary global production buff
+    if (result.mult > 1.0) {
+      const buffMult = 1 + (result.mult - 1) * 0.5; // half the profit ratio as buff
+      const duration = 5 * 60 * 1000; // 5 minutes
+      setBuffState(prev => addBuff(prev, {
+        source: 'market',
+        mult: Math.min(1.5, buffMult),
+        scope: 'global',
+        expiresAt: Date.now() + duration,
+        label: '投資收益',
+        emoji: '📈',
+      }));
+      addToast(`📈 投資收益 buff！生產 ×${Math.min(1.5, buffMult).toFixed(2)} 持續 5 分鐘`);
+    }
   }, [marketState]);
 
   // ── Garden handlers ──
@@ -940,7 +1108,13 @@ export default function App() {
   }, [mergeState]);
 
   const handleMergeGifts = useCallback((srcIdx, tgtIdx) => {
-    const result = mergeGifts(mergeState, srcIdx, tgtIdx);
+    // Cross-system: garden completedSeries boosts crit chance (+5% per series)
+    const critBonus = (gardenState.completedSeries?.length ?? 0) * 0.05;
+    // Cross-system: garden epic/legendary buff active → merge fail immunity
+    const hasEpicBuff = (gardenState.activeBuffs ?? []).some(
+      b => b.expiresAt > Date.now() && b.mult >= 2.0
+    );
+    const result = mergeGifts(mergeState, srcIdx, tgtIdx, Date.now(), { critBonus, noFail: hasEpicBuff });
     if (!result) return null;
     setMergeState(result.newState);
     if (result.event === 'critical') {
@@ -950,7 +1124,7 @@ export default function App() {
       addToast(`🎉 意外驚喜！獲得額外 buff！`);
     }
     return result;
-  }, [mergeState]);
+  }, [mergeState, gardenState]);
 
   const handleMoveGift = useCallback((fromIdx, toIdx) => {
     const result = moveGift(mergeState, fromIdx, toIdx);
@@ -968,32 +1142,42 @@ export default function App() {
   const handlePrestige = useCallback(() => {
     if (prestigeEarned < 1) return;
     playPrestige();
-    let startBonus = 0;
-    // Use updated boughtPrestige (after adding new ✦)
-    boughtPrestige.forEach(id => {
-      const node = PRESTIGE_UPGRADES.find(u => u.id === id);
-      if (node) getNodeEffects(node).forEach(e => { if (e.type === 'startBonus') startBonus += e.value; });
-    });
-    setPrestigePower(p => p + prestigeEarned);
-    setPrestigeCount(c => c + 1);
-    setReads(startBonus);
-    setAllTime(0);
-    setOwned(buildInitialOwned());
-    setBoughtUpgrades(new Set());
-    setUnlockedBuildings(new Set(['ex', 'par', 'bsy']));
-    setNewBuildings(new Set());
-    setMarketState(prev => resetHoldings(prev)); // reset holdings+futures, keep market running
-    setGardenState(prev => resetGarden(prev)); // reset slots/seeds/buffs, keep collection
-    setMergeState(prev => resetMerge(prev)); // reset grid/gifts, keep highestTier
-    setBuffState(createBuffState()); // reset all buffs, resonance, cooldowns
-    setSeenMilestones(new Set());
-    setRecentMsgs([]);
-    setTempMult(1);
-    setActiveChain(null);
-    setChainChoice(null);
-    // Note: boughtPrestige, activeSynergies, completedChains, eventChainBuffs persist across prestige
-    addToast(`🌀 Inbox Zero！+${prestigeEarned}已讀之力。第${prestigeCount + 1}次覺醒。${startBonus > 0 ? ` 快速啟動+${startBonus}！` : ''}`);
-  }, [prestigeEarned, prestigeCount, boughtPrestige]);
+    triggerShake(true);
+
+    // Start ceremony animation
+    setPrestigeAnim('wipe');
+
+    // Delay the actual reset to let the animation play
+    setTimeout(() => {
+      let startBonus = 0;
+      boughtPrestige.forEach(id => {
+        const node = PRESTIGE_UPGRADES.find(u => u.id === id);
+        if (node) getNodeEffects(node).forEach(e => { if (e.type === 'startBonus') startBonus += e.value; });
+      });
+      setPrestigePower(p => p + prestigeEarned);
+      setPrestigeCount(c => c + 1);
+      setReads(startBonus);
+      setAllTime(0);
+      setOwned(buildInitialOwned());
+      setBoughtUpgrades(new Set());
+      setUnlockedBuildings(new Set(['ex', 'par', 'bsy']));
+      setNewBuildings(new Set());
+      setMarketState(prev => resetHoldings(prev));
+      setGardenState(prev => resetGarden(prev));
+      setMergeState(prev => resetMerge(prev));
+      setBuffState(createBuffState());
+      setSeenMilestones(new Set());
+      setRecentMsgs([]);
+      setTempMult(1);
+      setActiveChain(null);
+      setChainChoice(null);
+      addToast(`🌀 Inbox Zero！+${prestigeEarned}已讀之力。第${prestigeCount + 1}次覺醒。${startBonus > 0 ? ` 快速啟動+${startBonus}！` : ''}`);
+
+      // Fade out the overlay
+      setPrestigeAnim('fadeOut');
+      setTimeout(() => setPrestigeAnim(null), 800);
+    }, 1200);
+  }, [prestigeEarned, prestigeCount, boughtPrestige, triggerShake]);
 
   const upgradeStates = UPGRADES.map(u => {
     if (boughtUpgrades.has(u.id)) return { ...u, state: 'done' };
@@ -1006,7 +1190,7 @@ export default function App() {
   }).filter(u => u.state !== 'lock');
 
   return (
-    <div style={{
+    <div ref={gameRootRef} style={{
       height: '100vh', background: 'var(--bg)', color: 'var(--text)',
       display: 'flex', flexDirection: 'column',
       fontFamily: "'Noto Sans TC',-apple-system,sans-serif",
@@ -1014,10 +1198,10 @@ export default function App() {
     }}>
       <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700;800&family=Noto+Sans+TC:wght@300;400;500;700;900&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet" />
       <style>{`
-        @keyframes fu  { 0% { opacity:1;transform:translateY(0) scale(1) } 100% { opacity:0;transform:translateY(-60px) scale(1.3) } }
+        @keyframes fu  { 0% { opacity:1;transform:translateY(0) scale(1) rotate(0deg) } 30% { opacity:1;transform:translateY(-20px) scale(1.4) } 100% { opacity:0;transform:translateY(-70px) scale(0.8) } }
         @keyframes pu  { 0%,100% { transform:scale(1);opacity:1 } 50% { transform:scale(1.4);opacity:.5 } }
         @keyframes ci  { 0% { opacity:0;transform:scale(.3) } 60% { transform:scale(1.1) } 100% { opacity:1;transform:scale(1) } }
-        @keyframes pn  { 0%,100% { transform:scale(1) } 50% { transform:scale(1.06) } }
+        @keyframes pn  { 0% { transform:scale(1) } 40% { transform:scale(1.12) } 100% { transform:scale(1) } }
         @keyframes ti  { 0% { opacity:0;transform:translateX(-50%) translateY(-20px) scale(.9) } 100% { opacity:1;transform:translateX(-50%) translateY(0) scale(1) } }
         @keyframes ib  { 0%,100% { transform:translateY(0) } 50% { transform:translateY(-6px) } }
         @keyframes hf  { 0% { opacity:.8 } 80% { opacity:.8 } 100% { opacity:0 } }
@@ -1098,6 +1282,135 @@ export default function App() {
           onAnimationEnd={() => setFloats(fs => fs.filter(x => x.id !== f.id))}
         >{f.text}</div>
       ))}
+
+      {/* Click burst particles */}
+      {particles.map(p => (
+        <div key={p.id} style={{
+          position: 'fixed', left: p.x, top: p.y,
+          pointerEvents: 'none', zIndex: 201,
+          fontSize: p.size,
+          color: '#6366f1',
+          fontWeight: 800,
+          fontFamily: "'JetBrains Mono',monospace",
+          textShadow: '0 0 6px rgba(99,102,241,.3)',
+          animation: 'clickBurst .5s ease-out forwards',
+          '--bx': `${p.bx}px`,
+          '--by': `${p.by}px`,
+        }}>{p.symbol}</div>
+      ))}
+
+      {/* Fever (已讀狂潮) overlay */}
+      {fever && !fever.ended && (() => {
+        const elapsed = Date.now() - fever.startedAt;
+        const remaining = Math.max(0, Math.ceil((fever.duration - elapsed) / 1000));
+        return (
+          <div style={{
+            position: 'fixed', inset: 0, zIndex: 400, pointerEvents: 'none',
+            animation: 'feverPulse 0.5s ease-in-out infinite',
+            border: '3px solid rgba(239,68,68,.6)',
+            borderRadius: 0,
+          }}>
+            {/* Top bar */}
+            <div style={{
+              position: 'absolute', top: 0, left: 0, right: 0,
+              display: 'flex', justifyContent: 'center', alignItems: 'center',
+              gap: 16, padding: '10px 0',
+              background: 'linear-gradient(180deg, rgba(239,68,68,.85) 0%, transparent 100%)',
+            }}>
+              <span style={{ color: '#fff', fontWeight: 800, fontSize: 18, letterSpacing: 2 }}>
+                🔥 已讀狂潮
+              </span>
+              <span style={{
+                color: '#fef2f2', fontSize: 28, fontWeight: 900,
+                fontFamily: "'JetBrains Mono', monospace",
+                animation: 'feverCountdown 1s ease-out',
+                key: remaining,
+              }}>
+                {remaining}s
+              </span>
+              <span style={{
+                color: '#fbbf24', fontSize: 16, fontWeight: 700,
+                animation: fever.combo > 1 ? 'feverComboUp 0.3s ease-out' : undefined,
+              }}>
+                ×{fever.combo} combo
+              </span>
+            </div>
+            {/* Time bar */}
+            <div style={{
+              position: 'absolute', bottom: 0, left: 0, right: 0, height: 4,
+              background: 'rgba(239,68,68,.2)',
+            }}>
+              <div style={{
+                height: '100%', background: '#ef4444',
+                animation: `feverBarShrink ${fever.duration / 1000}s linear forwards`,
+              }} />
+            </div>
+            {/* Click counter */}
+            <div style={{
+              position: 'absolute', bottom: 20, left: '50%', transform: 'translateX(-50%)',
+              color: '#fff', fontSize: 13, fontWeight: 600,
+              background: 'rgba(0,0,0,.5)', padding: '6px 16px', borderRadius: 20,
+            }}>
+              {fever.clicks} 次點擊 · +{fmt(fever.earned)}
+            </div>
+          </div>
+        );
+      })()}
+
+      {/* Fever result overlay */}
+      {fever?.ended && (
+        <div style={{
+          position: 'fixed', inset: 0, zIndex: 450, pointerEvents: 'none',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+        }}>
+          <div style={{
+            background: 'rgba(0,0,0,.8)', borderRadius: 20, padding: '28px 40px',
+            textAlign: 'center', color: '#fff',
+            animation: 'feverResultEnter 0.5s ease-out forwards',
+            border: '2px solid rgba(239,68,68,.4)',
+          }}>
+            <div style={{ fontSize: 32, fontWeight: 900, marginBottom: 8 }}>🔥 狂潮結束！</div>
+            <div style={{ fontSize: 15, color: 'rgba(255,255,255,.7)', marginBottom: 12 }}>
+              {(fever.duration / 1000).toFixed(0)} 秒內 {fever.clicks} 次點擊
+            </div>
+            <div style={{ fontSize: 22, fontWeight: 700, color: '#fbbf24', marginBottom: 4 }}>
+              最高 ×{fever.combo} combo
+            </div>
+            <div style={{ fontSize: 18, color: '#34d399' }}>
+              +{fmt(fever.earned)} 已讀
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Prestige ceremony overlay */}
+      {prestigeAnim && (
+        <div style={{
+          position: 'fixed', inset: 0, zIndex: 500,
+          background: 'linear-gradient(135deg, #1e1b4b, #312e81, #4338ca)',
+          display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+          animation: prestigeAnim === 'wipe' ? 'prestigeWipe 1s ease-out forwards'
+            : 'prestigeFadeOut 0.8s ease-in forwards',
+        }}>
+          <div style={{
+            fontSize: 60, fontWeight: 900,
+            color: '#fff',
+            textShadow: '0 0 40px rgba(99,102,241,.6), 0 0 80px rgba(99,102,241,.3)',
+            fontFamily: "'Space Grotesk','JetBrains Mono',monospace",
+            animation: 'prestigeText 1.8s ease-out forwards',
+          }}>
+            ✦ INBOX ZERO
+          </div>
+          <div style={{
+            fontSize: 18, color: 'rgba(255,255,255,.7)', marginTop: 12,
+            fontFamily: "'Noto Sans TC',sans-serif",
+            animation: 'prestigeText 1.8s ease-out 0.3s forwards',
+            opacity: 0,
+          }}>
+            +{prestigeEarned}已讀之力 · 第{prestigeCount + 1}次覺醒
+          </div>
+        </div>
+      )}
 
       {/* Toast */}
       {toasts.slice(-1).map(t => (
@@ -1219,7 +1532,7 @@ export default function App() {
               <div>
                 <div style={{ fontSize: 14, fontWeight: 700, color: '#fff' }}>已讀收件匣</div>
                 <div style={{ fontSize: 10, color: 'rgba(255,255,255,.7)' }}>
-                  {prodPerSec > 0 ? `${fmt(prodPerSec)}/秒` : '對方正在輸入...'}
+                  對方正在輸入...
                 </div>
               </div>
               <div style={{ flex: 1 }} />
@@ -1286,67 +1599,12 @@ export default function App() {
                   fontSize: 11, color: 'var(--text-muted)', marginTop: 2,
                   fontFamily: "'JetBrains Mono',monospace",
                 }}>
-                  生涯 {fmt(allTime)} · 大師 {Object.values(owned).reduce((s, v) => s + v, 0)} · 升級 {boughtUpgrades.size}/{UPGRADES.length}
+                  生涯 {fmt(allTime)} · 建築 {Object.values(owned).reduce((s, v) => s + v, 0)} · 升級 {boughtUpgrades.size}/{UPGRADES.length}
                 </span>
               )}
             </button>
 
-          {/* Combo boost chips — inside phone, near numbers */}
-          {(() => {
-            const gardenExBuff = getGardenExBuffMult(gardenState);
-            const liveBuffs = getActiveBuffs(buffState);
-            const boosts = [];
-            if (tempMult > 1) boosts.push({ icon: '🔥', label: `×${tempMult}`, color: '#6366f1', sub: tempMultExpiry > 0 ? `${Math.max(0, Math.ceil((tempMultExpiry - Date.now()) / 1000))}s` : '', title: '黃金訊息：全局產能加乘（限時）' });
-            // Show unified buffs by source
-            const sourceIcons = { storm: ['🌪️', '#6366f1', '風暴'], garden: ['🌸', '#22c55e', '花園'], merge: ['🎁', '#f59e0b', '合成'] };
-            const bySource = {};
-            for (const b of liveBuffs) {
-              if (b.scope !== 'global') continue;
-              if (!bySource[b.source]) bySource[b.source] = 0;
-              bySource[b.source] += (b.mult - 1);
-            }
-            for (const [src, bonus] of Object.entries(bySource)) {
-              if (bonus > 0) {
-                const [icon, color, sub] = sourceIcons[src] ?? ['✨', '#8b5cf6', src];
-                boosts.push({ icon, label: `×${(1 + bonus).toFixed(1)}`, color, sub, title: `${sub} buff` });
-              }
-            }
-            if (gardenExBuff > 1) boosts.push({ icon: '💔', label: `×${gardenExBuff.toFixed(1)}`, color: '#f43f5e', sub: '前任', title: '前任 buff：花朵加成前任產能' });
-            if (coldMaster) boosts.push({ icon: '🧊', label: '×1.5', color: '#06b6d4', sub: '冷漠', title: '冷漠大師：已讀不回的修行，永久×1.5 產能' });
-            if (boosts.length === 0) return null;
-            const unifiedMult = getBuffMultiplier(buffState);
-            const totalCombo = tempMult * unifiedMult * (coldMaster ? 1.5 : 1);
-            return (
-              <div style={{
-                display: 'flex', flexWrap: 'wrap', justifyContent: 'center',
-                gap: 4, padding: '4px 10px', marginBottom: 4,
-              }}>
-                {boosts.map((b, i) => (
-                  <div key={i} title={b.title} style={{
-                    display: 'flex', alignItems: 'center', gap: 2,
-                    padding: '2px 7px', borderRadius: 8,
-                    background: `${b.color}10`, border: `1px solid ${b.color}20`,
-                    cursor: 'help',
-                  }}>
-                    <span style={{ fontSize: 10 }}>{b.icon}</span>
-                    <span style={{ fontSize: 11, fontWeight: 700, color: b.color, fontFamily: "'JetBrains Mono',monospace" }}>{b.label}</span>
-                    {b.sub && <span style={{ fontSize: 8, color: 'var(--text-muted)' }}>{b.sub}</span>}
-                  </div>
-                ))}
-                {boosts.length >= 2 && (
-                  <div style={{
-                    padding: '2px 7px', borderRadius: 8,
-                    background: 'linear-gradient(135deg, rgba(99,102,241,.08), rgba(245,158,11,.08))',
-                    border: '1px solid rgba(99,102,241,.15)',
-                  }}>
-                    <span style={{ fontSize: 11, fontWeight: 800, color: 'var(--purple-dark)', fontFamily: "'JetBrains Mono',monospace" }}>
-                      = ×{totalCombo.toFixed(1)}
-                    </span>
-                  </div>
-                )}
-              </div>
-            );
-          })()}
+          {/* Boost chips moved to mini-game panel buff bar */}
 
           {/* Guilt indicator — always visible, between CPS and ClickArea */}
           <div style={{
@@ -1378,6 +1636,18 @@ export default function App() {
               }}>
                 {guilt < 200 ? '😶 罪惡感尚未覺醒' : coldMaster ? '🧊 冷漠大師' : '😔 罪惡感'}
               </span>
+              {/* Show penalty clearly */}
+              {guilt >= 200 && !coldMaster && (
+                <span style={{
+                  fontSize: 10, fontWeight: 800,
+                  padding: '1px 6px', borderRadius: 4,
+                  background: guiltLevel === 'high' ? 'rgba(239,68,68,.15)' : guiltLevel === 'medium' ? 'rgba(245,158,11,.12)' : 'rgba(99,102,241,.08)',
+                  color: guiltLevel === 'high' ? '#ef4444' : guiltLevel === 'medium' ? '#f59e0b' : '#6366f1',
+                  fontFamily: "'JetBrains Mono',monospace",
+                }}>
+                  產能 {guiltLevel === 'high' ? '-60%' : guiltLevel === 'medium' ? '-30%' : '-10%'}
+                </span>
+              )}
               <span style={{ flex: 1 }} />
               {guilt >= 200 && (
                 <span style={{
@@ -1761,6 +2031,47 @@ export default function App() {
       )}
 
       {/* Ticker removed — replaced by top marquee */}
+
+      {/* Hidden cheat panel — type "iddqd" to toggle */}
+      {cheatMode && (
+        <div style={{
+          position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 9999,
+          background: 'rgba(0,0,0,.92)', color: '#0f0', padding: '12px 16px',
+          fontFamily: "'JetBrains Mono',monospace", fontSize: 12,
+          display: 'flex', flexWrap: 'wrap', gap: 8, alignItems: 'center',
+        }}>
+          <span style={{ color: '#f00', fontWeight: 700 }}>CHEAT</span>
+          <button onClick={() => { setReads(r => r + 1e6); setAllTime(a => a + 1e6); }} style={cheatBtnStyle}>+1M已讀</button>
+          <button onClick={() => { setReads(r => r + 1e9); setAllTime(a => a + 1e9); }} style={cheatBtnStyle}>+1B已讀</button>
+          <button onClick={() => { setReads(r => r + 1e12); setAllTime(a => a + 1e12); }} style={cheatBtnStyle}>+1T已讀</button>
+          <button onClick={() => setPrestigePower(p => p + 10)} style={cheatBtnStyle}>+10✦</button>
+          <button onClick={() => setPrestigePower(p => p + 100)} style={cheatBtnStyle}>+100✦</button>
+          <button onClick={() => setPrestigePower(p => p + 500)} style={cheatBtnStyle}>+500✦</button>
+          <input
+            type="number"
+            placeholder="自訂已讀數"
+            style={{
+              background: '#111', color: '#0f0', border: '1px solid #0f0',
+              padding: '4px 8px', borderRadius: 4, width: 120, fontSize: 12,
+              fontFamily: "'JetBrains Mono',monospace",
+            }}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') {
+                const v = Number(e.target.value);
+                if (v > 0) { setReads(v); setAllTime(v); e.target.value = ''; }
+              }
+            }}
+          />
+          <span style={{ color: '#666', fontSize: 10 }}>reads={fmt(reads)} allTime={fmt(allTime)} ✦={prestigePower} ps={fmt(prodPerSec)}/s</span>
+          <button onClick={() => setCheatMode(false)} style={{ ...cheatBtnStyle, color: '#f00', borderColor: '#f00' }}>關閉</button>
+        </div>
+      )}
     </div>
   );
 }
+
+const cheatBtnStyle = {
+  background: 'transparent', color: '#0f0', border: '1px solid #0f0',
+  borderRadius: 4, padding: '4px 8px', cursor: 'pointer', fontSize: 11,
+  fontFamily: "'JetBrains Mono',monospace",
+};

@@ -130,7 +130,7 @@ export default function BuildingList({ buildings, owned, reads, allTime, unlocke
         <div style={{
           fontSize: 13, color: '#b45309', fontWeight: 700,
           letterSpacing: 1,
-        }}>🏰 已讀大師</div>
+        }}>🏰 已讀建築</div>
         <div style={{
           display: 'flex', gap: 2,
           background: 'var(--surface-hover)', borderRadius: 8, padding: 2,

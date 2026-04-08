@@ -12,7 +12,7 @@ import { GardenBanner, StockBanner, MergeBanner, QuantumBanner } from './Section
  * Each mini-game is a section with a header bar that toggles open/close.
  */
 const BUILDING_NAMES = {
-  ex: '前任', par: '忙朋友', algo: '社群演算法', quantum: '量子已讀',
+  ex: '前任', par: '爸媽', algo: '社群演算法', quantum: '量子已讀',
 };
 
 // Mini-game section summaries shown when collapsed
@@ -316,95 +316,22 @@ export default function MiniGamePanel({
             </div>
           )}
 
-          {/* Row 2: Action buttons — Storm + Quantum cooldowns */}
+          {/* Compact status indicators */}
           <div style={{
-            padding: '6px 12px',
-            display: 'flex', alignItems: 'center', gap: 8,
+            padding: '4px 12px 6px',
+            display: 'flex', alignItems: 'center', gap: 8, fontSize: 10,
           }}>
-            {/* Storm trigger */}
-            <div style={{
-              display: 'flex', alignItems: 'center', gap: 5, flex: 1,
-            }}>
-              <span style={{ fontSize: 14 }}>🌪️</span>
-              {stormActive ? (
-                <span style={{
-                  fontSize: 11, fontWeight: 700, color: '#6366f1',
-                  animation: 'stormActivePulse 1s ease-in-out infinite',
-                }}>進行中...</span>
-              ) : stormOnCooldown ? (
-                <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                  <div style={{
-                    width: 40, height: 4, borderRadius: 2,
-                    background: 'rgba(99,102,241,.1)', overflow: 'hidden',
-                  }}>
-                    <div style={{
-                      height: '100%', borderRadius: 2, background: '#6366f1',
-                      width: `${Math.max(0, 100 - ((stormCooldownEnd - Date.now()) / 180000) * 100)}%`,
-                      transition: 'width 1s linear',
-                    }} />
-                  </div>
-                  <span style={{
-                    fontSize: 10, fontWeight: 600, color: 'var(--text-muted)',
-                    fontFamily: "'JetBrains Mono',monospace",
-                  }}>{fmtCd(stormCooldownEnd)}</span>
-                </div>
-              ) : (
-                <button onClick={onStartStorm} style={{
-                  padding: '3px 12px', fontSize: 11, fontWeight: 700,
-                  background: 'linear-gradient(135deg, #6366f1, #4f46e5)',
-                  color: '#fff', border: 'none', borderRadius: 8,
-                  cursor: 'pointer', boxShadow: '0 2px 6px rgba(99,102,241,.25)',
-                  animation: 'readyGlow 2s ease-in-out infinite',
-                }}>
-                  啟動 ▶
-                </button>
-              )}
-            </div>
-
-            {/* Divider */}
-            <div style={{ width: 1, height: 16, background: 'rgba(148,163,184,.12)' }} />
-
-            {/* Quantum cooldown indicator */}
-            <div style={{
-              display: 'flex', alignItems: 'center', gap: 5, flex: 1,
-            }}>
-              <span style={{ fontSize: 14 }}>⚛️</span>
-              {quantumOnCooldown ? (
-                <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                  <div style={{
-                    width: 40, height: 4, borderRadius: 2,
-                    background: 'rgba(34,211,238,.1)', overflow: 'hidden',
-                  }}>
-                    <div style={{
-                      height: '100%', borderRadius: 2, background: '#22d3ee',
-                      width: `${Math.max(0, 100 - ((quantumCooldownEnd - Date.now()) / 300000) * 100)}%`,
-                      transition: 'width 1s linear',
-                    }} />
-                  </div>
-                  <span style={{
-                    fontSize: 10, fontWeight: 600, color: 'var(--text-muted)',
-                    fontFamily: "'JetBrains Mono',monospace",
-                  }}>{fmtCd(quantumCooldownEnd)}</span>
-                </div>
-              ) : (
-                <span style={{
-                  fontSize: 10, fontWeight: 600, color: '#22d3ee',
-                }}>就緒</span>
-              )}
-            </div>
-
-            {/* Futures count */}
+            {stormActive && (
+              <span style={{
+                fontWeight: 700, color: '#6366f1',
+                animation: 'stormActivePulse 1s ease-in-out infinite',
+              }}>🌪️ 風暴中</span>
+            )}
             {marketState?.futures?.length > 0 && (
-              <>
-                <div style={{ width: 1, height: 16, background: 'rgba(148,163,184,.12)' }} />
-                <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                  <span style={{ fontSize: 14 }}>📈</span>
-                  <span style={{
-                    fontSize: 10, fontWeight: 600, color: '#6366f1',
-                    fontFamily: "'JetBrains Mono',monospace",
-                  }}>{marketState.futures.length} 合約</span>
-                </div>
-              </>
+              <span style={{
+                fontWeight: 600, color: '#6366f1',
+                fontFamily: "'JetBrains Mono',monospace",
+              }}>📈 {marketState.futures.length} 合約</span>
             )}
           </div>
         </div>
