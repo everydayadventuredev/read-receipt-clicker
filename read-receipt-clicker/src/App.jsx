@@ -107,6 +107,8 @@ export default function App() {
   const [mutedUI,    setMutedUI]    = useState(false);
   const [offlineBanner, setOfflineBanner] = useState(null);
   const [prodPerSec, setProdPerSec] = useState(0);
+  const [multBreakdown, setMultBreakdown] = useState(null); // { baseProd, prestigeMult, ... }
+  const [showBreakdown, setShowBreakdown] = useState(false);
   const [showPrestigeShop, setShowPrestigeShop] = useState(false);
   const [showAchievements, setShowAchievements] = useState(false);
   const [marketState,      setMarketState]      = useState(() => {
@@ -329,6 +331,20 @@ export default function App() {
     const total = p * prestigeMult * prestigeGlobalMult * chainGlobalBuff * tempMult * coldMasterMult * guiltPenalty * unifiedBuff * gardenSeries * mergePerm * achievementMult;
     setProdPerSec(total);
     psRef.current = total;
+    setMultBreakdown({
+      baseProd: p,
+      prestigeMult,
+      prestigeGlobalMult,
+      chainGlobalBuff,
+      tempMult,
+      coldMasterMult,
+      guiltPenalty,
+      unifiedBuff,
+      gardenSeries,
+      mergePerm,
+      achievementMult,
+      total,
+    });
   }, [owned, boughtUpgrades, prestigeMult, prestigeGlobalMult, chainGlobalBuff, tempMult, boughtPrestige, eventChainBuffs, buffState, gardenState, mergeState, guilt, coldMaster, unlockedAchievements]);
 
   const calcClickPower = useCallback(() => {
@@ -1588,12 +1604,66 @@ export default function App() {
                   </span>
                 );
               })()}
-              <span style={{
-                fontSize: 14, color: 'var(--text-muted)', marginTop: 4,
-                fontFamily: "'JetBrains Mono',monospace",
-              }}>
+              <span
+                onClick={() => prodPerSec > 0 && setShowBreakdown(v => !v)}
+                style={{
+                  fontSize: 14, color: 'var(--text-muted)', marginTop: 4,
+                  fontFamily: "'JetBrains Mono',monospace",
+                  cursor: prodPerSec > 0 ? 'pointer' : 'default',
+                }}
+              >
                 <CheckIcon size={11} color="#94a3b8" /> {prodPerSec > 0 ? `${fmt(prodPerSec)}/秒` : '點擊開始已讀'}
+                {prodPerSec > 0 && <span style={{ fontSize: 10, marginLeft: 4, opacity: 0.5 }}>{showBreakdown ? '▲' : '▼'}</span>}
               </span>
+              {showBreakdown && multBreakdown && (
+                <div style={{
+                  marginTop: 6, padding: '8px 10px', borderRadius: 8,
+                  background: 'rgba(99,102,241,.04)', border: '1px solid rgba(99,102,241,.1)',
+                  width: '100%', maxWidth: 280,
+                  fontSize: 11, fontFamily: "'JetBrains Mono',monospace",
+                  color: 'var(--text-secondary)', lineHeight: 1.8,
+                }}>
+                  <div style={{ fontWeight: 700, color: 'var(--text)', marginBottom: 4, fontSize: 10, letterSpacing: 0.5, textTransform: 'uppercase' }}>乘數拆解</div>
+                  {[
+                    ['基礎產能', multBreakdown.baseProd, true],
+                    ['✦ 重生', multBreakdown.prestigeMult],
+                    ['✦ 天賦', multBreakdown.prestigeGlobalMult],
+                    ['事件鏈', multBreakdown.chainGlobalBuff],
+                    ['臨時增幅', multBreakdown.tempMult],
+                    ['冷漠大師', multBreakdown.coldMasterMult],
+                    ['罪惡感', multBreakdown.guiltPenalty],
+                    ['Buff', multBreakdown.unifiedBuff],
+                    ['花園系列', multBreakdown.gardenSeries],
+                    ['合併', multBreakdown.mergePerm],
+                    ['成就', multBreakdown.achievementMult],
+                  ].map(([label, value, isBase]) => {
+                    if (!isBase && value === 1) return null; // hide ×1 multipliers
+                    const isDebuff = value < 1;
+                    return (
+                      <div key={label} style={{ display: 'flex', justifyContent: 'space-between' }}>
+                        <span>{label}</span>
+                        <span style={{
+                          fontWeight: 600,
+                          color: isBase ? '#4f46e5'
+                            : isDebuff ? '#ef4444'
+                            : value > 1 ? '#16a34a' : 'var(--text-muted)',
+                        }}>
+                          {isBase ? `${fmt(value)}/s` : `×${value.toFixed(2)}`}
+                        </span>
+                      </div>
+                    );
+                  }).filter(Boolean)}
+                  <div style={{
+                    borderTop: '1px solid rgba(99,102,241,.15)',
+                    marginTop: 4, paddingTop: 4,
+                    display: 'flex', justifyContent: 'space-between',
+                    fontWeight: 800, color: '#4f46e5',
+                  }}>
+                    <span>最終</span>
+                    <span>{fmt(multBreakdown.total)}/s</span>
+                  </div>
+                </div>
+              )}
               {allTime > 0 && (
                 <span style={{
                   fontSize: 11, color: 'var(--text-muted)', marginTop: 2,
