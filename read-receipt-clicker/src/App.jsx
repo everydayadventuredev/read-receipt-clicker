@@ -923,7 +923,7 @@ export default function App() {
     const fid = idRef.current++;
     setFloats(f => [...f, { id: fid, x, y, text: power > 1 ? `+${fmt(power)}` : '+1' }]);
     spawnParticles(x, y, 5);
-    setRecentMsgs(prev => [message, ...prev].slice(0, 5));
+    setRecentMsgs(prev => [message, ...prev].slice(0, 20));
     playClick();
 
     setTimeout(() => {

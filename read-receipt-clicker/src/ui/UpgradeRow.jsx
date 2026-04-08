@@ -132,11 +132,11 @@ export default function UpgradeRow({ upgrades, reads, onBuy, onBuyAll, compact =
                 >
                   {u.emoji}
                 </button>
-                {/* Styled tooltip */}
+                {/* Styled tooltip — below the icon */}
                 {isHovered && (
                   <div style={{
-                    position: 'absolute', bottom: '100%', left: '50%',
-                    transform: 'translateX(-50%)', marginBottom: 6,
+                    position: 'absolute', top: '100%', left: '50%',
+                    transform: 'translateX(-50%)', marginTop: 6,
                     background: 'rgba(15,23,42,.92)', color: '#fff',
                     padding: '8px 12px', borderRadius: 8,
                     fontSize: 11, whiteSpace: 'nowrap', zIndex: 100,
@@ -144,6 +144,15 @@ export default function UpgradeRow({ upgrades, reads, onBuy, onBuyAll, compact =
                     boxShadow: '0 4px 12px rgba(0,0,0,.2)',
                     minWidth: 140,
                   }}>
+                    {/* Arrow pointing up */}
+                    <div style={{
+                      position: 'absolute', bottom: '100%', left: '50%',
+                      transform: 'translateX(-50%)',
+                      width: 0, height: 0,
+                      borderLeft: '5px solid transparent',
+                      borderRight: '5px solid transparent',
+                      borderBottom: '5px solid rgba(15,23,42,.92)',
+                    }} />
                     <div style={{ fontWeight: 700, fontSize: 12 }}>{u.name}</div>
                     <div style={{ color: canBuy ? '#a5b4fc' : '#94a3b8', fontWeight: 600 }}>{getEffectLabel(u)}</div>
                     <div style={{
@@ -151,15 +160,6 @@ export default function UpgradeRow({ upgrades, reads, onBuy, onBuyAll, compact =
                       fontFamily: "'JetBrains Mono',monospace",
                       fontWeight: 700, marginTop: 2,
                     }}>{fmt(u.cost)} 已讀</div>
-                    {/* Arrow */}
-                    <div style={{
-                      position: 'absolute', top: '100%', left: '50%',
-                      transform: 'translateX(-50%)',
-                      width: 0, height: 0,
-                      borderLeft: '5px solid transparent',
-                      borderRight: '5px solid transparent',
-                      borderTop: '5px solid rgba(15,23,42,.92)',
-                    }} />
                   </div>
                 )}
               </div>
