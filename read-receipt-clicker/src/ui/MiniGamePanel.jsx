@@ -103,6 +103,7 @@ function SectionHeader({ mg, isUnlocked, currentCount, onToggle, summary }) {
 
 export default function MiniGamePanel({
   owned,
+  unlockedBuildings,
   activeMiniGame,
   setActiveMiniGame,
   // Stock market props
@@ -141,7 +142,11 @@ export default function MiniGamePanel({
   onSendGift,
 }) {
   const unlocked = getUnlockedMinigames(owned);
-  const allEntries = MINIGAME_REGISTRY;
+  // Show all mini-games whose building is unlocked (even if count < unlockCount)
+  const visibleEntries = MINIGAME_REGISTRY.filter(
+    mg => unlockedBuildings?.has(mg.buildingId)
+  );
+  const allEntries = visibleEntries.length > 0 ? visibleEntries : MINIGAME_REGISTRY;
 
   // Auto-select first unlocked if none active
   React.useEffect(() => {
@@ -170,8 +175,8 @@ export default function MiniGamePanel({
     return () => clearInterval(iv);
   }, [stormOnCooldown, quantumOnCooldown, liveBuffs.length]);
 
-  // Nothing unlocked → placeholder
-  if (unlocked.length === 0) {
+  // Nothing visible → placeholder (only before any buildings unlocked)
+  if (visibleEntries.length === 0 && unlocked.length === 0) {
     return (
       <div style={{
         flex: 1, display: 'flex', flexDirection: 'column',

@@ -982,7 +982,6 @@ export default function App() {
     for (let i = count + 1; i <= newCount; i++) {
       if (b.milestones?.[i]) { addToast(`${b.emoji} ${b.milestones[i]}`); triggerShake(true); }
     }
-    triggerShake();
     playBuy();
   }, [triggerShake]);
 
@@ -1240,8 +1239,8 @@ export default function App() {
         button:active { transform:scale(.96)!important }
         @media(min-width:768px) {
           .game-layout { flex-direction:row!important }
-          .section-hero   { width:30%!important; border-right:2px solid #e2e8f0 }
-          .section-middle { width:40%!important; border-right:2px solid #e2e8f0 }
+          .section-hero   { width:30%!important; border-right:3px solid #d97706; box-shadow:2px 0 8px rgba(0,0,0,.06) }
+          .section-middle { width:40%!important; border-right:3px solid #d97706; box-shadow:2px 0 8px rgba(0,0,0,.06) }
           .section-store  { width:30%!important }
         }
       `}</style>
@@ -1664,14 +1663,7 @@ export default function App() {
                   </div>
                 </div>
               )}
-              {allTime > 0 && (
-                <span style={{
-                  fontSize: 11, color: 'var(--text-muted)', marginTop: 2,
-                  fontFamily: "'JetBrains Mono',monospace",
-                }}>
-                  生涯 {fmt(allTime)} · 建築 {Object.values(owned).reduce((s, v) => s + v, 0)} · 升級 {boughtUpgrades.size}/{UPGRADES.length}
-                </span>
-              )}
+              {/* Stats moved to Ticker bulletin board */}
             </button>
 
           {/* Boost chips moved to mini-game panel buff bar */}
@@ -1815,11 +1807,16 @@ export default function App() {
         }}>
 
           {/* Ticker — news/events at top of middle column */}
-          <Ticker allTime={allTime} logEntries={log} />
+          <Ticker allTime={allTime} logEntries={log} stats={{
+            allTime, prodPerSec, totalBuildings: Object.values(owned).reduce((s, v) => s + v, 0),
+            upgrades: boughtUpgrades.size, totalUpgrades: UPGRADES.length,
+            prestigeCount, prestigePower,
+          }} />
 
           {/* Mini-Game panel — building sub-systems */}
           <MiniGamePanel
             owned={owned}
+            unlockedBuildings={unlockedBuildings}
             activeMiniGame={activeMiniGame}
             setActiveMiniGame={setActiveMiniGame}
             marketState={marketState}
@@ -1861,50 +1858,55 @@ export default function App() {
           background: 'linear-gradient(180deg, rgba(245,158,11,.02) 0%, rgba(245,158,11,.01) 100%)',
         }}>
 
-          {/* Header bar — now inside right column */}
+          {/* Header bar — bulletin board style */}
           <div style={{
-            padding: '8px 12px', display: 'flex', alignItems: 'center',
+            padding: '10px 14px', display: 'flex', alignItems: 'center',
             flexShrink: 0, gap: 8,
-            borderBottom: '1px solid var(--border)',
-            background: 'rgba(255,255,255,.6)',
-            position: 'relative',
+            borderBottom: '2px solid #d97706',
+            background: 'linear-gradient(135deg, #fef3c7 0%, #fde68a 30%, #fef9c3 100%)',
+            position: 'relative', overflow: 'hidden',
           }}>
-            <HeaderBanner />
+            {/* Grid texture */}
+            <div style={{
+              position: 'absolute', inset: 0, opacity: 0.04,
+              backgroundImage: 'repeating-linear-gradient(0deg, transparent, transparent 8px, #92400e 8px, #92400e 9px), repeating-linear-gradient(90deg, transparent, transparent 8px, #92400e 8px, #92400e 9px)',
+              pointerEvents: 'none',
+            }} />
             {/* Logo */}
             <div style={{
-              width: 24, height: 24, borderRadius: 8,
+              width: 26, height: 26, borderRadius: 8,
               background: 'linear-gradient(135deg, var(--purple), var(--purple-dark))',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
-              flexShrink: 0,
+              flexShrink: 0, boxShadow: '0 1px 3px rgba(0,0,0,.15)',
             }}>
-              <CheckIcon size={12} color="#fff" />
+              <CheckIcon size={13} color="#fff" />
             </div>
             <span style={{
-              fontSize: 13, fontWeight: 800, color: 'var(--text)',
+              fontSize: 14, fontWeight: 800, color: '#78350f',
               letterSpacing: 1, fontFamily: "'JetBrains Mono',monospace",
             }}>已讀</span>
             {prestigePower > 0 && (
               <span style={{
-                fontSize: 9, color: 'var(--purple-text)',
-                background: 'rgba(99,102,241,.08)',
-                padding: '1px 6px', borderRadius: 6,
+                fontSize: 10, color: '#6366f1', fontWeight: 700,
+                background: 'rgba(99,102,241,.1)',
+                padding: '2px 7px', borderRadius: 6,
                 fontFamily: "'JetBrains Mono',monospace",
-                border: '1px solid rgba(99,102,241,.15)',
+                border: '1px solid rgba(99,102,241,.2)',
               }}>✦{prestigePower}</span>
             )}
             <button onClick={() => setShowAchievements(true)} style={{
-              fontSize: 11, color: 'var(--text-muted)', fontFamily: "'JetBrains Mono',monospace",
-              background: 'rgba(245,158,11,.06)', border: '1px solid rgba(245,158,11,.15)',
+              fontSize: 11, color: '#92400e', fontFamily: "'JetBrains Mono',monospace",
+              background: 'rgba(245,158,11,.15)', border: '1px solid rgba(217,119,6,.3)',
               borderRadius: 6, padding: '6px 10px', cursor: 'pointer',
-              minHeight: 44, fontWeight: 600,
+              minHeight: 44, fontWeight: 700,
             }}>
               {unlockedAchievements.size}/{ACHIEVEMENTS.filter(a => !a.hidden).length}⭐
             </button>
             <div style={{ flex: 1 }} />
             {prestigeCount > 0 && (
               <button onClick={() => setShowPrestigeShop(true)} style={{
-                background: 'rgba(99,102,241,.08)', border: '1px solid rgba(99,102,241,.2)',
-                borderRadius: 6, padding: '8px 12px', color: 'var(--purple-text)',
+                background: 'rgba(99,102,241,.12)', border: '1px solid rgba(99,102,241,.3)',
+                borderRadius: 6, padding: '8px 12px', color: '#4f46e5',
                 fontSize: 12, fontWeight: 700, cursor: 'pointer',
                 fontFamily: "'JetBrains Mono',monospace", minHeight: 44,
               }}>✦商店</button>
@@ -1918,8 +1920,8 @@ export default function App() {
               }}>重生 +✦{prestigeEarned}</button>
             )}
             <button onClick={() => { const m = toggleMute(); setMutedUI(m); }} style={{
-              background: 'var(--surface-hover)', border: '1px solid var(--border)',
-              borderRadius: 6, padding: '8px 12px', color: 'var(--text-secondary)', fontSize: 14,
+              background: 'rgba(255,255,255,.5)', border: '1px solid rgba(217,119,6,.2)',
+              borderRadius: 6, padding: '8px 12px', color: '#78350f', fontSize: 14,
               minWidth: 44, minHeight: 44, cursor: 'pointer',
             }}>{mutedUI ? '🔇' : '🔊'}</button>
           </div>

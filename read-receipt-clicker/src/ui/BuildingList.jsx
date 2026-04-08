@@ -18,12 +18,14 @@ function BuildingBar({ b, count, cost, prodRate, canAfford, buyN, isNew, onBuy, 
       style={{
         display: 'flex', alignItems: 'stretch',
         width: '100%', padding: 0, height: hasAny ? 72 : 48,
-        background: hasAny ? 'transparent' : `linear-gradient(90deg, ${b.color}08, ${b.color}03)`,
+        background: hasAny
+          ? (canAfford ? 'transparent' : 'rgba(0,0,0,.03)')
+          : `linear-gradient(90deg, ${b.color}08, ${b.color}03)`,
         border: isNew ? `1px solid ${b.color}55`
-          : canAfford ? `1px solid ${b.color}18`
-          : '1px solid #eef0f2',
+          : canAfford ? `1px solid ${b.color}30`
+          : '1px solid #d1d5db',
         borderRadius: 6,
-        opacity: canAfford ? 1 : 0.5,
+        opacity: canAfford ? 1 : 0.45,
         transition: 'all .15s',
         textAlign: 'left', position: 'relative', overflow: 'hidden',
         cursor: canAfford ? 'pointer' : 'default',
