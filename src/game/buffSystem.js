@@ -12,9 +12,10 @@ let _nextId = 1;
 
 // Per-source caps
 const SOURCE_CAPS = {
-  storm:  3.0,
-  garden: 3.0,
-  merge:  2.5,
+  storm:  1.8,
+  garden: 1.8,
+  merge:  1.5,
+  market: 1.5,
 };
 
 export function createBuffState() {

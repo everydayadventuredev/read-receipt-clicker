@@ -100,6 +100,8 @@ export default function App() {
   const [buyN,       setBuyN]       = useState(1);
   const [particles,  setParticles]  = useState([]);
   const [prestigeAnim, setPrestigeAnim] = useState(null); // null | 'wipe' | 'fadeOut'
+  // ── Fever (已讀狂潮) state ──
+  const [fever, setFever] = useState(null); // null | { startedAt, duration, clicks, combo, earned }
   const [tempMult,   setTempMult]   = useState(1);
   const [tempMultExpiry, setTempMultExpiry] = useState(0); // timestamp when tempMult expires
   const [mutedUI,    setMutedUI]    = useState(false);
@@ -134,6 +136,8 @@ export default function App() {
   const tempMultRef = useRef(tempMult);
   const costDiscountRef = useRef(0);
   const gameRootRef = useRef(null);
+  const feverRef = useRef(null); // current fever state for interval reads
+  const feverTimerRef = useRef(null);
 
   // Screen shake utility
   const triggerShake = useCallback((strong = false) => {
@@ -162,6 +166,70 @@ export default function App() {
     setTimeout(() => setParticles(prev => prev.filter(p => !ps.includes(p))), 600);
   }, []);
 
+  // ── Fever (已讀狂潮) system ──
+  // Force re-render every 200ms during fever for countdown display
+  const [feverTick, setFeverTick] = useState(0);
+  useEffect(() => {
+    if (!fever || fever.ended) return;
+    const iv = setInterval(() => setFeverTick(t => t + 1), 200);
+    return () => clearInterval(iv);
+  }, [fever?.startedAt, fever?.ended]);
+
+  // Returns fever chance based on active buff count
+  const getFeverChance = useCallback(() => {
+    const activeCount = getActiveBuffs(buffState).length;
+    const base = 0.15;
+    // Each active buff adds +0.08 chance (e.g., 2 buffs → 31%)
+    return Math.min(0.5, base + activeCount * 0.08);
+  }, [buffState]);
+
+  const startFever = useCallback((duration = 6) => {
+    if (feverRef.current) return; // already active
+    const f = { startedAt: Date.now(), duration: duration * 1000, clicks: 0, combo: 1, earned: 0 };
+    feverRef.current = f;
+    setFever(f);
+    triggerShake(true);
+    // Auto-end fever after duration
+    if (feverTimerRef.current) clearTimeout(feverTimerRef.current);
+    feverTimerRef.current = setTimeout(() => {
+      const final = feverRef.current;
+      if (!final) return;
+      feverRef.current = null;
+      // Show result for 2.5s then clear
+      setFever({ ...final, ended: true });
+      setTimeout(() => setFever(null), 2500);
+    }, duration * 1000);
+  }, [triggerShake]);
+
+  const handleFeverClick = useCallback((e) => {
+    if (!feverRef.current) return;
+    const f = feverRef.current;
+    const elapsed = Date.now() - f.startedAt;
+    if (elapsed >= f.duration) return;
+
+    const newClicks = f.clicks + 1;
+    // Combo: every 3 rapid clicks → +1 combo (max 10)
+    const newCombo = Math.min(10, 1 + Math.floor(newClicks / 3));
+    // Each fever click = combo × 2s of production
+    const clickValue = Math.max(1, Math.floor(psRef.current * 2 * newCombo));
+    const newEarned = f.earned + clickValue;
+
+    const updated = { ...f, clicks: newClicks, combo: newCombo, earned: newEarned };
+    feverRef.current = updated;
+    setFever(updated);
+
+    setReads(r => r + clickValue);
+    setAllTime(a => a + clickValue);
+
+    // Visual feedback
+    const rect = e.currentTarget.getBoundingClientRect();
+    const x = e.clientX ?? (e.touches?.[0]?.clientX ?? rect.left + rect.width / 2);
+    const y = e.clientY ?? (e.touches?.[0]?.clientY ?? rect.top + rect.height / 2);
+    const fid = idRef.current++;
+    setFloats(fl => [...fl, { id: fid, x, y, text: `×${newCombo} +${fmt(clickValue)}` }]);
+    if (newCombo > f.combo) triggerShake();
+  }, [triggerShake]);
+
   useEffect(() => { readsRef.current   = reads;   }, [reads]);
   useEffect(() => { allTimeRef.current = allTime; }, [allTime]);
   useEffect(() => { ownedRef.current   = owned;   }, [owned]);
@@ -185,7 +253,7 @@ export default function App() {
     if (!boughtPrestige.has(u.id)) return;
     getNodeEffects(u).forEach(e => { if (e.type === 'prestigeBonus') prestigeBonusMult += e.value; });
   });
-  const prestigeEarned = Math.floor(3 * Math.log(1 + allTime / 200000) * prestigeBonusMult);
+  const prestigeEarned = Math.floor(2 * Math.log(1 + allTime / 1000000) * prestigeBonusMult);
 
   // Global mult from prestige upgrades (multi-effect aware)
   let prestigeGlobalMult = 1;
@@ -454,7 +522,7 @@ export default function App() {
         const pool = GOLDEN_COOKIES.filter(e => !e.minAt || allTimeRef.current >= e.minAt);
         // Add mega event if gc5 unlocked
         if (boughtRef.current.has('gc5') && Math.random() < 0.08) {
-          setGoldenCookie({ type: 'mult5', mult: 10, dur: 5, toast: '宇宙彩券頭獎！×10 已讀！', minAt: 0 });
+          setGoldenCookie({ type: 'mult5', mult: 5, dur: 5, toast: '宇宙彩券頭獎！×5 已讀！', minAt: 0 });
         } else {
           const g = pk(pool);
           setGoldenCookie(g);
@@ -794,8 +862,18 @@ export default function App() {
   }
 
   const handleClick = useCallback((e) => {
-    if (isRead) return;
     if (!started) setStarted(true);
+
+    // During fever, bypass isRead cooldown — allow rapid clicking
+    if (feverRef.current && !feverRef.current.ended) {
+      handleFeverClick(e);
+      playClick();
+      setPopAnim(true);
+      setTimeout(() => setPopAnim(false), 80);
+      return;
+    }
+
+    if (isRead) return;
 
     const rect = e.currentTarget.getBoundingClientRect();
     const x = e.clientX ?? (e.touches?.[0]?.clientX ?? rect.left + rect.width / 2);
@@ -819,7 +897,7 @@ export default function App() {
       setIsRead(false);
       setMessage(nextMessage());
     }, 200);
-  }, [isRead, started, message, calcClickPower]);
+  }, [isRead, started, message, calcClickPower, handleFeverClick]);
 
   const handleGoldenCookie = useCallback((e) => {
     if (!goldenCookie) return;
@@ -833,6 +911,16 @@ export default function App() {
     spawnParticles(cx, cy, 10, ['✦', '★', '✧', '⭐', '✨']);
     triggerShake(gc.type === 'mult5');
 
+    // ── Fever chance: roll for 已讀狂潮 ──
+    const feverChance = getFeverChance();
+    if (!feverRef.current && Math.random() < feverChance) {
+      // Fever duration: 5-8s, longer if mult event
+      const feverDur = gc.type === 'mult5' ? 8 : gc.type === 'mult' ? 7 : 6;
+      startFever(feverDur);
+      addToast(`🔥 已讀狂潮！${feverDur} 秒內瘋狂點擊！`);
+      // Still apply the normal event effect too — but it stacks with fever
+    }
+
     const durMult = boughtUpgrades.has('gc4') ? 1.5 : 1;
     const powerBonus = boughtUpgrades.has('gc3') ? 1 : 0;
     if (gc.type === 'mult') {
@@ -840,7 +928,7 @@ export default function App() {
       setTempMultExpiry(Date.now() + gc.dur * 1000 * durMult);
       addToast(`🚀 ${gc.toast}`);
     } else if (gc.type === 'mult5') {
-      setTempMult(5 + powerBonus);
+      setTempMult(4 + powerBonus);
       setTempMultExpiry(Date.now() + gc.dur * 1000 * durMult);
       addToast(`🔥 ${gc.toast}`);
     } else {
@@ -849,7 +937,7 @@ export default function App() {
       setAllTime(a => a + bonus);
       addToast(`${gc.emoji} ${gc.toast} +${fmt(bonus)}`);
     }
-  }, [goldenCookie, spawnParticles, triggerShake]);
+  }, [goldenCookie, spawnParticles, triggerShake, getFeverChance, startFever]);
 
   const handleBuy = useCallback((b, n) => {
     const count = ownedRef.current[b.id] ?? 0;
@@ -1195,6 +1283,90 @@ export default function App() {
           '--by': `${p.by}px`,
         }}>{p.symbol}</div>
       ))}
+
+      {/* Fever (已讀狂潮) overlay */}
+      {fever && !fever.ended && (() => {
+        const elapsed = Date.now() - fever.startedAt;
+        const remaining = Math.max(0, Math.ceil((fever.duration - elapsed) / 1000));
+        return (
+          <div style={{
+            position: 'fixed', inset: 0, zIndex: 400, pointerEvents: 'none',
+            animation: 'feverPulse 0.5s ease-in-out infinite',
+            border: '3px solid rgba(239,68,68,.6)',
+            borderRadius: 0,
+          }}>
+            {/* Top bar */}
+            <div style={{
+              position: 'absolute', top: 0, left: 0, right: 0,
+              display: 'flex', justifyContent: 'center', alignItems: 'center',
+              gap: 16, padding: '10px 0',
+              background: 'linear-gradient(180deg, rgba(239,68,68,.85) 0%, transparent 100%)',
+            }}>
+              <span style={{ color: '#fff', fontWeight: 800, fontSize: 18, letterSpacing: 2 }}>
+                🔥 已讀狂潮
+              </span>
+              <span style={{
+                color: '#fef2f2', fontSize: 28, fontWeight: 900,
+                fontFamily: "'JetBrains Mono', monospace",
+                animation: 'feverCountdown 1s ease-out',
+                key: remaining,
+              }}>
+                {remaining}s
+              </span>
+              <span style={{
+                color: '#fbbf24', fontSize: 16, fontWeight: 700,
+                animation: fever.combo > 1 ? 'feverComboUp 0.3s ease-out' : undefined,
+              }}>
+                ×{fever.combo} combo
+              </span>
+            </div>
+            {/* Time bar */}
+            <div style={{
+              position: 'absolute', bottom: 0, left: 0, right: 0, height: 4,
+              background: 'rgba(239,68,68,.2)',
+            }}>
+              <div style={{
+                height: '100%', background: '#ef4444',
+                animation: `feverBarShrink ${fever.duration / 1000}s linear forwards`,
+              }} />
+            </div>
+            {/* Click counter */}
+            <div style={{
+              position: 'absolute', bottom: 20, left: '50%', transform: 'translateX(-50%)',
+              color: '#fff', fontSize: 13, fontWeight: 600,
+              background: 'rgba(0,0,0,.5)', padding: '6px 16px', borderRadius: 20,
+            }}>
+              {fever.clicks} 次點擊 · +{fmt(fever.earned)}
+            </div>
+          </div>
+        );
+      })()}
+
+      {/* Fever result overlay */}
+      {fever?.ended && (
+        <div style={{
+          position: 'fixed', inset: 0, zIndex: 450, pointerEvents: 'none',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+        }}>
+          <div style={{
+            background: 'rgba(0,0,0,.8)', borderRadius: 20, padding: '28px 40px',
+            textAlign: 'center', color: '#fff',
+            animation: 'feverResultEnter 0.5s ease-out forwards',
+            border: '2px solid rgba(239,68,68,.4)',
+          }}>
+            <div style={{ fontSize: 32, fontWeight: 900, marginBottom: 8 }}>🔥 狂潮結束！</div>
+            <div style={{ fontSize: 15, color: 'rgba(255,255,255,.7)', marginBottom: 12 }}>
+              {(fever.duration / 1000).toFixed(0)} 秒內 {fever.clicks} 次點擊
+            </div>
+            <div style={{ fontSize: 22, fontWeight: 700, color: '#fbbf24', marginBottom: 4 }}>
+              最高 ×{fever.combo} combo
+            </div>
+            <div style={{ fontSize: 18, color: '#34d399' }}>
+              +{fmt(fever.earned)} 已讀
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Prestige ceremony overlay */}
       {prestigeAnim && (
