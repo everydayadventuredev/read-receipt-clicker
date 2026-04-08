@@ -35,6 +35,7 @@ export default function UpgradeRow({ upgrades, reads, onBuy, onBuyAll, compact =
   const doneCount = upgrades.filter(u => u.state === 'done').length;
   const seenRef = useRef(new Set());
   const [newIds, setNewIds] = useState(new Set());
+  const [hoveredUpgrade, setHoveredUpgrade] = useState(null);
 
   useEffect(() => {
     const freshIds = new Set();
@@ -105,11 +106,13 @@ export default function UpgradeRow({ upgrades, reads, onBuy, onBuyAll, compact =
           {activeItems.map(u => {
             const canBuy = u.state === 'buy';
             const isWait = u.state === 'wait';
+            const isHovered = hoveredUpgrade === u.id;
             return (
               <div key={u.id} style={{ position: 'relative' }}>
                 <button
                   onClick={() => canBuy && onBuy(u)}
-                  title={`${u.name}\n${getEffectLabel(u)}\n${fmt(u.cost)} 已讀`}
+                  onMouseEnter={() => setHoveredUpgrade(u.id)}
+                  onMouseLeave={() => setHoveredUpgrade(null)}
                   style={{
                     width: 36, height: 36, borderRadius: 8,
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -123,11 +126,42 @@ export default function UpgradeRow({ upgrades, reads, onBuy, onBuyAll, compact =
                     fontFamily: 'inherit',
                     transition: 'all .15s',
                     boxShadow: canBuy ? '0 1px 4px rgba(99,102,241,.1)' : 'none',
-                    ...(canBuy ? { animation: 'glowPulse 2.5s ease-in-out infinite' } : {}),
+                    transform: isHovered ? 'scale(1.12)' : 'none',
+                    ...(canBuy && !isHovered ? { animation: 'glowPulse 2.5s ease-in-out infinite' } : {}),
                   }}
                 >
                   {u.emoji}
                 </button>
+                {/* Styled tooltip */}
+                {isHovered && (
+                  <div style={{
+                    position: 'absolute', bottom: '100%', left: '50%',
+                    transform: 'translateX(-50%)', marginBottom: 6,
+                    background: 'rgba(15,23,42,.92)', color: '#fff',
+                    padding: '8px 12px', borderRadius: 8,
+                    fontSize: 11, whiteSpace: 'nowrap', zIndex: 100,
+                    pointerEvents: 'none', lineHeight: 1.6,
+                    boxShadow: '0 4px 12px rgba(0,0,0,.2)',
+                    minWidth: 140,
+                  }}>
+                    <div style={{ fontWeight: 700, fontSize: 12 }}>{u.name}</div>
+                    <div style={{ color: canBuy ? '#a5b4fc' : '#94a3b8', fontWeight: 600 }}>{getEffectLabel(u)}</div>
+                    <div style={{
+                      color: canBuy ? '#fbbf24' : '#64748b',
+                      fontFamily: "'JetBrains Mono',monospace",
+                      fontWeight: 700, marginTop: 2,
+                    }}>{fmt(u.cost)} 已讀</div>
+                    {/* Arrow */}
+                    <div style={{
+                      position: 'absolute', top: '100%', left: '50%',
+                      transform: 'translateX(-50%)',
+                      width: 0, height: 0,
+                      borderLeft: '5px solid transparent',
+                      borderRight: '5px solid transparent',
+                      borderTop: '5px solid rgba(15,23,42,.92)',
+                    }} />
+                  </div>
+                )}
               </div>
             );
           })}

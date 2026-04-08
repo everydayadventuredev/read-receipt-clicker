@@ -37,8 +37,11 @@ function BuildingBar({ b, count, cost, prodRate, canAfford, buyN, isNew, onBuy, 
         transform: lastBought ? 'scale(1.005)' : 'none',
       }}
     >
-      {/* Dynamic pixel art banner background */}
-      <div style={{ position: 'absolute', inset: 0, zIndex: 0, opacity: hasAny ? 1 : 0.18 }}>
+      {/* Dynamic pixel art banner background — fallback to color gradient if no banner */}
+      <div style={{
+        position: 'absolute', inset: 0, zIndex: 0, opacity: hasAny ? 1 : 0.18,
+        background: hasAny ? `linear-gradient(135deg, ${b.color}35 0%, ${b.color}18 40%, ${b.color}08 100%)` : 'none',
+      }}>
         <BuildingBanner buildingId={b.id} count={hasAny ? count : 1} />
       </div>
 
