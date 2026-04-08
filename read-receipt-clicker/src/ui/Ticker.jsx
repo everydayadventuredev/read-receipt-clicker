@@ -20,7 +20,7 @@ function getEventColor(msg) {
   return '#6366f1';
 }
 
-export default function Ticker({ allTime, logEntries = [], stats }) {
+export default function Ticker({ allTime, logEntries = [] }) {
   const [display, setDisplay] = useState({ text: '', color: '#6366f1', isEvent: false });
   const [visible, setVisible] = useState(true);
   const poolRef = useRef([]);
@@ -128,46 +128,21 @@ export default function Ticker({ allTime, logEntries = [], stats }) {
         filter: display.isEvent ? 'none' : 'grayscale(0.3)',
       }}>{display.isEvent ? '📌' : '📰'}</span>
 
-      {/* Message + stats column */}
-      <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 4 }}>
-        {/* Message text */}
-        <span style={{
-          color: display.isEvent ? '#92400e' : '#78350f',
-          fontSize: 14,
-          fontWeight: display.isEvent ? 700 : 500,
-          transition: 'opacity .3s, color .3s',
-          opacity: visible ? 1 : 0,
-          lineHeight: 1.5,
-          display: '-webkit-box',
-          WebkitLineClamp: 2,
-          WebkitBoxOrient: 'vertical',
-          overflow: 'hidden',
-          letterSpacing: 0.3,
-        }}>{display.text}</span>
-
-        {/* Stats strip */}
-        {stats && stats.allTime > 0 && (
-          <div style={{
-            display: 'flex', gap: 8, flexWrap: 'wrap',
-            fontSize: 10, fontFamily: "'JetBrains Mono',monospace",
-            color: '#92400e', opacity: 0.7,
-          }}>
-            <span>生涯 {fmt(stats.allTime)}</span>
-            <span>·</span>
-            <span>產能 {fmt(stats.prodPerSec)}/s</span>
-            <span>·</span>
-            <span>建築 {stats.totalBuildings}</span>
-            <span>·</span>
-            <span>升級 {stats.upgrades}/{stats.totalUpgrades}</span>
-            {stats.prestigeCount > 0 && (<>
-              <span>·</span>
-              <span>重生 {stats.prestigeCount}次</span>
-              <span>·</span>
-              <span>✦{stats.prestigePower}</span>
-            </>)}
-          </div>
-        )}
-      </div>
+      {/* Message text */}
+      <span style={{
+        color: display.isEvent ? '#92400e' : '#78350f',
+        fontSize: 14,
+        fontWeight: display.isEvent ? 700 : 500,
+        transition: 'opacity .3s, color .3s',
+        opacity: visible ? 1 : 0,
+        lineHeight: 1.5,
+        flex: 1,
+        display: '-webkit-box',
+        WebkitLineClamp: 2,
+        WebkitBoxOrient: 'vertical',
+        overflow: 'hidden',
+        letterSpacing: 0.3,
+      }}>{display.text}</span>
     </div>
   );
 }

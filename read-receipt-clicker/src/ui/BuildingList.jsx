@@ -19,13 +19,15 @@ function BuildingBar({ b, count, cost, prodRate, canAfford, buyN, isNew, onBuy, 
         display: 'flex', alignItems: 'stretch',
         width: '100%', padding: 0, height: hasAny ? 72 : 48,
         background: hasAny
-          ? (canAfford ? 'transparent' : 'rgba(0,0,0,.03)')
+          ? 'transparent'
           : `linear-gradient(90deg, ${b.color}08, ${b.color}03)`,
-        border: isNew ? `1px solid ${b.color}55`
-          : canAfford ? `1px solid ${b.color}30`
-          : '1px solid #d1d5db',
+        border: isNew ? `2px solid ${b.color}66`
+          : hasAny && canAfford ? `1.5px solid ${b.color}40`
+          : hasAny && !canAfford ? '1.5px solid rgba(100,100,100,.25)'
+          : canAfford ? `1px solid ${b.color}20`
+          : '1px solid #e2e8f0',
         borderRadius: 6,
-        opacity: canAfford ? 1 : 0.45,
+        opacity: canAfford ? 1 : (hasAny ? 0.55 : 0.4),
         transition: 'all .15s',
         textAlign: 'left', position: 'relative', overflow: 'hidden',
         cursor: canAfford ? 'pointer' : 'default',
@@ -46,7 +48,7 @@ function BuildingBar({ b, count, cost, prodRate, canAfford, buyN, isNew, onBuy, 
         display: 'flex', flexDirection: 'column', justifyContent: 'center',
         zIndex: 1, position: 'relative',
         background: hasAny
-          ? `linear-gradient(90deg, rgba(0,0,0,.6) 0%, rgba(0,0,0,.3) 70%, transparent 100%)`
+          ? `linear-gradient(90deg, rgba(15,23,42,.75) 0%, rgba(15,23,42,.45) 60%, rgba(15,23,42,.15) 85%, transparent 100%)`
           : `linear-gradient(90deg, ${b.color}05, transparent)`,
       }}>
         <span style={{

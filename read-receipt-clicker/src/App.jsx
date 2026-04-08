@@ -129,6 +129,7 @@ export default function App() {
   const [buffState,        setBuffState]        = useState(() => init.buffState ?? createBuffState());
   const [activeMiniGame,   setActiveMiniGame]   = useState(null);
   const [cheatMode,        setCheatMode]        = useState(false);
+  const [achievementPopup, setAchievementPopup] = useState(null); // { icon, name }
   const cheatBufRef = useRef('');
 
   const idRef      = useRef(0);
@@ -530,7 +531,8 @@ export default function App() {
     ACHIEVEMENTS.forEach(a => {
       if (!unlockedAchievements.has(a.id) && a.req(allTime, owned, prestigeCount, prodPerSec, achievementExtra)) {
         setUnlockedAchievements(prev => new Set([...prev, a.id]));
-        addToast(`🎖️ 成就解鎖：${a.icon} ${a.name}`);
+        setAchievementPopup({ icon: a.icon, name: a.name });
+        setTimeout(() => setAchievementPopup(null), 3500);
         playMilestone();
       }
     });
@@ -1453,6 +1455,27 @@ export default function App() {
         </div>
       ))}
 
+      {/* Achievement popup — separate from general toasts */}
+      {achievementPopup && (
+        <div style={{
+          position: 'fixed', bottom: 24, left: '50%', transform: 'translateX(-50%)',
+          background: 'linear-gradient(135deg, rgba(245,158,11,.95), rgba(217,119,6,.95))',
+          color: '#fff', padding: '12px 24px', borderRadius: 12, fontSize: 14,
+          boxShadow: '0 8px 30px rgba(245,158,11,.3), 0 0 0 2px rgba(255,255,255,.2)',
+          zIndex: 350, textAlign: 'center', fontWeight: 700,
+          animation: 'ti .4s cubic-bezier(.34,1.56,.64,1)',
+          display: 'flex', alignItems: 'center', gap: 10,
+          whiteSpace: 'nowrap',
+        }}>
+          <span style={{ fontSize: 24 }}>{achievementPopup.icon}</span>
+          <div>
+            <div style={{ fontSize: 10, fontWeight: 600, letterSpacing: 1, opacity: 0.8, textTransform: 'uppercase' }}>成就解鎖</div>
+            <div style={{ fontSize: 15, fontWeight: 800 }}>{achievementPopup.name}</div>
+          </div>
+          <span style={{ fontSize: 18 }}>🎖️</span>
+        </div>
+      )}
+
       {/* Offline banner */}
       {offlineBanner && (
         <div style={{
@@ -1663,7 +1686,14 @@ export default function App() {
                   </div>
                 </div>
               )}
-              {/* Stats moved to Ticker bulletin board */}
+              {allTime > 0 && (
+                <span style={{
+                  fontSize: 11, color: 'var(--text-muted)', marginTop: 2,
+                  fontFamily: "'JetBrains Mono',monospace",
+                }}>
+                  生涯 {fmt(allTime)} · 建築 {Object.values(owned).reduce((s, v) => s + v, 0)} · 升級 {boughtUpgrades.size}/{UPGRADES.length}
+                </span>
+              )}
             </button>
 
           {/* Boost chips moved to mini-game panel buff bar */}
@@ -1807,11 +1837,7 @@ export default function App() {
         }}>
 
           {/* Ticker — news/events at top of middle column */}
-          <Ticker allTime={allTime} logEntries={log} stats={{
-            allTime, prodPerSec, totalBuildings: Object.values(owned).reduce((s, v) => s + v, 0),
-            upgrades: boughtUpgrades.size, totalUpgrades: UPGRADES.length,
-            prestigeCount, prestigePower,
-          }} />
+          <Ticker allTime={allTime} logEntries={log} />
 
           {/* Mini-Game panel — building sub-systems */}
           <MiniGamePanel
@@ -1858,55 +1884,50 @@ export default function App() {
           background: 'linear-gradient(180deg, rgba(245,158,11,.02) 0%, rgba(245,158,11,.01) 100%)',
         }}>
 
-          {/* Header bar — bulletin board style */}
+          {/* Header bar */}
           <div style={{
             padding: '10px 14px', display: 'flex', alignItems: 'center',
             flexShrink: 0, gap: 8,
-            borderBottom: '2px solid #d97706',
-            background: 'linear-gradient(135deg, #fef3c7 0%, #fde68a 30%, #fef9c3 100%)',
+            borderBottom: '2px solid var(--border)',
+            background: 'linear-gradient(135deg, rgba(99,102,241,.04) 0%, rgba(99,102,241,.01) 100%)',
             position: 'relative', overflow: 'hidden',
           }}>
-            {/* Grid texture */}
-            <div style={{
-              position: 'absolute', inset: 0, opacity: 0.04,
-              backgroundImage: 'repeating-linear-gradient(0deg, transparent, transparent 8px, #92400e 8px, #92400e 9px), repeating-linear-gradient(90deg, transparent, transparent 8px, #92400e 8px, #92400e 9px)',
-              pointerEvents: 'none',
-            }} />
+            <HeaderBanner />
             {/* Logo */}
             <div style={{
               width: 26, height: 26, borderRadius: 8,
               background: 'linear-gradient(135deg, var(--purple), var(--purple-dark))',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
-              flexShrink: 0, boxShadow: '0 1px 3px rgba(0,0,0,.15)',
+              flexShrink: 0, boxShadow: '0 1px 3px rgba(99,102,241,.2)',
             }}>
               <CheckIcon size={13} color="#fff" />
             </div>
             <span style={{
-              fontSize: 14, fontWeight: 800, color: '#78350f',
+              fontSize: 14, fontWeight: 800, color: 'var(--text)',
               letterSpacing: 1, fontFamily: "'JetBrains Mono',monospace",
             }}>已讀</span>
             {prestigePower > 0 && (
               <span style={{
-                fontSize: 10, color: '#6366f1', fontWeight: 700,
-                background: 'rgba(99,102,241,.1)',
+                fontSize: 10, color: 'var(--purple-text)', fontWeight: 700,
+                background: 'rgba(99,102,241,.08)',
                 padding: '2px 7px', borderRadius: 6,
                 fontFamily: "'JetBrains Mono',monospace",
-                border: '1px solid rgba(99,102,241,.2)',
+                border: '1px solid rgba(99,102,241,.15)',
               }}>✦{prestigePower}</span>
             )}
             <button onClick={() => setShowAchievements(true)} style={{
-              fontSize: 11, color: '#92400e', fontFamily: "'JetBrains Mono',monospace",
-              background: 'rgba(245,158,11,.15)', border: '1px solid rgba(217,119,6,.3)',
+              fontSize: 11, color: 'var(--text-muted)', fontFamily: "'JetBrains Mono',monospace",
+              background: 'rgba(245,158,11,.06)', border: '1px solid rgba(245,158,11,.15)',
               borderRadius: 6, padding: '6px 10px', cursor: 'pointer',
-              minHeight: 44, fontWeight: 700,
+              minHeight: 44, fontWeight: 600,
             }}>
               {unlockedAchievements.size}/{ACHIEVEMENTS.filter(a => !a.hidden).length}⭐
             </button>
             <div style={{ flex: 1 }} />
             {prestigeCount > 0 && (
               <button onClick={() => setShowPrestigeShop(true)} style={{
-                background: 'rgba(99,102,241,.12)', border: '1px solid rgba(99,102,241,.3)',
-                borderRadius: 6, padding: '8px 12px', color: '#4f46e5',
+                background: 'rgba(99,102,241,.08)', border: '1px solid rgba(99,102,241,.2)',
+                borderRadius: 6, padding: '8px 12px', color: 'var(--purple-text)',
                 fontSize: 12, fontWeight: 700, cursor: 'pointer',
                 fontFamily: "'JetBrains Mono',monospace", minHeight: 44,
               }}>✦商店</button>
@@ -1920,15 +1941,15 @@ export default function App() {
               }}>重生 +✦{prestigeEarned}</button>
             )}
             <button onClick={() => { const m = toggleMute(); setMutedUI(m); }} style={{
-              background: 'rgba(255,255,255,.5)', border: '1px solid rgba(217,119,6,.2)',
-              borderRadius: 6, padding: '8px 12px', color: '#78350f', fontSize: 14,
+              background: 'var(--surface-hover)', border: '1px solid var(--border)',
+              borderRadius: 6, padding: '8px 12px', color: 'var(--text-secondary)', fontSize: 14,
               minWidth: 44, minHeight: 44, cursor: 'pointer',
             }}>{mutedUI ? '🔇' : '🔊'}</button>
           </div>
 
-          {/* Upgrades — compact, capped height */}
+          {/* Upgrades — fixed height icon grid */}
           <div style={{
-            maxHeight: '25%', overflowY: 'auto', flexShrink: 0,
+            maxHeight: 80, overflowY: 'auto', flexShrink: 0,
             borderBottom: '2px solid var(--border)',
             background: 'rgba(99,102,241,.02)',
             position: 'relative', overflowX: 'hidden',
