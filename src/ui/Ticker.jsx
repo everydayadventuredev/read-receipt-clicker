@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { TICKER_TIERS } from '../game/ticker.js';
-import { pk } from '../utils/format.js';
+import { pk, fmt } from '../utils/format.js';
 
 /**
  * Unified news-style ticker that merges:
@@ -94,43 +94,54 @@ export default function Ticker({ allTime, logEntries = [] }) {
 
   return (
     <div style={{
-      padding: '10px 16px',
-      background: 'rgba(255,255,255,.85)',
-      borderBottom: '1px solid var(--border)',
-      minHeight: 52,
+      padding: '12px 16px',
+      background: 'linear-gradient(135deg, #fef3c7 0%, #fde68a 30%, #fef9c3 100%)',
+      borderBottom: '2px solid #d97706',
+      minHeight: 64,
       display: 'flex', alignItems: 'center',
       flexShrink: 0, gap: 10,
       position: 'relative',
       overflow: 'hidden',
+      boxShadow: 'inset 0 1px 0 rgba(255,255,255,.6), 0 2px 4px rgba(0,0,0,.06)',
     }}>
-      {/* Subtle bottom accent instead of left bar */}
+      {/* Bulletin board texture */}
       <div style={{
-        position: 'absolute', left: 16, right: 16, bottom: 0, height: 2,
-        background: `linear-gradient(90deg, ${display.color}40, transparent)`,
-        transition: 'background .3s',
-        borderRadius: 1,
+        position: 'absolute', inset: 0, opacity: 0.04,
+        backgroundImage: 'repeating-linear-gradient(0deg, transparent, transparent 8px, #92400e 8px, #92400e 9px), repeating-linear-gradient(90deg, transparent, transparent 8px, #92400e 8px, #92400e 9px)',
+        pointerEvents: 'none',
+      }} />
+      {/* Pin decorations */}
+      <div style={{
+        position: 'absolute', top: 4, left: 10,
+        width: 8, height: 8, borderRadius: '50%',
+        background: '#ef4444', boxShadow: '0 1px 2px rgba(0,0,0,.2)',
+      }} />
+      <div style={{
+        position: 'absolute', top: 4, right: 10,
+        width: 8, height: 8, borderRadius: '50%',
+        background: '#3b82f6', boxShadow: '0 1px 2px rgba(0,0,0,.2)',
       }} />
 
       {/* Icon prefix */}
       <span style={{
-        fontSize: 16, flexShrink: 0,
-        opacity: 0.7,
-        transition: 'opacity .3s',
-      }}>{display.isEvent ? '' : '📰'}</span>
+        fontSize: 18, flexShrink: 0,
+        filter: display.isEvent ? 'none' : 'grayscale(0.3)',
+      }}>{display.isEvent ? '📌' : '📰'}</span>
 
       {/* Message text */}
       <span style={{
-        color: display.isEvent ? 'var(--text)' : 'var(--text-secondary)',
+        color: display.isEvent ? '#92400e' : '#78350f',
         fontSize: 14,
-        fontWeight: display.isEvent ? 600 : 500,
+        fontWeight: display.isEvent ? 700 : 500,
         transition: 'opacity .3s, color .3s',
         opacity: visible ? 1 : 0,
-        lineHeight: 1.4,
+        lineHeight: 1.5,
         flex: 1,
         display: '-webkit-box',
         WebkitLineClamp: 2,
         WebkitBoxOrient: 'vertical',
         overflow: 'hidden',
+        letterSpacing: 0.3,
       }}>{display.text}</span>
     </div>
   );

@@ -18,12 +18,16 @@ function BuildingBar({ b, count, cost, prodRate, canAfford, buyN, isNew, onBuy, 
       style={{
         display: 'flex', alignItems: 'stretch',
         width: '100%', padding: 0, height: hasAny ? 72 : 48,
-        background: hasAny ? 'transparent' : `linear-gradient(90deg, ${b.color}08, ${b.color}03)`,
-        border: isNew ? `1px solid ${b.color}55`
-          : canAfford ? `1px solid ${b.color}18`
-          : '1px solid #eef0f2',
+        background: hasAny
+          ? 'transparent'
+          : `linear-gradient(90deg, ${b.color}08, ${b.color}03)`,
+        border: isNew ? `2px solid ${b.color}66`
+          : hasAny && canAfford ? `1.5px solid ${b.color}40`
+          : hasAny && !canAfford ? '1.5px solid rgba(100,100,100,.25)'
+          : canAfford ? `1px solid ${b.color}20`
+          : '1px solid #e2e8f0',
         borderRadius: 6,
-        opacity: canAfford ? 1 : 0.5,
+        opacity: canAfford ? 1 : (hasAny ? 0.55 : 0.5),
         transition: 'all .15s',
         textAlign: 'left', position: 'relative', overflow: 'hidden',
         cursor: canAfford ? 'pointer' : 'default',
@@ -33,8 +37,11 @@ function BuildingBar({ b, count, cost, prodRate, canAfford, buyN, isNew, onBuy, 
         transform: lastBought ? 'scale(1.005)' : 'none',
       }}
     >
-      {/* Dynamic pixel art banner background */}
-      <div style={{ position: 'absolute', inset: 0, zIndex: 0, opacity: hasAny ? 1 : 0.18 }}>
+      {/* Dynamic pixel art banner background — fallback to color gradient if no banner */}
+      <div style={{
+        position: 'absolute', inset: 0, zIndex: 0, opacity: hasAny ? 1 : 0.18,
+        background: hasAny ? `linear-gradient(135deg, ${b.color}35 0%, ${b.color}18 40%, ${b.color}08 100%)` : 'none',
+      }}>
         <BuildingBanner buildingId={b.id} count={hasAny ? count : 1} />
       </div>
 
@@ -44,7 +51,7 @@ function BuildingBar({ b, count, cost, prodRate, canAfford, buyN, isNew, onBuy, 
         display: 'flex', flexDirection: 'column', justifyContent: 'center',
         zIndex: 1, position: 'relative',
         background: hasAny
-          ? `linear-gradient(90deg, rgba(0,0,0,.6) 0%, rgba(0,0,0,.3) 70%, transparent 100%)`
+          ? `linear-gradient(90deg, rgba(15,23,42,.75) 0%, rgba(15,23,42,.45) 60%, rgba(15,23,42,.15) 85%, transparent 100%)`
           : `linear-gradient(90deg, ${b.color}05, transparent)`,
       }}>
         <span style={{
@@ -130,7 +137,7 @@ export default function BuildingList({ buildings, owned, reads, allTime, unlocke
         <div style={{
           fontSize: 13, color: '#b45309', fontWeight: 700,
           letterSpacing: 1,
-        }}>🏰 已讀大師</div>
+        }}>🏰 已讀建築</div>
         <div style={{
           display: 'flex', gap: 2,
           background: 'var(--surface-hover)', borderRadius: 8, padding: 2,

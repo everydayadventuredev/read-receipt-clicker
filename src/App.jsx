@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
+import { createPortal } from 'react-dom';
 
 import { BUILDINGS, UNLOCK_THRESHOLDS } from './game/buildings.js';
 import { UPGRADES } from './game/upgrades.js';
@@ -107,6 +108,8 @@ export default function App() {
   const [mutedUI,    setMutedUI]    = useState(false);
   const [offlineBanner, setOfflineBanner] = useState(null);
   const [prodPerSec, setProdPerSec] = useState(0);
+  const [multBreakdown, setMultBreakdown] = useState(null); // { baseProd, prestigeMult, ... }
+  const [showBreakdown, setShowBreakdown] = useState(false);
   const [showPrestigeShop, setShowPrestigeShop] = useState(false);
   const [showAchievements, setShowAchievements] = useState(false);
   const [marketState,      setMarketState]      = useState(() => {
@@ -126,6 +129,10 @@ export default function App() {
   const [mergeState,       setMergeState]       = useState(() => init.mergeState ?? createMergeState());
   const [buffState,        setBuffState]        = useState(() => init.buffState ?? createBuffState());
   const [activeMiniGame,   setActiveMiniGame]   = useState(null);
+  const [cheatMode,        setCheatMode]        = useState(false);
+  const [mobileTab,        setMobileTab]        = useState('chat');
+  const [achievementPopup, setAchievementPopup] = useState(null); // { icon, name }
+  const cheatBufRef = useRef('');
 
   const idRef      = useRef(0);
   const readsRef   = useRef(reads);
@@ -146,6 +153,19 @@ export default function App() {
     el.classList.remove('shake', 'shake-strong');
     void el.offsetWidth; // reflow to restart animation
     el.classList.add(strong ? 'shake-strong' : 'shake');
+  }, []);
+
+  // Cheat mode: type "iddqd" anywhere to toggle
+  useEffect(() => {
+    const handler = (e) => {
+      cheatBufRef.current = (cheatBufRef.current + e.key.toLowerCase()).slice(-5);
+      if (cheatBufRef.current === 'iddqd') {
+        setCheatMode(v => !v);
+        cheatBufRef.current = '';
+      }
+    };
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
   }, []);
 
   // Spawn click burst particles at (x, y)
@@ -253,7 +273,7 @@ export default function App() {
     if (!boughtPrestige.has(u.id)) return;
     getNodeEffects(u).forEach(e => { if (e.type === 'prestigeBonus') prestigeBonusMult += e.value; });
   });
-  const prestigeEarned = Math.floor(2 * Math.log(1 + allTime / 1000000) * prestigeBonusMult);
+  const prestigeEarned = Math.floor(1.5 * Math.log(1 + allTime / 2000000) * prestigeBonusMult);
 
   // Global mult from prestige upgrades (multi-effect aware)
   let prestigeGlobalMult = 1;
@@ -314,6 +334,20 @@ export default function App() {
     const total = p * prestigeMult * prestigeGlobalMult * chainGlobalBuff * tempMult * coldMasterMult * guiltPenalty * unifiedBuff * gardenSeries * mergePerm * achievementMult;
     setProdPerSec(total);
     psRef.current = total;
+    setMultBreakdown({
+      baseProd: p,
+      prestigeMult,
+      prestigeGlobalMult,
+      chainGlobalBuff,
+      tempMult,
+      coldMasterMult,
+      guiltPenalty,
+      unifiedBuff,
+      gardenSeries,
+      mergePerm,
+      achievementMult,
+      total,
+    });
   }, [owned, boughtUpgrades, prestigeMult, prestigeGlobalMult, chainGlobalBuff, tempMult, boughtPrestige, eventChainBuffs, buffState, gardenState, mergeState, guilt, coldMaster, unlockedAchievements]);
 
   const calcClickPower = useCallback(() => {
@@ -499,7 +533,8 @@ export default function App() {
     ACHIEVEMENTS.forEach(a => {
       if (!unlockedAchievements.has(a.id) && a.req(allTime, owned, prestigeCount, prodPerSec, achievementExtra)) {
         setUnlockedAchievements(prev => new Set([...prev, a.id]));
-        addToast(`🎖️ 成就解鎖：${a.icon} ${a.name}`);
+        setAchievementPopup({ icon: a.icon, name: a.name });
+        setTimeout(() => setAchievementPopup(null), 3500);
         playMilestone();
       }
     });
@@ -890,7 +925,7 @@ export default function App() {
     const fid = idRef.current++;
     setFloats(f => [...f, { id: fid, x, y, text: power > 1 ? `+${fmt(power)}` : '+1' }]);
     spawnParticles(x, y, 5);
-    setRecentMsgs(prev => [message, ...prev].slice(0, 5));
+    setRecentMsgs(prev => [message, ...prev].slice(0, 20));
     playClick();
 
     setTimeout(() => {
@@ -951,7 +986,6 @@ export default function App() {
     for (let i = count + 1; i <= newCount; i++) {
       if (b.milestones?.[i]) { addToast(`${b.emoji} ${b.milestones[i]}`); triggerShake(true); }
     }
-    triggerShake();
     playBuy();
   }, [triggerShake]);
 
@@ -1207,16 +1241,25 @@ export default function App() {
         ::-webkit-scrollbar-track { background:transparent }
         ::-webkit-scrollbar-thumb { background:rgba(99,102,241,.15); border-radius:3px }
         button:active { transform:scale(.96)!important }
+        @media(max-width:767px) {
+          .mobile-hidden { display: none !important }
+          .mobile-tab-bar { display: flex !important }
+          .section-hero, .section-middle, .section-store { flex: 1 !important; flex-shrink: 1 !important; }
+          .section-hero { padding: 4px !important; }
+          .game-layout { padding-bottom: 56px; }
+          .bg-particles { opacity: 0.3 !important; }
+        }
         @media(min-width:768px) {
           .game-layout { flex-direction:row!important }
-          .section-hero   { width:30%!important; border-right:2px solid #e2e8f0 }
-          .section-middle { width:40%!important; border-right:2px solid #e2e8f0 }
-          .section-store  { width:30%!important }
+          .section-hero   { width:35%!important; border-right:3px solid #d97706; box-shadow:2px 0 8px rgba(0,0,0,.06) }
+          .section-middle { width:28%!important; border-right:3px solid #d97706; box-shadow:2px 0 8px rgba(0,0,0,.06) }
+          .section-store  { width:37%!important }
+          .mobile-tab-bar { display: none !important }
         }
       `}</style>
 
       {/* Ambient background — floating checkmarks + gradient */}
-      <div style={{ position: 'fixed', inset: 0, pointerEvents: 'none', zIndex: 0,
+      <div className="bg-particles" style={{ position: 'fixed', inset: 0, pointerEvents: 'none', zIndex: 0,
         background: 'radial-gradient(ellipse at 25% 15%, rgba(99,102,241,.08) 0%, transparent 50%), radial-gradient(ellipse at 75% 85%, rgba(217,119,6,.06) 0%, transparent 50%), radial-gradient(ellipse at 50% 50%, rgba(99,102,241,.03) 0%, transparent 70%)',
       }}>
         {/* Floating tick particles — 3 layers: ✓✓, ✓, 已讀 */}
@@ -1423,6 +1466,27 @@ export default function App() {
         </div>
       ))}
 
+      {/* Achievement popup — separate from general toasts */}
+      {achievementPopup && (
+        <div style={{
+          position: 'fixed', bottom: 24, left: '50%', transform: 'translateX(-50%)',
+          background: 'linear-gradient(135deg, rgba(245,158,11,.95), rgba(217,119,6,.95))',
+          color: '#fff', padding: '12px 24px', borderRadius: 12, fontSize: 14,
+          boxShadow: '0 8px 30px rgba(245,158,11,.3), 0 0 0 2px rgba(255,255,255,.2)',
+          zIndex: 350, textAlign: 'center', fontWeight: 700,
+          animation: 'ti .4s cubic-bezier(.34,1.56,.64,1)',
+          display: 'flex', alignItems: 'center', gap: 10,
+          whiteSpace: 'nowrap',
+        }}>
+          <span style={{ fontSize: 24 }}>{achievementPopup.icon}</span>
+          <div>
+            <div style={{ fontSize: 10, fontWeight: 600, letterSpacing: 1, opacity: 0.8, textTransform: 'uppercase' }}>成就解鎖</div>
+            <div style={{ fontSize: 15, fontWeight: 800 }}>{achievementPopup.name}</div>
+          </div>
+          <span style={{ fontSize: 18 }}>🎖️</span>
+        </div>
+      )}
+
       {/* Offline banner */}
       {offlineBanner && (
         <div style={{
@@ -1447,11 +1511,11 @@ export default function App() {
       <div className="game-layout" style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', minHeight: 0 }}>
 
         {/* LEFT — Phone-style container */}
-        <div className="section-hero" style={{
+        <div className={`section-hero ${mobileTab !== 'chat' ? 'mobile-hidden' : ''}`} style={{
           display: 'flex', flexDirection: 'column', alignItems: 'center',
           justifyContent: 'center',
           padding: '12px',
-          position: 'relative', flexShrink: 0, overflow: 'hidden',
+          position: 'relative', flex: 1, overflow: 'hidden',
         }}>
           {/* Dynamic progression background — changes with building tiers */}
           <HeroBackground owned={owned} allTime={allTime} />
@@ -1517,7 +1581,7 @@ export default function App() {
               <div>
                 <div style={{ fontSize: 14, fontWeight: 700, color: '#fff' }}>已讀收件匣</div>
                 <div style={{ fontSize: 10, color: 'rgba(255,255,255,.7)' }}>
-                  {prodPerSec > 0 ? `${fmt(prodPerSec)}/秒` : '對方正在輸入...'}
+                  對方正在輸入...
                 </div>
               </div>
               <div style={{ flex: 1 }} />
@@ -1573,78 +1637,77 @@ export default function App() {
                   </span>
                 );
               })()}
-              <span style={{
-                fontSize: 14, color: 'var(--text-muted)', marginTop: 4,
-                fontFamily: "'JetBrains Mono',monospace",
-              }}>
+              <span
+                onClick={() => prodPerSec > 0 && setShowBreakdown(v => !v)}
+                style={{
+                  fontSize: 14, color: 'var(--text-muted)', marginTop: 4,
+                  fontFamily: "'JetBrains Mono',monospace",
+                  cursor: prodPerSec > 0 ? 'pointer' : 'default',
+                }}
+              >
                 <CheckIcon size={11} color="#94a3b8" /> {prodPerSec > 0 ? `${fmt(prodPerSec)}/秒` : '點擊開始已讀'}
+                {prodPerSec > 0 && <span style={{ fontSize: 10, marginLeft: 4, opacity: 0.5 }}>{showBreakdown ? '▲' : '▼'}</span>}
               </span>
+              {showBreakdown && multBreakdown && (
+                <div style={{
+                  marginTop: 6, padding: '8px 10px', borderRadius: 8,
+                  background: 'rgba(99,102,241,.04)', border: '1px solid rgba(99,102,241,.1)',
+                  width: '100%', maxWidth: 280,
+                  fontSize: 11, fontFamily: "'JetBrains Mono',monospace",
+                  color: 'var(--text-secondary)', lineHeight: 1.8,
+                }}>
+                  <div style={{ fontWeight: 700, color: 'var(--text)', marginBottom: 4, fontSize: 10, letterSpacing: 0.5, textTransform: 'uppercase' }}>乘數拆解</div>
+                  {[
+                    ['基礎產能', multBreakdown.baseProd, true],
+                    ['✦ 重生', multBreakdown.prestigeMult],
+                    ['✦ 天賦', multBreakdown.prestigeGlobalMult],
+                    ['事件鏈', multBreakdown.chainGlobalBuff],
+                    ['臨時增幅', multBreakdown.tempMult],
+                    ['冷漠大師', multBreakdown.coldMasterMult],
+                    ['罪惡感', multBreakdown.guiltPenalty],
+                    ['Buff', multBreakdown.unifiedBuff],
+                    ['花園系列', multBreakdown.gardenSeries],
+                    ['合併', multBreakdown.mergePerm],
+                    ['成就', multBreakdown.achievementMult],
+                  ].map(([label, value, isBase]) => {
+                    if (!isBase && value === 1) return null; // hide ×1 multipliers
+                    const isDebuff = value < 1;
+                    return (
+                      <div key={label} style={{ display: 'flex', justifyContent: 'space-between' }}>
+                        <span>{label}</span>
+                        <span style={{
+                          fontWeight: 600,
+                          color: isBase ? '#4f46e5'
+                            : isDebuff ? '#ef4444'
+                            : value > 1 ? '#16a34a' : 'var(--text-muted)',
+                        }}>
+                          {isBase ? `${fmt(value)}/s` : `×${value.toFixed(2)}`}
+                        </span>
+                      </div>
+                    );
+                  }).filter(Boolean)}
+                  <div style={{
+                    borderTop: '1px solid rgba(99,102,241,.15)',
+                    marginTop: 4, paddingTop: 4,
+                    display: 'flex', justifyContent: 'space-between',
+                    fontWeight: 800, color: '#4f46e5',
+                  }}>
+                    <span>最終</span>
+                    <span>{fmt(multBreakdown.total)}/s</span>
+                  </div>
+                </div>
+              )}
               {allTime > 0 && (
                 <span style={{
                   fontSize: 11, color: 'var(--text-muted)', marginTop: 2,
                   fontFamily: "'JetBrains Mono',monospace",
                 }}>
-                  生涯 {fmt(allTime)} · 大師 {Object.values(owned).reduce((s, v) => s + v, 0)} · 升級 {boughtUpgrades.size}/{UPGRADES.length}
+                  生涯 {fmt(allTime)} · 建築 {Object.values(owned).reduce((s, v) => s + v, 0)} · 升級 {boughtUpgrades.size}/{UPGRADES.length}
                 </span>
               )}
             </button>
 
-          {/* Combo boost chips — inside phone, near numbers */}
-          {(() => {
-            const gardenExBuff = getGardenExBuffMult(gardenState);
-            const liveBuffs = getActiveBuffs(buffState);
-            const boosts = [];
-            if (tempMult > 1) boosts.push({ icon: '🔥', label: `×${tempMult}`, color: '#6366f1', sub: tempMultExpiry > 0 ? `${Math.max(0, Math.ceil((tempMultExpiry - Date.now()) / 1000))}s` : '', title: '黃金訊息：全局產能加乘（限時）' });
-            // Show unified buffs by source
-            const sourceIcons = { storm: ['🌪️', '#6366f1', '風暴'], garden: ['🌸', '#22c55e', '花園'], merge: ['🎁', '#f59e0b', '合成'] };
-            const bySource = {};
-            for (const b of liveBuffs) {
-              if (b.scope !== 'global') continue;
-              if (!bySource[b.source]) bySource[b.source] = 0;
-              bySource[b.source] += (b.mult - 1);
-            }
-            for (const [src, bonus] of Object.entries(bySource)) {
-              if (bonus > 0) {
-                const [icon, color, sub] = sourceIcons[src] ?? ['✨', '#8b5cf6', src];
-                boosts.push({ icon, label: `×${(1 + bonus).toFixed(1)}`, color, sub, title: `${sub} buff` });
-              }
-            }
-            if (gardenExBuff > 1) boosts.push({ icon: '💔', label: `×${gardenExBuff.toFixed(1)}`, color: '#f43f5e', sub: '前任', title: '前任 buff：花朵加成前任產能' });
-            if (coldMaster) boosts.push({ icon: '🧊', label: '×1.5', color: '#06b6d4', sub: '冷漠', title: '冷漠大師：已讀不回的修行，永久×1.5 產能' });
-            if (boosts.length === 0) return null;
-            const unifiedMult = getBuffMultiplier(buffState);
-            const totalCombo = tempMult * unifiedMult * (coldMaster ? 1.5 : 1);
-            return (
-              <div style={{
-                display: 'flex', flexWrap: 'wrap', justifyContent: 'center',
-                gap: 4, padding: '4px 10px', marginBottom: 4,
-              }}>
-                {boosts.map((b, i) => (
-                  <div key={i} title={b.title} style={{
-                    display: 'flex', alignItems: 'center', gap: 2,
-                    padding: '2px 7px', borderRadius: 8,
-                    background: `${b.color}10`, border: `1px solid ${b.color}20`,
-                    cursor: 'help',
-                  }}>
-                    <span style={{ fontSize: 10 }}>{b.icon}</span>
-                    <span style={{ fontSize: 11, fontWeight: 700, color: b.color, fontFamily: "'JetBrains Mono',monospace" }}>{b.label}</span>
-                    {b.sub && <span style={{ fontSize: 8, color: 'var(--text-muted)' }}>{b.sub}</span>}
-                  </div>
-                ))}
-                {boosts.length >= 2 && (
-                  <div style={{
-                    padding: '2px 7px', borderRadius: 8,
-                    background: 'linear-gradient(135deg, rgba(99,102,241,.08), rgba(245,158,11,.08))',
-                    border: '1px solid rgba(99,102,241,.15)',
-                  }}>
-                    <span style={{ fontSize: 11, fontWeight: 800, color: 'var(--purple-dark)', fontFamily: "'JetBrains Mono',monospace" }}>
-                      = ×{totalCombo.toFixed(1)}
-                    </span>
-                  </div>
-                )}
-              </div>
-            );
-          })()}
+          {/* Boost chips moved to mini-game panel buff bar */}
 
           {/* Guilt indicator — always visible, between CPS and ClickArea */}
           <div style={{
@@ -1676,6 +1739,18 @@ export default function App() {
               }}>
                 {guilt < 200 ? '😶 罪惡感尚未覺醒' : coldMaster ? '🧊 冷漠大師' : '😔 罪惡感'}
               </span>
+              {/* Show penalty clearly */}
+              {guilt >= 200 && !coldMaster && (
+                <span style={{
+                  fontSize: 10, fontWeight: 800,
+                  padding: '1px 6px', borderRadius: 4,
+                  background: guiltLevel === 'high' ? 'rgba(239,68,68,.15)' : guiltLevel === 'medium' ? 'rgba(245,158,11,.12)' : 'rgba(99,102,241,.08)',
+                  color: guiltLevel === 'high' ? '#ef4444' : guiltLevel === 'medium' ? '#f59e0b' : '#6366f1',
+                  fontFamily: "'JetBrains Mono',monospace",
+                }}>
+                  產能 {guiltLevel === 'high' ? '-60%' : guiltLevel === 'medium' ? '-30%' : '-10%'}
+                </span>
+              )}
               <span style={{ flex: 1 }} />
               {guilt >= 200 && (
                 <span style={{
@@ -1767,7 +1842,7 @@ export default function App() {
         </div>
 
         {/* MIDDLE — Ticker + Mini-Game */}
-        <div className="section-middle" style={{
+        <div className={`section-middle ${mobileTab !== 'explore' ? 'mobile-hidden' : ''}`} style={{
           flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', minHeight: 0,
           background: 'linear-gradient(180deg, rgba(99,102,241,.02) 0%, rgba(99,102,241,.01) 100%)',
         }}>
@@ -1775,9 +1850,22 @@ export default function App() {
           {/* Ticker — news/events at top of middle column */}
           <Ticker allTime={allTime} logEntries={log} />
 
+          {/* Empty state guide for locked mini-games */}
+          {Object.values(owned).every(v => v < 10) && (
+            <div style={{
+              padding: '16px 12px', textAlign: 'center',
+              color: 'var(--text-muted)', fontSize: 12,
+            }}>
+              <div style={{ fontSize: 28, marginBottom: 8 }}>🎮</div>
+              <div style={{ fontWeight: 600, marginBottom: 4 }}>小遊戲即將解鎖</div>
+              <div>購買更多建築來解鎖各種小遊戲！</div>
+            </div>
+          )}
+
           {/* Mini-Game panel — building sub-systems */}
           <MiniGamePanel
             owned={owned}
+            unlockedBuildings={unlockedBuildings}
             activeMiniGame={activeMiniGame}
             setActiveMiniGame={setActiveMiniGame}
             marketState={marketState}
@@ -1814,38 +1902,38 @@ export default function App() {
         </div>
 
         {/* RIGHT — Header + Store: Upgrades + Buildings */}
-        <div className="section-store" style={{
+        <div className={`section-store ${mobileTab !== 'store' ? 'mobile-hidden' : ''}`} style={{
           display: 'flex', flexDirection: 'column', overflow: 'hidden', minHeight: 0,
           background: 'linear-gradient(180deg, rgba(245,158,11,.02) 0%, rgba(245,158,11,.01) 100%)',
         }}>
 
-          {/* Header bar — now inside right column */}
+          {/* Header bar */}
           <div style={{
-            padding: '8px 12px', display: 'flex', alignItems: 'center',
+            padding: '10px 14px', display: 'flex', alignItems: 'center',
             flexShrink: 0, gap: 8,
-            borderBottom: '1px solid var(--border)',
-            background: 'rgba(255,255,255,.6)',
-            position: 'relative',
+            borderBottom: '2px solid var(--border)',
+            background: 'linear-gradient(135deg, rgba(99,102,241,.04) 0%, rgba(99,102,241,.01) 100%)',
+            position: 'relative', overflow: 'hidden',
           }}>
             <HeaderBanner />
             {/* Logo */}
             <div style={{
-              width: 24, height: 24, borderRadius: 8,
+              width: 26, height: 26, borderRadius: 8,
               background: 'linear-gradient(135deg, var(--purple), var(--purple-dark))',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
-              flexShrink: 0,
+              flexShrink: 0, boxShadow: '0 1px 3px rgba(99,102,241,.2)',
             }}>
-              <CheckIcon size={12} color="#fff" />
+              <CheckIcon size={13} color="#fff" />
             </div>
             <span style={{
-              fontSize: 13, fontWeight: 800, color: 'var(--text)',
+              fontSize: 14, fontWeight: 800, color: 'var(--text)',
               letterSpacing: 1, fontFamily: "'JetBrains Mono',monospace",
             }}>已讀</span>
             {prestigePower > 0 && (
               <span style={{
-                fontSize: 9, color: 'var(--purple-text)',
+                fontSize: 10, color: 'var(--purple-text)', fontWeight: 700,
                 background: 'rgba(99,102,241,.08)',
-                padding: '1px 6px', borderRadius: 6,
+                padding: '2px 7px', borderRadius: 6,
                 fontFamily: "'JetBrains Mono',monospace",
                 border: '1px solid rgba(99,102,241,.15)',
               }}>✦{prestigePower}</span>
@@ -1882,9 +1970,9 @@ export default function App() {
             }}>{mutedUI ? '🔇' : '🔊'}</button>
           </div>
 
-          {/* Upgrades — compact, capped height */}
+          {/* Upgrades — fixed height icon grid */}
           <div style={{
-            maxHeight: '25%', overflowY: 'auto', flexShrink: 0,
+            maxHeight: 64, overflowY: 'auto', flexShrink: 0,
             borderBottom: '2px solid var(--border)',
             background: 'rgba(99,102,241,.02)',
             position: 'relative', overflowX: 'hidden',
@@ -1936,6 +2024,36 @@ export default function App() {
           />
         </div>
       </div>
+
+      {/* Mobile tab bar — portal to body to escape overflow:hidden */}
+      {createPortal(
+        <div className="mobile-tab-bar" style={{
+          display: 'none', /* overridden by media query */
+          position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 9999,
+          background: '#fff', borderTop: '2px solid var(--border)',
+          padding: '4px 0 env(safe-area-inset-bottom, 4px)',
+          justifyContent: 'space-around',
+        }}>
+          {[
+            { id: 'chat', icon: '📱', label: '聊天' },
+            { id: 'explore', icon: '🎮', label: '探索' },
+            { id: 'store', icon: '🏰', label: '商店' },
+          ].map(tab => (
+            <button key={tab.id} onClick={() => setMobileTab(tab.id)} style={{
+              flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center',
+              gap: 2, padding: '6px 0', border: 'none', borderRadius: 0,
+              background: mobileTab === tab.id ? 'rgba(99,102,241,.08)' : 'transparent',
+              color: mobileTab === tab.id ? '#6366f1' : 'var(--text-muted)',
+              fontSize: 10, fontWeight: mobileTab === tab.id ? 700 : 500,
+              fontFamily: 'inherit', cursor: 'pointer',
+            }}>
+              <span style={{ fontSize: 20 }}>{tab.icon}</span>
+              {tab.label}
+            </button>
+          ))}
+        </div>,
+        document.body
+      )}
 
       {/* Prestige Shop Modal */}
       {showPrestigeShop && (
@@ -2059,6 +2177,47 @@ export default function App() {
       )}
 
       {/* Ticker removed — replaced by top marquee */}
+
+      {/* Hidden cheat panel — type "iddqd" to toggle */}
+      {cheatMode && (
+        <div style={{
+          position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 9999,
+          background: 'rgba(0,0,0,.92)', color: '#0f0', padding: '12px 16px',
+          fontFamily: "'JetBrains Mono',monospace", fontSize: 12,
+          display: 'flex', flexWrap: 'wrap', gap: 8, alignItems: 'center',
+        }}>
+          <span style={{ color: '#f00', fontWeight: 700 }}>CHEAT</span>
+          <button onClick={() => { setReads(r => r + 1e6); setAllTime(a => a + 1e6); }} style={cheatBtnStyle}>+1M已讀</button>
+          <button onClick={() => { setReads(r => r + 1e9); setAllTime(a => a + 1e9); }} style={cheatBtnStyle}>+1B已讀</button>
+          <button onClick={() => { setReads(r => r + 1e12); setAllTime(a => a + 1e12); }} style={cheatBtnStyle}>+1T已讀</button>
+          <button onClick={() => setPrestigePower(p => p + 10)} style={cheatBtnStyle}>+10✦</button>
+          <button onClick={() => setPrestigePower(p => p + 100)} style={cheatBtnStyle}>+100✦</button>
+          <button onClick={() => setPrestigePower(p => p + 500)} style={cheatBtnStyle}>+500✦</button>
+          <input
+            type="number"
+            placeholder="自訂已讀數"
+            style={{
+              background: '#111', color: '#0f0', border: '1px solid #0f0',
+              padding: '4px 8px', borderRadius: 4, width: 120, fontSize: 12,
+              fontFamily: "'JetBrains Mono',monospace",
+            }}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') {
+                const v = Number(e.target.value);
+                if (v > 0) { setReads(v); setAllTime(v); e.target.value = ''; }
+              }
+            }}
+          />
+          <span style={{ color: '#666', fontSize: 10 }}>reads={fmt(reads)} allTime={fmt(allTime)} ✦={prestigePower} ps={fmt(prodPerSec)}/s</span>
+          <button onClick={() => setCheatMode(false)} style={{ ...cheatBtnStyle, color: '#f00', borderColor: '#f00' }}>關閉</button>
+        </div>
+      )}
     </div>
   );
 }
+
+const cheatBtnStyle = {
+  background: 'transparent', color: '#0f0', border: '1px solid #0f0',
+  borderRadius: 4, padding: '4px 8px', cursor: 'pointer', fontSize: 11,
+  fontFamily: "'JetBrains Mono',monospace",
+};

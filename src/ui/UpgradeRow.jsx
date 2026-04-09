@@ -35,6 +35,7 @@ export default function UpgradeRow({ upgrades, reads, onBuy, onBuyAll, compact =
   const doneCount = upgrades.filter(u => u.state === 'done').length;
   const seenRef = useRef(new Set());
   const [newIds, setNewIds] = useState(new Set());
+  const [hoveredUpgrade, setHoveredUpgrade] = useState(null);
 
   useEffect(() => {
     const freshIds = new Set();
@@ -68,19 +69,19 @@ export default function UpgradeRow({ upgrades, reads, onBuy, onBuyAll, compact =
 
   const activeItems = compact ? sorted.filter(u => u.state !== 'done') : sorted;
 
-  // Compact mode: 2-column grid of pills
+  // Compact mode: icon grid with hover tooltips
   if (compact) {
     return (
-      <div style={{ padding: '8px 10px 6px', flexShrink: 0 }}>
+      <div style={{ padding: '6px 10px', flexShrink: 0 }}>
         <div style={{
-          fontSize: 13, fontWeight: 700, color: '#4f46e5',
-          marginBottom: 6, letterSpacing: 0.5,
+          fontSize: 12, fontWeight: 700, color: '#4f46e5',
+          marginBottom: 4, letterSpacing: 0.5,
           display: 'flex', alignItems: 'center', gap: 6,
-          padding: '0 4px',
+          padding: '0 2px',
         }}>
           ⚡ 升級
           <span style={{
-            fontFamily: "'JetBrains Mono',monospace", fontSize: 12,
+            fontFamily: "'JetBrains Mono',monospace", fontSize: 11,
             color: 'var(--text-muted)', fontWeight: 500,
           }}>{doneCount}/{upgrades.length}</span>
           <div style={{ flex: 1 }} />
@@ -88,10 +89,10 @@ export default function UpgradeRow({ upgrades, reads, onBuy, onBuyAll, compact =
             <button
               onClick={onBuyAll}
               style={{
-                padding: '6px 10px', fontSize: 11, fontWeight: 700,
+                padding: '4px 8px', fontSize: 10, fontWeight: 700,
                 color: '#10b981', background: 'rgba(16,185,129,.08)',
                 border: '1px solid rgba(16,185,129,.2)',
-                borderRadius: 6, cursor: 'pointer', minHeight: 32,
+                borderRadius: 4, cursor: 'pointer', minHeight: 28,
               }}
             >
               全買
@@ -99,76 +100,72 @@ export default function UpgradeRow({ upgrades, reads, onBuy, onBuyAll, compact =
           )}
         </div>
 
-        {/* Rotating flavor tip */}
-        {activeItems.length > 0 && (
-          <div style={{
-            padding: '3px 10px 6px',
-            fontSize: 11, color: 'var(--text-muted)', fontStyle: 'italic',
-            letterSpacing: 0.2, lineHeight: 1.4,
-          }}>
-            {UPGRADE_TIPS[doneCount % UPGRADE_TIPS.length]}
-          </div>
-        )}
-
         <div style={{
-          display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)',
-          gap: 4,
+          display: 'flex', flexWrap: 'wrap', gap: 3,
         }}>
           {activeItems.map(u => {
             const canBuy = u.state === 'buy';
             const isWait = u.state === 'wait';
+            const isHovered = hoveredUpgrade === u.id;
             return (
-              <button
-                key={u.id}
-                onClick={() => canBuy && onBuy(u)}
-                style={{
-                  display: 'flex', alignItems: 'center', gap: 6,
-                  padding: '6px 10px', borderRadius: 8,
-                  background: canBuy ? 'linear-gradient(135deg, rgba(99,102,241,.04), rgba(168,85,247,.04))' : '#f8fafc',
-                  border: canBuy ? '1px solid rgba(99,102,241,.2)' : '1px solid #e8eaed',
-                  opacity: isWait ? 0.5 : 1,
-                  cursor: canBuy ? 'pointer' : 'default',
-                  textAlign: 'left', fontFamily: 'inherit',
-                  transition: 'all .15s',
-                  ...(canBuy ? { animation: 'glowPulse 2.5s ease-in-out infinite' } : {}),
-                }}
-              >
-                <span style={{ fontSize: 16, lineHeight: 1, flexShrink: 0 }}>{u.emoji}</span>
-                <div style={{ flex: 1, minWidth: 0, overflow: 'hidden' }}>
+              <div key={u.id} style={{ position: 'relative' }}>
+                <button
+                  onClick={() => canBuy && onBuy(u)}
+                  onMouseEnter={() => setHoveredUpgrade(u.id)}
+                  onMouseLeave={() => setHoveredUpgrade(null)}
+                  style={{
+                    width: 36, height: 36, borderRadius: 8,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    fontSize: 18, lineHeight: 1,
+                    background: canBuy
+                      ? 'linear-gradient(135deg, rgba(99,102,241,.08), rgba(168,85,247,.06))'
+                      : '#f8fafc',
+                    border: canBuy ? '1.5px solid rgba(99,102,241,.3)' : '1px solid #e8eaed',
+                    opacity: isWait ? 0.4 : 1,
+                    cursor: canBuy ? 'pointer' : 'default',
+                    fontFamily: 'inherit',
+                    transition: 'all .15s',
+                    boxShadow: canBuy ? '0 1px 4px rgba(99,102,241,.1)' : 'none',
+                    transform: isHovered ? 'scale(1.12)' : 'none',
+                    ...(canBuy && !isHovered ? { animation: 'glowPulse 2.5s ease-in-out infinite' } : {}),
+                  }}
+                >
+                  {u.emoji}
+                </button>
+                {/* Styled tooltip — below the icon */}
+                {isHovered && (
                   <div style={{
-                    fontSize: 13, fontWeight: 700, color: 'var(--text)',
-                    whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
-                  }}>{u.name}</div>
-                  <div style={{
-                    fontSize: 11, color: canBuy ? '#6366f1' : 'var(--text-muted)', fontWeight: 600,
-                  }}>{getEffectLabel(u)}</div>
-                  {getFlavor(u) && (
+                    position: 'absolute', top: '100%', left: '50%',
+                    transform: 'translateX(-50%)', marginTop: 6,
+                    background: 'rgba(15,23,42,.92)', color: '#fff',
+                    padding: '8px 12px', borderRadius: 8,
+                    fontSize: 11, whiteSpace: 'nowrap', zIndex: 100,
+                    pointerEvents: 'none', lineHeight: 1.6,
+                    boxShadow: '0 4px 12px rgba(0,0,0,.2)',
+                    minWidth: 140,
+                  }}>
+                    {/* Arrow pointing up */}
                     <div style={{
-                      fontSize: 10, color: 'var(--text-muted)', fontWeight: 500,
-                      whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
-                      fontStyle: 'italic', marginTop: 1,
-                    }}>{getFlavor(u)}</div>
-                  )}
-                </div>
-                <span style={{
-                  fontSize: 12, fontWeight: 700,
-                  color: canBuy ? 'var(--amber-text)' : 'var(--text-disabled)',
-                  fontFamily: "'JetBrains Mono',monospace",
-                  flexShrink: 0,
-                }}>{fmt(u.cost)}</span>
-              </button>
+                      position: 'absolute', bottom: '100%', left: '50%',
+                      transform: 'translateX(-50%)',
+                      width: 0, height: 0,
+                      borderLeft: '5px solid transparent',
+                      borderRight: '5px solid transparent',
+                      borderBottom: '5px solid rgba(15,23,42,.92)',
+                    }} />
+                    <div style={{ fontWeight: 700, fontSize: 12 }}>{u.name}</div>
+                    <div style={{ color: canBuy ? '#a5b4fc' : '#94a3b8', fontWeight: 600 }}>{getEffectLabel(u)}</div>
+                    <div style={{
+                      color: canBuy ? '#fbbf24' : '#64748b',
+                      fontFamily: "'JetBrains Mono',monospace",
+                      fontWeight: 700, marginTop: 2,
+                    }}>{fmt(u.cost)} 已讀</div>
+                  </div>
+                )}
+              </div>
             );
           })}
         </div>
-
-        {doneCount > 0 && (
-          <div style={{
-            marginTop: 4, padding: '4px 10px',
-            fontSize: 12, color: 'var(--text-muted)', opacity: 0.6,
-          }}>
-            ✓ {doneCount}/{upgrades.length}
-          </div>
-        )}
       </div>
     );
   }

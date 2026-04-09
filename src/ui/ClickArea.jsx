@@ -106,7 +106,7 @@ export default function ClickArea({ message, isRead, isFirstClick, popAnim, rece
           )}
 
           {/* Old messages — oldest at top, newest just above CTA */}
-          {recentMessages.slice(0, 10).reverse().map((m, i, arr) => {
+          {recentMessages.slice(0, 20).reverse().map((m, i, arr) => {
             const age = arr.length - i;
             return (
               <div key={i} style={{

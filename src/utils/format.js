@@ -27,11 +27,11 @@ export const fmt = (n) => {
 
 export const pk = (a) => a[Math.floor(Math.random() * a.length)];
 
-export const buildingCost = (b, count, discount = 0) => Math.floor(b.baseCost * Math.pow(1.18, count) * (1 - discount));
+export const buildingCost = (b, count, discount = 0) => Math.floor(b.baseCost * Math.pow(1.20, count) * (1 - discount));
 
 export const buildingCostN = (b, count, n, discount = 0) => {
   let total = 0;
   const mult = 1 - discount;
-  for (let i = 0; i < n; i++) total += Math.floor(b.baseCost * Math.pow(1.18, count + i) * mult);
+  for (let i = 0; i < n; i++) total += Math.floor(b.baseCost * Math.pow(1.20, count + i) * mult);
   return total;
 };

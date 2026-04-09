@@ -216,6 +216,80 @@ function PlotCell({ slot, index, fieldCount, seeds, onPlant, onHarvest, onClear 
 /**
  * Collection / 圖鑑 view — card grid style.
  */
+function fmtDuration(ms) {
+  const m = Math.round(ms / 60000);
+  if (m >= 60) return `${Math.round(m / 60)}h`;
+  return `${m}m`;
+}
+
+function FlowerCard({ flower, found, rarity }) {
+  const [showTip, setShowTip] = useState(false);
+  const scopeLabel = flower?.scope === 'global' ? '全域' : '前任';
+
+  return (
+    <div
+      style={{
+        width: 60, padding: '6px 2px',
+        borderRadius: 12,
+        background: found ? `${rarity.color}08` : 'rgba(148,163,184,.04)',
+        border: found ? `1.5px solid ${rarity.color}25` : '1px dashed rgba(148,163,184,.15)',
+        textAlign: 'center',
+        transition: 'all .2s',
+        position: 'relative',
+        cursor: found ? 'pointer' : 'default',
+      }}
+      onMouseEnter={() => found && setShowTip(true)}
+      onMouseLeave={() => setShowTip(false)}
+      onClick={() => found && setShowTip(t => !t)}
+    >
+      <div style={{ fontSize: 24, display: 'flex', justifyContent: 'center' }}>
+        {found && getFlowerIcon(flower.id)
+          ? <GameIcon src={getFlowerIcon(flower.id)} size={24} color={rarity.color} />
+          : found ? flower.emoji : '❓'
+        }
+      </div>
+      <div style={{
+        fontSize: 9, fontWeight: 600,
+        color: found ? rarity.color : 'var(--text-disabled)',
+        marginTop: 2,
+      }}>
+        {found ? flower.name : '???'}
+      </div>
+
+      {/* Tooltip */}
+      {showTip && found && flower && (
+        <div style={{
+          position: 'absolute', bottom: '100%', left: '50%',
+          transform: 'translateX(-50%)', marginBottom: 6,
+          background: 'rgba(30,41,59,.95)', color: '#fff',
+          borderRadius: 10, padding: '8px 12px',
+          fontSize: 11, lineHeight: 1.5, whiteSpace: 'nowrap',
+          zIndex: 100, pointerEvents: 'none',
+          boxShadow: '0 4px 16px rgba(0,0,0,.25)',
+          backdropFilter: 'blur(8px)',
+        }}>
+          <div style={{ fontWeight: 800, fontSize: 12, marginBottom: 2, color: rarity.color }}>
+            {flower.emoji} {flower.name}
+            <span style={{ marginLeft: 6, fontSize: 10, opacity: 0.7 }}>{rarity.label}</span>
+          </div>
+          <div style={{ color: 'rgba(255,255,255,.8)' }}>
+            {scopeLabel}產能 ×{flower.buffMult.toFixed(1)} · {fmtDuration(flower.buffDuration)}
+          </div>
+          {/* Arrow */}
+          <div style={{
+            position: 'absolute', top: '100%', left: '50%',
+            transform: 'translateX(-50%)',
+            width: 0, height: 0,
+            borderLeft: '5px solid transparent',
+            borderRight: '5px solid transparent',
+            borderTop: '5px solid rgba(30,41,59,.95)',
+          }} />
+        </div>
+      )}
+    </div>
+  );
+}
+
 function CollectionView({ collection, completedSeries }) {
   const totalDiscovered = Object.keys(collection).length;
 
@@ -259,30 +333,7 @@ function CollectionView({ collection, completedSeries }) {
                 const flower = getFlowerById(fid);
                 const found = collection[fid];
                 const rarity = RARITY[flower?.rarity ?? 'common'];
-                return (
-                  <div key={fid} style={{
-                    width: 60, padding: '6px 2px',
-                    borderRadius: 12,
-                    background: found ? `${rarity.color}08` : 'rgba(148,163,184,.04)',
-                    border: found ? `1.5px solid ${rarity.color}25` : '1px dashed rgba(148,163,184,.15)',
-                    textAlign: 'center',
-                    transition: 'all .2s',
-                  }}>
-                    <div style={{ fontSize: 24, display: 'flex', justifyContent: 'center' }}>
-                      {found && getFlowerIcon(flower.id)
-                        ? <GameIcon src={getFlowerIcon(flower.id)} size={24} color={rarity.color} />
-                        : found ? flower.emoji : '❓'
-                      }
-                    </div>
-                    <div style={{
-                      fontSize: 9, fontWeight: 600,
-                      color: found ? rarity.color : 'var(--text-disabled)',
-                      marginTop: 2,
-                    }}>
-                      {found ? flower.name : '???'}
-                    </div>
-                  </div>
-                );
+                return <FlowerCard key={fid} flower={flower} found={found} rarity={rarity} />;
               })}
             </div>
           </div>

@@ -55,25 +55,25 @@ export const GUILT_RELIEF = [
   {
     id: 'relief1', name: '發貼圖', emoji: '🎉',
     desc: '最低成本的社交行為',
-    guiltReduce: 100, cooldown: 60,
+    guiltReduce: 400, cooldown: 30,
     cost: 0,
   },
   {
     id: 'relief2', name: '轉發長輩圖', emoji: '🌅',
     desc: '「早安，今天也要加油喔」',
-    guiltReduce: 300, cooldown: 120,
+    guiltReduce: 800, cooldown: 60,
     cost: 0,
   },
   {
     id: 'relief3', name: '按讚', emoji: '👍',
     desc: '用一個動作假裝你在乎',
-    guiltReduce: 50, cooldown: 30,
+    guiltReduce: 200, cooldown: 15,
     cost: 0,
   },
   {
     id: 'relief4', name: '生日快樂罐頭訊息', emoji: '🎂',
     desc: '每年一次的交情維護',
-    guiltReduce: 500, cooldown: 300,
+    guiltReduce: 1500, cooldown: 120,
     cost: 0,
   },
 ];

@@ -459,20 +459,206 @@ function BannerGod({ count }) {
   );
 }
 
+// ── 網紅: pink studio with ring lights, each unit = a selfie stick ──
+function BannerInf({ count }) {
+  const units = Math.min(count, 25);
+  return (
+    <svg viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="xMinYMid slice" style={{ width: '100%', height: '100%', display: 'block' }}>
+      <rect width={W} height={H} fill="#fce4ec" />
+      <rect y={56} width={W} height={16} fill="#f8bbd0" />
+      {/* Spotlight beams */}
+      {[100, 350, 600].map((x, i) => (
+        <polygon key={`sp${i}`} points={`${x},0 ${x - 30},${H} ${x + 30},${H}`} fill="#f48fb1" opacity={0.12} />
+      ))}
+      {/* Each unit = ring light + phone */}
+      {Array.from({ length: units }, (_, i) => {
+        const x = 175 + (i * (W - 235)) / Math.max(units, 1);
+        return (
+          <g key={i}>
+            {/* Ring light */}
+            <circle cx={x + 7} cy={18} r={8} fill="none" stroke="#f06292" strokeWidth={2.5} opacity={0.7} />
+            <rect x={x + 5} y={26} width={4} height={20} fill="#ad1457" opacity={0.5} />
+            {/* Phone/selfie */}
+            <rect x={x} y={30} width={14} height={20} rx={2} fill="#880e4f" opacity={0.6} />
+            <rect x={x + 2} y={33} width={10} height={12} fill="#f8bbd0" opacity={0.5} />
+            {/* Heart above some */}
+            {i % 3 === 0 && <rect x={x + 4} y={8} width={6} height={5} rx={2} fill="#e91e63" opacity={0.6} />}
+          </g>
+        );
+      })}
+    </svg>
+  );
+}
+
+// ── 前輩: traditional office with filing cabinets, each unit = a desk ──
+function BannerSen({ count }) {
+  const units = Math.min(count, 20);
+  return (
+    <svg viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="xMinYMid slice" style={{ width: '100%', height: '100%', display: 'block' }}>
+      <rect width={W} height={H} fill="#d7ccc8" />
+      <rect y={54} width={W} height={18} fill="#a1887f" />
+      {/* Wood paneling lines */}
+      {[0, 100, 200, 300, 400, 500, 600, 700].map((x, i) => (
+        <rect key={`w${i}`} x={x} y={0} width={1} height={H} fill="#8d6e63" opacity={0.15} />
+      ))}
+      {/* Each unit = desk with papers */}
+      {Array.from({ length: units }, (_, i) => {
+        const x = 175 + (i * (W - 235)) / Math.max(units, 1);
+        return (
+          <g key={i}>
+            {/* Desk */}
+            <rect x={x} y={38} width={24} height={4} fill="#6d4c41" />
+            <rect x={x + 2} y={42} width={3} height={12} fill="#5d4037" />
+            <rect x={x + 19} y={42} width={3} height={12} fill="#5d4037" />
+            {/* Papers on desk */}
+            <rect x={x + 3} y={32} width={8} height={6} fill="#efebe9" opacity={0.8} />
+            <rect x={x + 5} y={30} width={8} height={6} fill="#fff" opacity={0.6} />
+            {/* Tea cup */}
+            {i % 2 === 0 && <rect x={x + 16} y={33} width={5} height={5} rx={1} fill="#ff8f00" opacity={0.5} />}
+          </g>
+        );
+      })}
+    </svg>
+  );
+}
+
+// ── 記者: newsroom with monitors, each unit = a screen ──
+function BannerRep({ count }) {
+  const units = Math.min(count, 20);
+  return (
+    <svg viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="xMinYMid slice" style={{ width: '100%', height: '100%', display: 'block' }}>
+      <rect width={W} height={H} fill="#263238" />
+      <rect y={56} width={W} height={16} fill="#37474f" />
+      {/* Breaking news ticker */}
+      <rect y={60} width={W} height={8} fill="#b71c1c" opacity={0.4} />
+      {/* Each unit = monitor */}
+      {Array.from({ length: units }, (_, i) => {
+        const x = 175 + (i * (W - 235)) / Math.max(units, 1);
+        return (
+          <g key={i}>
+            <rect x={x} y={14} width={20} height={16} rx={1} fill="#455a64" />
+            <rect x={x + 2} y={16} width={16} height={10} fill="#4dd0e1" opacity={0.5} />
+            {/* Text lines on screen */}
+            <rect x={x + 3} y={18} width={10} height={1.5} fill="#fff" opacity={0.4} />
+            <rect x={x + 3} y={21} width={7} height={1.5} fill="#fff" opacity={0.3} />
+            {/* Stand */}
+            <rect x={x + 8} y={30} width={4} height={6} fill="#546e7a" />
+            <rect x={x + 5} y={36} width={10} height={2} fill="#546e7a" />
+          </g>
+        );
+      })}
+    </svg>
+  );
+}
+
+// ── 駭客: dark terminal with green text, each unit = a terminal window ──
+function BannerHkr({ count }) {
+  const units = Math.min(count, 20);
+  return (
+    <svg viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="xMinYMid slice" style={{ width: '100%', height: '100%', display: 'block' }}>
+      <rect width={W} height={H} fill="#0d1117" />
+      {/* Scan lines */}
+      {Array.from({ length: 18 }, (_, i) => (
+        <rect key={`sl${i}`} y={i * 4} width={W} height={1} fill="#00ff00" opacity={0.03} />
+      ))}
+      {/* Each unit = terminal */}
+      {Array.from({ length: units }, (_, i) => {
+        const x = 175 + (i * (W - 235)) / Math.max(units, 1);
+        return (
+          <g key={i}>
+            <rect x={x} y={10} width={22} height={18} rx={2} fill="#161b22" stroke="#30363d" strokeWidth={1} />
+            {/* Terminal dots */}
+            <rect x={x + 2} y={12} width={2} height={2} rx={1} fill="#f85149" />
+            <rect x={x + 5} y={12} width={2} height={2} rx={1} fill="#f0883e" />
+            <rect x={x + 8} y={12} width={2} height={2} rx={1} fill="#3fb950" />
+            {/* Code lines */}
+            <rect x={x + 2} y={17} width={12} height={1.5} fill="#3fb950" opacity={0.6} />
+            <rect x={x + 2} y={20} width={8} height={1.5} fill="#3fb950" opacity={0.4} />
+            <rect x={x + 2} y={23} width={14} height={1.5} fill="#3fb950" opacity={0.5} />
+            {/* Skull icon on some */}
+            {i % 4 === 0 && <rect x={x + 7} y={34} width={8} height={8} rx={2} fill="#3fb950" opacity={0.3} />}
+          </g>
+        );
+      })}
+    </svg>
+  );
+}
+
+// ── 平行自我: mirror dimension, each unit = a reflection ──
+function BannerPar2({ count }) {
+  const units = Math.min(count, 15);
+  return (
+    <svg viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="xMinYMid slice" style={{ width: '100%', height: '100%', display: 'block' }}>
+      <rect width={W} height={H} fill="#2e1065" />
+      {/* Mirror line */}
+      <rect y={H / 2 - 1} width={W} height={2} fill="#c084fc" opacity={0.4} />
+      {/* Each unit = figure + reflection */}
+      {Array.from({ length: units }, (_, i) => {
+        const x = 175 + (i * (W - 235)) / Math.max(units, 1);
+        return (
+          <g key={i}>
+            {/* Figure */}
+            <rect x={x + 4} y={8} width={6} height={6} rx={3} fill="#c084fc" opacity={0.7} />
+            <rect x={x + 3} y={16} width={8} height={16} rx={1} fill="#a855f7" opacity={0.5} />
+            {/* Reflection (mirrored, dimmer) */}
+            <rect x={x + 4} y={58} width={6} height={6} rx={3} fill="#7c3aed" opacity={0.3} />
+            <rect x={x + 3} y={40} width={8} height={16} rx={1} fill="#6d28d9" opacity={0.2} />
+          </g>
+        );
+      })}
+    </svg>
+  );
+}
+
+// ── 意識蜂巢: honeycomb pattern, each unit = a hex cell ──
+function BannerHive({ count }) {
+  const units = Math.min(count, 20);
+  return (
+    <svg viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="xMinYMid slice" style={{ width: '100%', height: '100%', display: 'block' }}>
+      <rect width={W} height={H} fill="#1a2e05" />
+      {/* Background glow */}
+      <circle cx={W / 2} cy={H / 2} r={200} fill="#84cc16" opacity={0.05} />
+      {/* Each unit = glowing hex */}
+      {Array.from({ length: units }, (_, i) => {
+        const x = 175 + (i * (W - 235)) / Math.max(units, 1);
+        const y = 20 + (i % 3) * 12;
+        const s = 10;
+        return (
+          <g key={i}>
+            <polygon
+              points={`${x},${y - s} ${x + s * 0.87},${y - s / 2} ${x + s * 0.87},${y + s / 2} ${x},${y + s} ${x - s * 0.87},${y + s / 2} ${x - s * 0.87},${y - s / 2}`}
+              fill="#84cc16" opacity={0.15 + (i % 4) * 0.08}
+              stroke="#a3e635" strokeWidth={0.8} opacity={0.4}
+            />
+            {/* Neural pulse in some cells */}
+            {i % 3 === 0 && <circle cx={x} cy={y} r={3} fill="#a3e635" opacity={0.5} />}
+          </g>
+        );
+      })}
+    </svg>
+  );
+}
+
 const BANNER_MAP = {
   ex: BannerEx,
   par: BannerPar,
+  inf: BannerInf,
   bsy: BannerBsy,
+  sen: BannerSen,
   hr: BannerHr,
   del: BannerDel,
+  rep: BannerRep,
   gov: BannerGov,
   int: BannerInt,
+  hkr: BannerHkr,
   algo: BannerAlgo,
   ai: BannerAi,
   alien: BannerAlien,
+  par2: BannerPar2,
   time: BannerTime,
   quantum: BannerQuantum,
   void: BannerVoid,
+  hive: BannerHive,
   god: BannerGod,
 };
 
