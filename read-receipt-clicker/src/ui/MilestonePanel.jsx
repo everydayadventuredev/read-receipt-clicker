@@ -126,22 +126,34 @@ function CategorySection({ cat, achievements, unlockedAchievements, defaultOpen 
         }}>▼</span>
       </button>
 
-      {/* Progress bar — always visible */}
-      {cat.id !== 'hidden' && (
-        <div style={{
-          height: 3, margin: '0 10px 6px',
-          background: 'rgba(0,0,0,.04)', borderRadius: 2, overflow: 'hidden',
-        }}>
+      {/* Progress bar — color steps with completion ratio */}
+      {cat.id !== 'hidden' && (() => {
+        const ratio = items.length > 0 ? count / items.length : 0;
+        // Tiered color: 0% grey, <50% read-blue, <100% amber (almost there), 100% green
+        let barFill;
+        if (ratio === 0) {
+          barFill = 'rgba(148,163,184,.4)';
+        } else if (ratio < 0.5) {
+          barFill = 'linear-gradient(90deg, #93c5fd, #3b82f6)';
+        } else if (ratio < 1) {
+          barFill = 'linear-gradient(90deg, #fcd34d, #f59e0b)';
+        } else {
+          barFill = 'linear-gradient(90deg, #10b981, #34d399)';
+        }
+        return (
           <div style={{
-            height: '100%', borderRadius: 2,
-            width: `${items.length > 0 ? (count / items.length) * 100 : 0}%`,
-            background: allDone
-              ? 'linear-gradient(90deg, #10b981, #34d399)'
-              : 'linear-gradient(90deg, var(--purple), var(--purple-dark))',
-            transition: 'width .5s',
-          }} />
-        </div>
-      )}
+            height: 3, margin: '0 10px 6px',
+            background: 'rgba(0,0,0,.04)', borderRadius: 2, overflow: 'hidden',
+          }}>
+            <div style={{
+              height: '100%', borderRadius: 2,
+              width: `${ratio * 100}%`,
+              background: barFill,
+              transition: 'width .5s, background .5s',
+            }} />
+          </div>
+        );
+      })()}
 
       {/* Achievement grid — collapsed by default */}
       {open && (
@@ -246,39 +258,47 @@ export default function MilestonePanel({ unlockedAchievements, allTime }) {
 
       <div style={{ padding: '0 10px 10px', display: 'flex', flexDirection: 'column', gap: 4 }}>
         {/* Next milestone progress */}
-        {nextThreshold && (
-          <div style={{
-            padding: '6px 10px', borderRadius: 8,
-            background: 'rgba(99,102,241,.04)',
-            border: '1px solid rgba(99,102,241,.1)',
-            marginBottom: 4,
-          }}>
+        {nextThreshold && (() => {
+          const r = progressToNext / 100;
+          let bar;
+          if (r < 0.1) bar = 'rgba(148,163,184,.5)';
+          else if (r < 0.5) bar = 'linear-gradient(90deg, #93c5fd, #3b82f6)';
+          else if (r < 1) bar = 'linear-gradient(90deg, #fcd34d, #f59e0b)';
+          else bar = 'linear-gradient(90deg, #10b981, #34d399)';
+          return (
             <div style={{
-              display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+              padding: '6px 10px', borderRadius: 8,
+              background: 'rgba(59,130,246,.04)',
+              border: '1px solid rgba(59,130,246,.1)',
               marginBottom: 4,
             }}>
-              <span style={{ fontSize: 12, color: 'var(--text-secondary)', fontWeight: 600 }}>
-                下個里程碑
-              </span>
-              <span style={{
-                fontSize: 12, fontWeight: 700, color: 'var(--purple-text)',
-                fontFamily: "'JetBrains Mono',monospace",
-              }}>
-                {fmt(allTime)} / {fmt(nextThreshold)}
-              </span>
-            </div>
-            <div style={{
-              height: 6, background: 'rgba(0,0,0,.06)', borderRadius: 3, overflow: 'hidden',
-            }}>
               <div style={{
-                height: '100%', borderRadius: 3,
-                width: `${progressToNext}%`,
-                background: 'linear-gradient(90deg, var(--purple), var(--purple-dark))',
-                transition: 'width .5s',
-              }} />
+                display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                marginBottom: 4,
+              }}>
+                <span style={{ fontSize: 12, color: 'var(--text-secondary)', fontWeight: 600 }}>
+                  下個里程碑
+                </span>
+                <span style={{
+                  fontSize: 12, fontWeight: 700, color: 'var(--brand-text)',
+                  fontFamily: "'JetBrains Mono',monospace",
+                }}>
+                  {fmt(allTime)} / {fmt(nextThreshold)}
+                </span>
+              </div>
+              <div style={{
+                height: 6, background: 'rgba(0,0,0,.06)', borderRadius: 3, overflow: 'hidden',
+              }}>
+                <div style={{
+                  height: '100%', borderRadius: 3,
+                  width: `${progressToNext}%`,
+                  background: bar,
+                  transition: 'width .5s, background .5s',
+                }} />
+              </div>
             </div>
-          </div>
-        )}
+          );
+        })()}
 
         {/* Category sections */}
         {CATEGORIES.map(cat => (

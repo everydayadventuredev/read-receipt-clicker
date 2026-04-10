@@ -27,7 +27,7 @@ function BuildingBar({ b, count, cost, prodRate, canAfford, buyN, isNew, onBuy, 
           : canAfford ? `1px solid ${b.color}20`
           : '1px solid #e2e8f0',
         borderRadius: 6,
-        opacity: canAfford ? 1 : (hasAny ? 0.55 : 0.4),
+        opacity: canAfford ? 1 : (hasAny ? 0.55 : 0.5),
         transition: 'all .15s',
         textAlign: 'left', position: 'relative', overflow: 'hidden',
         cursor: canAfford ? 'pointer' : 'default',
@@ -64,7 +64,7 @@ function BuildingBar({ b, count, cost, prodRate, canAfford, buyN, isNew, onBuy, 
         }}>{b.desc}</span>
         <div style={{
           fontSize: 13, fontWeight: 700,
-          color: hasAny ? '#fdcb6e' : canAfford ? '#b45309' : 'var(--text-muted)',
+          color: hasAny ? '#fdcb6e' : canAfford ? '#1d4ed8' : 'var(--text-muted)',
           fontFamily: "'JetBrains Mono',monospace",
           marginTop: 2,
           textShadow: hasAny ? '0 1px 2px rgba(0,0,0,.5)' : 'none',
@@ -135,7 +135,7 @@ export default function BuildingList({ buildings, owned, reads, allTime, unlocke
         justifyContent: 'space-between', flexShrink: 0,
       }}>
         <div style={{
-          fontSize: 13, color: '#b45309', fontWeight: 700,
+          fontSize: 13, color: '#1d4ed8', fontWeight: 700,
           letterSpacing: 1,
         }}>🏰 已讀建築</div>
         <div style={{
@@ -189,23 +189,58 @@ export default function BuildingList({ buildings, owned, reads, allTime, unlocke
             );
           })}
 
-          {/* Locked buildings — only show next 2 */}
+          {/* Locked buildings — outline silhouette preview, next 2 */}
           {lockedBuildings.slice(0, 2).map(b => {
             const unlockAt = b.unlockAt ?? 0;
             const unlockPct = unlockAt > 0 ? Math.min(100, ((allTime ?? 0) / unlockAt) * 100) : 100;
+            const close = unlockPct >= 50;
 
             return (
               <div key={b.id} style={{
-                display: 'flex', alignItems: 'center', gap: 6,
-                padding: '4px 8px', height: 28,
-                opacity: 0.55, fontSize: 12, color: 'var(--text-muted)',
+                position: 'relative',
+                display: 'flex', alignItems: 'center', gap: 10,
+                padding: '8px 12px', height: 44,
+                background: 'transparent',
+                border: `1.5px dashed ${b.color}55`,
+                borderRadius: 6,
+                fontSize: 12,
+                overflow: 'hidden',
               }}>
-                <span style={{ fontSize: 10 }}>🔒</span>
-                <span style={{ fontWeight: 600, minWidth: 50 }}>{b.name}</span>
-                <div style={{ flex: 1, height: 3, background: 'rgba(148,163,184,.15)', borderRadius: 2, overflow: 'hidden' }}>
-                  <div style={{ height: '100%', width: `${unlockPct}%`, background: 'rgba(148,163,184,.35)', borderRadius: 2, transition: 'width .5s' }} />
+                {/* Faint silhouette emoji */}
+                <span style={{
+                  fontSize: 22,
+                  filter: 'grayscale(1) brightness(1.3) opacity(0.45)',
+                  flexShrink: 0,
+                }}>{b.emoji}</span>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{
+                    display: 'flex', alignItems: 'center', gap: 6,
+                    fontSize: 12, fontWeight: 700,
+                    color: close ? b.color : 'var(--text-muted)',
+                    letterSpacing: 0.5,
+                  }}>
+                    <span style={{ fontSize: 9 }}>🔒</span>
+                    <span>???</span>
+                    <span style={{
+                      marginLeft: 'auto',
+                      fontFamily: "'JetBrains Mono',monospace", fontSize: 10,
+                      color: 'var(--text-muted)',
+                    }}>{fmt(unlockAt)}</span>
+                  </div>
+                  <div style={{
+                    height: 3, marginTop: 4,
+                    background: 'rgba(148,163,184,.15)',
+                    borderRadius: 2, overflow: 'hidden',
+                  }}>
+                    <div style={{
+                      height: '100%',
+                      width: `${unlockPct}%`,
+                      background: close ? b.color : `${b.color}80`,
+                      borderRadius: 2,
+                      transition: 'width .5s',
+                    }} />
+                  </div>
                 </div>
-                <span style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 10 }}>{fmt(unlockAt)}</span>
               </div>
             );
           })}

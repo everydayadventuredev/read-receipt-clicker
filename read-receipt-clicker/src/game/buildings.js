@@ -132,7 +132,7 @@ export const BUILDINGS = [
     },
   },
   {
-    id: 'algo', name: '社群演算法', emoji: '📱', color: '#3b82f6',
+    id: 'algo', name: '社群演算法', emoji: '📱', color: '#7c3aed',
     baseCost: 2000000, baseProd: 16000, desc: '自動推送，永不停歇',
     messages: MSG_ALGO,
     unlockAt: 3000000,

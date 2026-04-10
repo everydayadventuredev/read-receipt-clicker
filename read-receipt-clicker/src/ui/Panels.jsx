@@ -23,16 +23,16 @@ export function StatsPanel({ reads, allTime, prodPerSec, clickPower, owned, seen
   const allTimeGold = isNewMilestone(allTime);
 
   const left = [
-    ['生涯', fmt(allTime), allTimeGold ? '#d97706' : '#4f46e5'],
-    ['產能', `${fmt(prodPerSec)}/s`, '#b45309'],
+    ['生涯', fmt(allTime), allTimeGold ? '#b45309' : '#1d4ed8'],
+    ['產能', `${fmt(prodPerSec)}/s`, '#1d4ed8'],
     ['點擊', fmt(clickPower), '#4f46e5'],
     ['大師', totalOwned, 'var(--text)'],
   ];
   const right = [
-    ['里程', `${seenMilestones.size}/${MILESTONES.length}`, '#f59e0b'],
+    ['里程', `${seenMilestones.size}/${MILESTONES.length}`, '#b45309'],
     ['重生', `${prestigeCount}次`, '#ec4899'],
     ['✦力', prestigePower, '#4f46e5'],
-    ['升級', `${boughtUpgrades.size}/${UPGRADES.length}`, '#b45309'],
+    ['升級', `${boughtUpgrades.size}/${UPGRADES.length}`, '#1d4ed8'],
   ];
 
   // Detect value changes to trigger flash
@@ -179,17 +179,17 @@ export function AchievementBadges({ unlockedAchievements, maxVisible }) {
               width: 24, height: 24, borderRadius: 6,
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               fontSize: 13,
-              background: isDark ? 'rgba(139,92,246,.08)' : 'rgba(217,119,6,.06)',
+              background: isDark ? 'rgba(139,92,246,.08)' : 'rgba(59,130,246,.06)',
               border: isDark
                 ? '1.5px solid rgba(139,92,246,.4)'
-                : '1px solid rgba(217,119,6,.15)',
+                : '1px solid rgba(59,130,246,.15)',
               cursor: 'default',
               transition: 'transform .15s ease, box-shadow .15s ease',
               transform: isHovered ? 'scale(1.15)' : 'scale(1)',
               boxShadow: isHovered
                 ? isDark
                   ? '0 0 8px rgba(139,92,246,.3)'
-                  : '0 0 8px rgba(217,119,6,.2)'
+                  : '0 0 8px rgba(59,130,246,.2)'
                 : 'none',
               ...(isNew ? {
                 animation: 'badgeEntrance .5s cubic-bezier(.34,1.56,.64,1) forwards',

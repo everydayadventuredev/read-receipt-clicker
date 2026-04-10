@@ -35,7 +35,17 @@ export default function UpgradeRow({ upgrades, reads, onBuy, onBuyAll, compact =
   const doneCount = upgrades.filter(u => u.state === 'done').length;
   const seenRef = useRef(new Set());
   const [newIds, setNewIds] = useState(new Set());
-  const [hoveredUpgrade, setHoveredUpgrade] = useState(null);
+  const [activeTooltip, setActiveTooltip] = useState(null);
+
+  // Dismiss tooltip when clicking outside
+  useEffect(() => {
+    if (!activeTooltip) return;
+    const handler = (e) => {
+      if (!e.target.closest?.('[data-upgrade-icon]')) setActiveTooltip(null);
+    };
+    document.addEventListener('click', handler);
+    return () => document.removeEventListener('click', handler);
+  }, [activeTooltip]);
 
   useEffect(() => {
     const freshIds = new Set();
@@ -106,41 +116,48 @@ export default function UpgradeRow({ upgrades, reads, onBuy, onBuyAll, compact =
           {activeItems.map(u => {
             const canBuy = u.state === 'buy';
             const isWait = u.state === 'wait';
-            const isHovered = hoveredUpgrade === u.id;
+            const isOpen = activeTooltip === u.id;
             return (
-              <div key={u.id} style={{ position: 'relative' }}>
+              <div key={u.id} style={{ position: 'relative' }} data-upgrade-icon>
                 <button
-                  onClick={() => canBuy && onBuy(u)}
-                  onMouseEnter={() => setHoveredUpgrade(u.id)}
-                  onMouseLeave={() => setHoveredUpgrade(null)}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    // First tap: show tooltip. Second tap (already open): buy if affordable.
+                    if (isOpen) {
+                      if (canBuy) { onBuy(u); setActiveTooltip(null); }
+                    } else {
+                      setActiveTooltip(u.id);
+                    }
+                  }}
+                  onMouseEnter={() => setActiveTooltip(u.id)}
                   style={{
-                    width: 36, height: 36, borderRadius: 8,
+                    width: 44, height: 44, borderRadius: 10,
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    fontSize: 18, lineHeight: 1,
+                    fontSize: 22, lineHeight: 1,
                     background: canBuy
-                      ? 'linear-gradient(135deg, rgba(99,102,241,.08), rgba(168,85,247,.06))'
+                      ? 'linear-gradient(135deg, rgba(59,130,246,.10), rgba(99,102,241,.06))'
                       : '#f8fafc',
-                    border: canBuy ? '1.5px solid rgba(99,102,241,.3)' : '1px solid #e8eaed',
+                    border: canBuy ? '1.5px solid rgba(59,130,246,.35)' : '1px solid #e8eaed',
                     opacity: isWait ? 0.4 : 1,
                     cursor: canBuy ? 'pointer' : 'default',
                     fontFamily: 'inherit',
                     transition: 'all .15s',
-                    boxShadow: canBuy ? '0 1px 4px rgba(99,102,241,.1)' : 'none',
-                    transform: isHovered ? 'scale(1.12)' : 'none',
-                    ...(canBuy && !isHovered ? { animation: 'glowPulse 2.5s ease-in-out infinite' } : {}),
+                    boxShadow: canBuy ? '0 1px 4px rgba(59,130,246,.12)' : 'none',
+                    transform: isOpen ? 'scale(1.12)' : 'none',
+                    ...(canBuy && !isOpen ? { animation: 'glowPulse 2.5s ease-in-out infinite' } : {}),
                   }}
                 >
                   {u.emoji}
                 </button>
                 {/* Styled tooltip — below the icon */}
-                {isHovered && (
+                {isOpen && (
                   <div style={{
                     position: 'absolute', top: '100%', left: '50%',
                     transform: 'translateX(-50%)', marginTop: 6,
-                    background: 'rgba(15,23,42,.92)', color: '#fff',
+                    background: 'rgba(15,23,42,.94)', color: '#fff',
                     padding: '8px 12px', borderRadius: 8,
                     fontSize: 11, whiteSpace: 'nowrap', zIndex: 100,
-                    pointerEvents: 'none', lineHeight: 1.6,
+                    lineHeight: 1.6,
                     boxShadow: '0 4px 12px rgba(0,0,0,.2)',
                     minWidth: 140,
                   }}>
@@ -151,15 +168,21 @@ export default function UpgradeRow({ upgrades, reads, onBuy, onBuyAll, compact =
                       width: 0, height: 0,
                       borderLeft: '5px solid transparent',
                       borderRight: '5px solid transparent',
-                      borderBottom: '5px solid rgba(15,23,42,.92)',
+                      borderBottom: '5px solid rgba(15,23,42,.94)',
                     }} />
                     <div style={{ fontWeight: 700, fontSize: 12 }}>{u.name}</div>
-                    <div style={{ color: canBuy ? '#a5b4fc' : '#94a3b8', fontWeight: 600 }}>{getEffectLabel(u)}</div>
+                    <div style={{ color: canBuy ? '#93c5fd' : '#94a3b8', fontWeight: 600 }}>{getEffectLabel(u)}</div>
                     <div style={{
                       color: canBuy ? '#fbbf24' : '#64748b',
                       fontFamily: "'JetBrains Mono',monospace",
                       fontWeight: 700, marginTop: 2,
                     }}>{fmt(u.cost)} 已讀</div>
+                    {canBuy && (
+                      <div style={{
+                        color: '#fbbf24', fontWeight: 700, fontSize: 10,
+                        marginTop: 4, opacity: 0.85,
+                      }}>再點一次購買</div>
+                    )}
                   </div>
                 )}
               </div>
@@ -223,7 +246,7 @@ export default function UpgradeRow({ upgrades, reads, onBuy, onBuyAll, compact =
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                   <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--text)' }}>{u.name}</span>
-                  <span style={{ fontSize: 14, fontWeight: 800, fontFamily: "'JetBrains Mono',monospace", color: canBuy ? 'var(--amber-text)' : 'var(--text-disabled)' }}>{fmt(u.cost)}</span>
+                  <span style={{ fontSize: 14, fontWeight: 800, fontFamily: "'JetBrains Mono',monospace", color: canBuy ? 'var(--brand-text)' : 'var(--text-disabled)' }}>{fmt(u.cost)}</span>
                 </div>
                 <div style={{ fontSize: 12, color: canBuy ? '#6366f1' : 'var(--text-muted)', marginTop: 2, fontWeight: 600 }}>{u.desc}</div>
                 {isWait && buildingName && (

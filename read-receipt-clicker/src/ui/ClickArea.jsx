@@ -45,6 +45,24 @@ function Avatar({ size = 24 }) {
   );
 }
 
+// Normalize message to { text, color } shape (supports legacy string)
+function normalizeMsg(m) {
+  if (typeof m === 'string') return { text: m, color: '#64748b' };
+  if (m && typeof m === 'object') return { text: m.text ?? '', color: m.color ?? '#64748b' };
+  return { text: '', color: '#64748b' };
+}
+
+// Convert a hex color to rgba with given alpha (accepts #RGB or #RRGGBB)
+function hexToRgba(hex, alpha) {
+  if (!hex || hex[0] !== '#') return `rgba(100,116,139,${alpha})`;
+  let h = hex.slice(1);
+  if (h.length === 3) h = h.split('').map(c => c + c).join('');
+  const r = parseInt(h.slice(0, 2), 16);
+  const g = parseInt(h.slice(2, 4), 16);
+  const b = parseInt(h.slice(4, 6), 16);
+  return `rgba(${r},${g},${b},${alpha})`;
+}
+
 export default function ClickArea({ message, isRead, isFirstClick, popAnim, recentMessages, onClick, guilt = 0, guiltLevel = 'none' }) {
   const now = new Date();
   const timeStr = `${now.getHours()}:${now.getMinutes().toString().padStart(2, '0')}`;
@@ -54,6 +72,8 @@ export default function ClickArea({ message, isRead, isFirstClick, popAnim, rece
   const inputText = inputBarTexts[guiltLevel] || inputBarTexts.none;
   const bubbleBorder = bubbleBorders[guiltLevel] || bubbleBorders.none;
   const isHigh = guiltLevel === 'high';
+
+  const cur = normalizeMsg(message);
 
   return (
     <>
@@ -106,8 +126,11 @@ export default function ClickArea({ message, isRead, isFirstClick, popAnim, rece
           )}
 
           {/* Old messages — oldest at top, newest just above CTA */}
-          {recentMessages.slice(0, 20).reverse().map((m, i, arr) => {
+          {recentMessages.slice(0, 20).reverse().map((rawMsg, i, arr) => {
             const age = arr.length - i;
+            const m = normalizeMsg(rawMsg);
+            const tintBg = hexToRgba(m.color, 0.06);
+            const tintBorder = hexToRgba(m.color, 0.25);
             return (
               <div key={i} style={{
                 display: 'flex', alignItems: 'flex-start', gap: 6,
@@ -118,17 +141,17 @@ export default function ClickArea({ message, isRead, isFirstClick, popAnim, rece
                 <div style={{ flex: 1 }}>
                   <div style={{
                     maxWidth: '82%',
-                    background: '#fff',
-                    border: bubbleBorder,
+                    background: tintBg,
+                    border: `1px solid ${tintBorder}`,
                     borderRadius: '4px 12px 12px 12px',
                     padding: '5px 10px',
                     fontSize: 12, color: 'var(--text-secondary)', lineHeight: 1.4,
                     transition: 'border .5s ease',
                   }}>
-                    {m}
+                    {m.text}
                   </div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 2, marginTop: 2 }}>
-                    <CheckIcon size={7} color="#6366f1" />
+                    <CheckIcon size={7} color={m.color} />
                     <span style={{ fontSize: 9, color: 'var(--text-muted)' }}>
                       {now.getHours()}:{String(Math.max(0, now.getMinutes() - age)).padStart(2, '0')}
                     </span>
@@ -175,11 +198,11 @@ export default function ClickArea({ message, isRead, isFirstClick, popAnim, rece
                   maxWidth: '90%',
                   background: isRead
                     ? 'var(--surface-hover)'
-                    : 'linear-gradient(145deg, rgba(99,102,241,.12), rgba(99,102,241,.05))',
+                    : `linear-gradient(145deg, ${hexToRgba(cur.color, 0.14)}, ${hexToRgba(cur.color, 0.05)})`,
                   border: isRead
                     ? '1px solid var(--border)'
                     : isHigh ? '2px solid rgba(239,68,68,.4)'
-                    : '2px solid rgba(99,102,241,.3)',
+                    : `2px solid ${hexToRgba(cur.color, 0.35)}`,
                   borderRadius: '4px 16px 16px 16px',
                   padding: '12px 16px',
                   transition: 'all .15s cubic-bezier(.4,0,.2,1)',
@@ -187,7 +210,7 @@ export default function ClickArea({ message, isRead, isFirstClick, popAnim, rece
                   boxShadow: isRead
                     ? 'none'
                     : isHigh ? '0 4px 16px rgba(239,68,68,.15)'
-                    : '0 4px 16px rgba(99,102,241,.12)',
+                    : `0 4px 16px ${hexToRgba(cur.color, 0.14)}`,
                   animation: !isRead && isHigh ? 'guiltPulse 2s ease-in-out infinite'
                     : !isRead && !isFirstClick ? 'ib 2.5s ease-in-out infinite' : 'none',
                 }}>
@@ -195,7 +218,7 @@ export default function ClickArea({ message, isRead, isFirstClick, popAnim, rece
                     color: isRead ? 'var(--text-muted)' : 'var(--text)',
                     fontSize: 17, lineHeight: 1.5, fontWeight: 600,
                   }}>
-                    {message}
+                    {cur.text}
                   </div>
                 </div>
                 <div style={{
@@ -205,7 +228,7 @@ export default function ClickArea({ message, isRead, isFirstClick, popAnim, rece
                   <span style={{ fontSize: 10, color: 'var(--text-muted)' }}>{timeStr}</span>
                   {isRead && (
                     <span style={{ animation: 'ci .3s ease-out' }}>
-                      <CheckIcon size={10} color="#6366f1" />
+                      <CheckIcon size={10} color={cur.color} />
                     </span>
                   )}
                 </div>

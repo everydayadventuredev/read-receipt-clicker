@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
+import { createPortal } from 'react-dom';
 
 import { BUILDINGS, UNLOCK_THRESHOLDS } from './game/buildings.js';
 import { UPGRADES } from './game/upgrades.js';
@@ -10,6 +11,7 @@ import { PRESTIGE_UPGRADES, getNodeEffects, getCapstoneBlocker } from './game/pr
 import { SYNERGIES, getActiveSynergies, getSynergyMult } from './game/synergies.js';
 import { EVENT_CHAINS } from './game/eventChains.js';
 import { REPLY_TRAPS, GUILT_EVENTS, GUILT_RELIEF, GUILT_THRESHOLDS } from './game/guilt.js';
+import { MINIGAME_REGISTRY } from './game/minigames.js';
 
 import { fmt, pk, buildingCostN } from './utils/format.js';
 import { saveGame, loadGame, buildInitialOwned, calcOfflineEarnings } from './utils/save.js';
@@ -28,6 +30,8 @@ import Ticker from './ui/Ticker.jsx';
 import MiniGamePanel from './ui/MiniGamePanel.jsx';
 import MilestonePanel from './ui/MilestonePanel.jsx';
 import HeroBackground from './ui/HeroBackground.jsx';
+import SplashScreen from './ui/SplashScreen.jsx';
+import NextGoal from './ui/NextGoal.jsx';
 import { StatsPanel, LogPanel, AchievementBadges } from './ui/Panels.jsx';
 import { HeaderBanner, TickerBanner, CounterBanner, ChatBanner, UpgradeBanner } from './ui/SectionBanners.jsx';
 
@@ -85,7 +89,8 @@ export default function App() {
   const [guiltCooldowns,   setGuiltCooldowns]   = useState({});
   const [coldMaster,       setColdMaster]       = useState(init.coldMaster ?? false);
 
-  const [message,    setMessage]    = useState(pk(MSG_GENERIC));
+  const [message,    setMessage]    = useState({ text: pk(MSG_GENERIC), cat: 'generic', color: '#64748b' });
+  const messageRef = useRef(message);
   const [isRead,     setIsRead]     = useState(false);
   const [floats,     setFloats]     = useState([]);
   const [popAnim,    setPopAnim]    = useState(false);
@@ -93,9 +98,14 @@ export default function App() {
   const [goldenCookie, setGoldenCookie] = useState(null);
   const [gcPos,      setGcPos]      = useState({ x: 50, y: 30 });
   const [newBuildings, setNewBuildings] = useState(new Set());
+  const [newMinigames, setNewMinigames] = useState(new Set());
   const [log,        setLog]        = useState([]);
   const [recentMsgs, setRecentMsgs] = useState([]);
   const [started,    setStarted]    = useState(false);
+  const [showSplash, setShowSplash] = useState(() => {
+    try { return localStorage.getItem('rrc-seen-splash') !== '1'; }
+    catch { return true; }
+  });
   const [showHint,   setShowHint]   = useState(true);
   const [buyN,       setBuyN]       = useState(1);
   const [particles,  setParticles]  = useState([]);
@@ -129,6 +139,7 @@ export default function App() {
   const [buffState,        setBuffState]        = useState(() => init.buffState ?? createBuffState());
   const [activeMiniGame,   setActiveMiniGame]   = useState(null);
   const [cheatMode,        setCheatMode]        = useState(false);
+  const [mobileTab,        setMobileTab]        = useState('chat');
   const [achievementPopup, setAchievementPopup] = useState(null); // { icon, name }
   const cheatBufRef = useRef('');
 
@@ -251,6 +262,7 @@ export default function App() {
   useEffect(() => { readsRef.current   = reads;   }, [reads]);
   useEffect(() => { allTimeRef.current = allTime; }, [allTime]);
   useEffect(() => { ownedRef.current   = owned;   }, [owned]);
+  useEffect(() => { messageRef.current = message; }, [message]);
   useEffect(() => { boughtRef.current  = boughtUpgrades; }, [boughtUpgrades]);
   useEffect(() => { tempMultRef.current = tempMult; }, [tempMult]);
   // Auto-expire tempMult
@@ -500,6 +512,16 @@ export default function App() {
       }
     });
   }, [allTime, unlockedBuildings]);
+
+  // Mini-game unlock detection — flag tab badge when threshold crossed
+  useEffect(() => {
+    MINIGAME_REGISTRY.forEach(mg => {
+      if ((owned[mg.buildingId] ?? 0) >= mg.unlockCount && !newMinigames.has(mg.buildingId)) {
+        // Only flag if we haven't already (will be set to "seen" once user opens explore tab)
+        setNewMinigames(prev => prev.has(mg.buildingId) ? prev : new Set([...prev, mg.buildingId]));
+      }
+    });
+  }, [owned]);
 
   // Milestones
   useEffect(() => {
@@ -884,14 +906,22 @@ export default function App() {
   }
 
   function nextMessage() {
-    const pool = [...MSG_GENERIC];
+    // Weighted pick: each building with owned count contributes weight = min(count, 5).
+    // Return { text, cat, color } so the bubble can render with the sender's accent color.
+    const sources = [{ pool: MSG_GENERIC, cat: 'generic', color: '#64748b', weight: 1 }];
     BUILDINGS.forEach(b => {
       const c = ownedRef.current[b.id] ?? 0;
       if (c > 0 && b.messages) {
-        for (let i = 0; i < Math.min(c, 5); i++) pool.push(pk(b.messages));
+        sources.push({ pool: b.messages, cat: b.id, color: b.color, weight: Math.min(c, 5) });
       }
     });
-    return pk(pool);
+    const total = sources.reduce((s, x) => s + x.weight, 0);
+    let r = Math.random() * total;
+    for (const src of sources) {
+      r -= src.weight;
+      if (r <= 0) return { text: pk(src.pool), cat: src.cat, color: src.color };
+    }
+    return { text: pk(MSG_GENERIC), cat: 'generic', color: '#64748b' };
   }
 
   const handleClick = useCallback((e) => {
@@ -923,14 +953,18 @@ export default function App() {
     const fid = idRef.current++;
     setFloats(f => [...f, { id: fid, x, y, text: power > 1 ? `+${fmt(power)}` : '+1' }]);
     spawnParticles(x, y, 5);
-    setRecentMsgs(prev => [message, ...prev].slice(0, 20));
+    // Use ref to guarantee we log the message actually being displayed (not a stale closure)
+    const displayed = messageRef.current ?? message;
+    setRecentMsgs(prev => [displayed, ...prev].slice(0, 20));
     playClick();
 
     setTimeout(() => {
       setIsRead(false);
-      setMessage(nextMessage());
+      const next = nextMessage();
+      messageRef.current = next;
+      setMessage(next);
     }, 200);
-  }, [isRead, started, message, calcClickPower, handleFeverClick]);
+  }, [isRead, started, calcClickPower, handleFeverClick]);
 
   const handleGoldenCookie = useCallback((e) => {
     if (!goldenCookie) return;
@@ -1213,6 +1247,12 @@ export default function App() {
       fontFamily: "'Noto Sans TC',-apple-system,sans-serif",
       position: 'relative', overflow: 'hidden',
     }}>
+      {showSplash && (
+        <SplashScreen onDismiss={() => {
+          setShowSplash(false);
+          try { localStorage.setItem('rrc-seen-splash', '1'); } catch {}
+        }} />
+      )}
       <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700;800&family=Noto+Sans+TC:wght@300;400;500;700;900&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet" />
       <style>{`
         @keyframes fu  { 0% { opacity:1;transform:translateY(0) scale(1) rotate(0deg) } 30% { opacity:1;transform:translateY(-20px) scale(1.4) } 100% { opacity:0;transform:translateY(-70px) scale(0.8) } }
@@ -1239,32 +1279,48 @@ export default function App() {
         ::-webkit-scrollbar-track { background:transparent }
         ::-webkit-scrollbar-thumb { background:rgba(99,102,241,.15); border-radius:3px }
         button:active { transform:scale(.96)!important }
+        @media(max-width:767px) {
+          .mobile-hidden { display: none !important }
+          .mobile-tab-bar { display: flex !important }
+          .section-hero, .section-middle, .section-store { flex: 1 !important; flex-shrink: 1 !important; }
+          .section-hero { padding: 0 !important; }
+          .game-layout { padding-bottom: 56px; }
+          .bg-particles { opacity: 0.2 !important; }
+          /* Phone frame: remove ornament on actual mobile — chat fills the screen */
+          .phone-frame {
+            max-width: 100% !important;
+            border: none !important;
+            border-radius: 0 !important;
+            box-shadow: none !important;
+          }
+          .phone-frame .phone-notch { display: none !important }
+        }
         @media(min-width:768px) {
           .game-layout { flex-direction:row!important }
-          .section-hero   { width:30%!important; border-right:3px solid #d97706; box-shadow:2px 0 8px rgba(0,0,0,.06) }
-          .section-middle { width:40%!important; border-right:3px solid #d97706; box-shadow:2px 0 8px rgba(0,0,0,.06) }
-          .section-store  { width:30%!important }
+          .section-hero   { width:35%!important; border-right:3px solid #3b82f6; box-shadow:2px 0 8px rgba(0,0,0,.06) }
+          .section-middle { width:28%!important; border-right:3px solid #3b82f6; box-shadow:2px 0 8px rgba(0,0,0,.06) }
+          .section-store  { width:37%!important }
+          .mobile-tab-bar { display: none !important }
         }
       `}</style>
 
       {/* Ambient background — floating checkmarks + gradient */}
-      <div style={{ position: 'fixed', inset: 0, pointerEvents: 'none', zIndex: 0,
-        background: 'radial-gradient(ellipse at 25% 15%, rgba(99,102,241,.08) 0%, transparent 50%), radial-gradient(ellipse at 75% 85%, rgba(217,119,6,.06) 0%, transparent 50%), radial-gradient(ellipse at 50% 50%, rgba(99,102,241,.03) 0%, transparent 70%)',
+      <div className="bg-particles" style={{ position: 'fixed', inset: 0, pointerEvents: 'none', zIndex: 0,
+        background: 'radial-gradient(ellipse at 25% 15%, rgba(59,130,246,.08) 0%, transparent 50%), radial-gradient(ellipse at 75% 85%, rgba(99,102,241,.05) 0%, transparent 55%), radial-gradient(ellipse at 50% 50%, rgba(59,130,246,.03) 0%, transparent 70%)',
       }}>
-        {/* Floating tick particles — 3 layers: ✓✓, ✓, 已讀 */}
-        {Array.from({ length: 24 }, (_, i) => {
-          const symbols = ['✓✓', '✓', '✓', '已讀', '✓✓', '✓'];
+        {/* Floating tick particles — sparse & quiet per Hara/Rams */}
+        {Array.from({ length: 10 }, (_, i) => {
+          const symbols = ['✓✓', '✓', '✓✓', '已讀', '✓'];
           const sym = symbols[i % symbols.length];
-          const isBlue = i % 3 !== 2;
-          const baseOpacity = sym === '已讀' ? 0.04 : 0.09;
+          const baseOpacity = sym === '已讀' ? 0.025 : 0.05;
           return (
             <div key={i} style={{
               position: 'absolute',
-              left: `${(i * 4.2 + 1.5) % 100}%`,
-              fontSize: sym === '已讀' ? 9 : (8 + (i % 5) * 3),
-              color: isBlue ? `rgba(99,102,241,${baseOpacity})` : `rgba(217,119,6,${baseOpacity - 0.02})`,
-              animation: `bgfloat ${14 + (i % 7) * 3}s linear infinite`,
-              animationDelay: `${-(i * 1.8) % 20}s`,
+              left: `${(i * 10 + 4) % 100}%`,
+              fontSize: sym === '已讀' ? 9 : (10 + (i % 4) * 3),
+              color: `rgba(99,102,241,${baseOpacity})`,
+              animation: `bgfloat ${18 + (i % 5) * 4}s linear infinite`,
+              animationDelay: `${-(i * 3) % 24}s`,
               fontFamily: "'JetBrains Mono',monospace",
               fontWeight: 800,
               letterSpacing: sym === '✓✓' ? -1 : 0,
@@ -1500,16 +1556,16 @@ export default function App() {
       <div className="game-layout" style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', minHeight: 0 }}>
 
         {/* LEFT — Phone-style container */}
-        <div className="section-hero" style={{
+        <div className={`section-hero ${mobileTab !== 'chat' ? 'mobile-hidden' : ''}`} style={{
           display: 'flex', flexDirection: 'column', alignItems: 'center',
           justifyContent: 'center',
           padding: '12px',
-          position: 'relative', flexShrink: 0, overflow: 'hidden',
+          position: 'relative', flex: 1, overflow: 'hidden',
         }}>
           {/* Dynamic progression background — changes with building tiers */}
           <HeroBackground owned={owned} allTime={allTime} />
           {/* Phone frame */}
-          <div style={{
+          <div className="phone-frame" style={{
             width: '100%', maxWidth: 340, flex: 1,
             display: 'flex', flexDirection: 'column',
             borderRadius: 28,
@@ -1525,7 +1581,7 @@ export default function App() {
               background: 'linear-gradient(180deg, rgba(13,148,136,.03) 0%, transparent 40%, rgba(99,102,241,.02) 100%)',
             }} />
             {/* Phone notch */}
-            <div style={{
+            <div className="phone-notch" style={{
               position: 'absolute', top: 0, left: '50%', transform: 'translateX(-50%)',
               width: 80, height: 22, background: 'var(--text)',
               borderRadius: '0 0 14px 14px', zIndex: 10,
@@ -1817,6 +1873,14 @@ export default function App() {
               />
             </div>
 
+            {/* Next goal indicator */}
+            <NextGoal
+              allTime={allTime}
+              reads={reads}
+              owned={owned}
+              unlockedBuildings={unlockedBuildings}
+            />
+
             {/* Phone home indicator */}
             <div style={{
               padding: '6px 0', display: 'flex', justifyContent: 'center',
@@ -1831,13 +1895,25 @@ export default function App() {
         </div>
 
         {/* MIDDLE — Ticker + Mini-Game */}
-        <div className="section-middle" style={{
+        <div className={`section-middle ${mobileTab !== 'explore' ? 'mobile-hidden' : ''}`} style={{
           flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', minHeight: 0,
           background: 'linear-gradient(180deg, rgba(99,102,241,.02) 0%, rgba(99,102,241,.01) 100%)',
         }}>
 
           {/* Ticker — news/events at top of middle column */}
           <Ticker allTime={allTime} logEntries={log} />
+
+          {/* Empty state guide for locked mini-games */}
+          {Object.values(owned).every(v => v < 10) && (
+            <div style={{
+              padding: '16px 12px', textAlign: 'center',
+              color: 'var(--text-muted)', fontSize: 12,
+            }}>
+              <div style={{ fontSize: 28, marginBottom: 8 }}>🎮</div>
+              <div style={{ fontWeight: 600, marginBottom: 4 }}>小遊戲即將解鎖</div>
+              <div>購買更多建築來解鎖各種小遊戲！</div>
+            </div>
+          )}
 
           {/* Mini-Game panel — building sub-systems */}
           <MiniGamePanel
@@ -1879,7 +1955,7 @@ export default function App() {
         </div>
 
         {/* RIGHT — Header + Store: Upgrades + Buildings */}
-        <div className="section-store" style={{
+        <div className={`section-store ${mobileTab !== 'store' ? 'mobile-hidden' : ''}`} style={{
           display: 'flex', flexDirection: 'column', overflow: 'hidden', minHeight: 0,
           background: 'linear-gradient(180deg, rgba(245,158,11,.02) 0%, rgba(245,158,11,.01) 100%)',
         }}>
@@ -1949,7 +2025,7 @@ export default function App() {
 
           {/* Upgrades — fixed height icon grid */}
           <div style={{
-            maxHeight: 80, overflowY: 'auto', flexShrink: 0,
+            maxHeight: 64, overflowY: 'auto', flexShrink: 0,
             borderBottom: '2px solid var(--border)',
             background: 'rgba(99,102,241,.02)',
             position: 'relative', overflowX: 'hidden',
@@ -2001,6 +2077,64 @@ export default function App() {
           />
         </div>
       </div>
+
+      {/* Mobile tab bar — portal to body to escape overflow:hidden */}
+      {createPortal(
+        <div className="mobile-tab-bar" style={{
+          display: 'none', /* overridden by media query */
+          position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 9999,
+          background: '#fff', borderTop: '2px solid var(--border)',
+          padding: '4px 0 env(safe-area-inset-bottom, 4px)',
+          justifyContent: 'space-around',
+        }}>
+          {[
+            { id: 'chat', icon: '📱', label: '聊天', badge: 0 },
+            { id: 'explore', icon: '🎮', label: '探索', badge: newMinigames.size },
+            { id: 'store', icon: '🏰', label: '商店', badge: newBuildings.size },
+          ].map(tab => {
+            const isActive = mobileTab === tab.id;
+            const showBadge = tab.badge > 0 && !isActive;
+            return (
+              <button key={tab.id} onClick={() => {
+                setMobileTab(tab.id);
+                if (tab.id === 'explore') setNewMinigames(new Set());
+                if (tab.id === 'store') setNewBuildings(new Set());
+              }} style={{
+                flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center',
+                gap: 2, padding: '6px 0', border: 'none', borderRadius: 0,
+                background: isActive ? 'rgba(59,130,246,.08)' : 'transparent',
+                color: isActive ? '#3b82f6' : 'var(--text-muted)',
+                fontSize: 10, fontWeight: isActive ? 700 : 500,
+                fontFamily: 'inherit', cursor: 'pointer',
+                position: 'relative',
+              }}>
+                <span style={{
+                  fontSize: 20, position: 'relative', display: 'inline-block',
+                  animation: showBadge ? 'tabBadgePulse 1.6s ease-in-out infinite' : 'none',
+                }}>
+                  {tab.icon}
+                  {showBadge && (
+                    <span style={{
+                      position: 'absolute', top: -4, right: -8,
+                      minWidth: 16, height: 16, borderRadius: 8,
+                      background: '#ef4444', color: '#fff',
+                      fontSize: 10, fontWeight: 800,
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      padding: '0 4px',
+                      boxShadow: '0 0 0 2px #fff, 0 2px 4px rgba(239,68,68,.4)',
+                      lineHeight: 1,
+                    }}>
+                      {tab.badge}
+                    </span>
+                  )}
+                </span>
+                {tab.label}
+              </button>
+            );
+          })}
+        </div>,
+        document.body
+      )}
 
       {/* Prestige Shop Modal */}
       {showPrestigeShop && (
